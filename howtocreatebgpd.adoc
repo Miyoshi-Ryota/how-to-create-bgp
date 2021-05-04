@@ -1,0 +1,55 @@
+
+:toc:
+= 作って学ぶルーティングプロトコル〜RustでBGPを実装〜
+Miyoshi Ryota (@llp_qlv / mr-csce (miyoshi))
+
+== はじめに
+現在執筆中です。
+
+次の本書のGitHubリポジトリや、本書で作成したBGPデーモンのリポジトリにStarをいただけると嬉しいです。
+++++
+本書のリポジトリ：
+<iframe src="https://ghbtns.com/github-btn.html?user=Miyoshi-Ryota&repo=how-to-create-bgp
+&type=star&count=true&size=large" frameborder="0" scrolling="0" width="170" height="30" title="GitHub"></iframe>
+本書で作成したBGPデーモンのリポジトリ：
+<iframe src="https://ghbtns.com/github-btn.html?user=Miyoshi-Ryota&repo=mrbgpd
+&type=star&count=true&size=large" frameborder="0" scrolling="0" width="170" height="30" title="GitHub"></iframe>
+++++
+
+本書ではルーティングプロトコルの1つであるBGP（特に今回はEBGP4）をRustで実装する本です。
+読者に以下の前提知識を求めています。
+
+. ルーティングプロトコルは聞いたことがある。
+. スタティックルートとは何か分かる。
+. ルーティングテーブルを見て意味が分かる。
+. 何らかのプログラミング言語でのプログラミング経験
+
+以下の経験があるとよりわかりやすいかもしれません。
+
+. BGPの運用経験
+
+== BGPの実装に必要な知識の学習
+=== BGPはステートマシン
+=== ステートマシンとは
+=== ステートマシンの例
+
+== 1つのピアを実装するまで
+=== main関数の実装
+=== 本章で作るものの全体像
+[plantuml]
+----
+@startuml
+class Animal {
+  run()
+}
+
+class Cat extends Animal {
+}
+@enduml
+----
+
+
+== 複数ピアをハンドリング可能な実装
+=== 本章で作るものの全体像
+
+== 他社実装との疎通確認
