@@ -70,20 +70,16 @@ http://www5e.biglobe.ne.jp/aji/30min/index.html[30分間ネットワーキング
 ----
 @startuml
 
-state poweroff {
-  state "電源OFF"
-}
+state 電源OFF
 
-state poweron {
-  state "電源ON"
-}
+state 電源ON
 
-poweroff --> poweron : 電源ボタンの押下
-poweroff --> poweroff : 音量増加ボタンの押下
-poweroff --> poweroff : 音量減少ボタンの押下
-poweron --> poweroff : 電源ボタンの押下
-poweron --> poweron : 音量増加ボタンの押下
-poweron --> poweron : 音量減少ボタンの押下
+電源OFF --> 電源ON : 電源ボタンの押下
+電源OFF --> 電源OFF : 音量増加ボタンの押下
+電源OFF --> 電源OFF : 音量減少ボタンの押下
+電源ON --> 電源OFF : 電源ボタンの押下
+電源ON --> 電源ON : 音量増加ボタンの押下
+電源ON --> 電源ON : 音量減少ボタンの押下
 
 @enduml
 ----
