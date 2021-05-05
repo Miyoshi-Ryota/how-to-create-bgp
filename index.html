@@ -605,6 +605,31 @@ BGPについて詳しくない方は、どちらかを読み、本章以降に�
 <img src="diag-06535e762f0bfe69dbdbe2fb63456264.png" alt="Diagram" width="456" height="205">
 </div>
 </div>
+<div class="paragraph">
+<p>本書ではステートマシン図では表しにくい動作の内容について、次のように付箋をつけることにします。
+この図では、状態が電源ONのときに、音量増加ボタンの押下が入力されたときには、状態を状態ONのままにするだけでなく、音量を増加させることを表しています。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>@startuml
+
+state 電源OFF
+
+state 電源ON
+
+電源OFF --&gt; 電源ON : 電源ボタンの押下
+電源OFF --&gt; 電源OFF : 音量増加ボタンの押下
+電源OFF --&gt; 電源OFF : 音量減少ボタンの押下
+電源ON --&gt; 電源OFF : 電源ボタンの押下
+電源ON --&gt; 電源ON : 音量増加ボタンの押下
+note on link
+   音量の増加
+end note
+電源ON --&gt; 電源ON : 音量減少ボタンの押下
+
+@enduml</pre>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_ステートマシンの例">ステートマシンの例</h3>
@@ -647,7 +672,7 @@ BGPについて詳しくない方は、どちらかを読み、本章以降に�
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-05 14:12:12 UTC
+Last updated 2021-05-05 14:20:32 UTC
 </div>
 </div>
 </body>

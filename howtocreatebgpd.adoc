@@ -79,18 +79,39 @@ state 電源ON
 電源OFF --> 電源OFF : 音量減少ボタンの押下
 電源ON --> 電源OFF : 電源ボタンの押下
 電源ON --> 電源ON : 音量増加ボタンの押下
-note on link 
+note on link
    音量の増加
 end note
 電源ON --> 電源ON : 音量減少ボタンの押下
-note on link 
+note on link
   音量の減少
 end note
 
 @enduml
 ----
 
+本書ではステートマシン図では表しにくい動作の内容について、次のように付箋をつけることにします。
+この図では、状態が電源ONのときに、音量増加ボタンの押下が入力されたときには、状態を状態ONのままにするだけでなく、音量を増加させることを表しています。
 
+----
+@startuml
+
+state 電源OFF
+
+state 電源ON
+
+電源OFF --> 電源ON : 電源ボタンの押下
+電源OFF --> 電源OFF : 音量増加ボタンの押下
+電源OFF --> 電源OFF : 音量減少ボタンの押下
+電源ON --> 電源OFF : 電源ボタンの押下
+電源ON --> 電源ON : 音量増加ボタンの押下
+note on link
+   音量の増加
+end note
+電源ON --> 電源ON : 音量減少ボタンの押下
+
+@enduml
+----
 
 === ステートマシンの例
 
