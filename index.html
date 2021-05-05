@@ -451,8 +451,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <ul class="sectlevel2">
 <li><a href="#_bgpとは">BGPとは</a></li>
 <li><a href="#_bgpはイベント駆動ステートマシン">BGPはイベント駆動ステートマシン</a></li>
-<li><a href="#_イベント駆動ステートマシンとは">イベント駆動ステートマシンとは</a></li>
-<li><a href="#_ステートマシンの例">ステートマシンの例</a></li>
+<li><a href="#what_is_event_driven_state_machine">イベント駆動ステートマシンとは</a></li>
+<li><a href="#_イベント駆動ステートマシンの例">イベント駆動ステートマシンの例</a></li>
 </ul>
 </li>
 <li><a href="#_1つのピアを実装するまで">1つのピアを実装するまで</a>
@@ -583,7 +583,7 @@ BGPについて詳しくない方は、どちらかを読み、本章以降に�
 
 </div>
 <div class="sect2">
-<h3 id="_イベント駆動ステートマシンとは">イベント駆動ステートマシンとは</h3>
+<h3 id="what_is_event_driven_state_machine">イベント駆動ステートマシンとは</h3>
 <div class="paragraph">
 <p>イベント駆動ステートマシンとは、現在の状態（ステート）と入力（イベント）によって動作が決定するモノのモデルです。</p>
 </div>
@@ -609,31 +609,18 @@ BGPについて詳しくない方は、どちらかを読み、本章以降に�
 <p>本書ではステートマシン図では表しにくい動作の内容について、次のように付箋をつけることにします。
 この図では、状態が電源ONのときに、音量増加ボタンの押下が入力されたときには、状態を状態ONのままにするだけでなく、音量を増加させることを表しています。</p>
 </div>
-<div class="listingblock">
+<div class="imageblock">
 <div class="content">
-<pre>@startuml
-
-state 電源OFF
-
-state 電源ON
-
-電源OFF --&gt; 電源ON : 電源ボタンの押下
-電源OFF --&gt; 電源OFF : 音量増加ボタンの押下
-電源OFF --&gt; 電源OFF : 音量減少ボタンの押下
-電源ON --&gt; 電源OFF : 電源ボタンの押下
-電源ON --&gt; 電源ON : 音量増加ボタンの押下
-note on link
-   音量の増加
-end note
-電源ON --&gt; 電源ON : 音量減少ボタンの押下
-
-@enduml</pre>
+<img src="diag-266a87bbd1a802145d0e1e58d707cddf.png" alt="Diagram" width="456" height="205">
 </div>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_ステートマシンの例">ステートマシンの例</h3>
-
+<h3 id="_イベント駆動ステートマシンの例">イベント駆動ステートマシンの例</h3>
+<div class="paragraph">
+<p>イベント駆動ステートマシンをどのよう実装すればいいのかという勘所を掴んでもらうために<a href="#what_is_event_driven_state_machine">イベント駆動ステートマシンとは</a>の章で例示したテレビをコードにします。
+次のようになります。</p>
+</div>
 </div>
 </div>
 </div>
@@ -672,7 +659,7 @@ end note
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-05 14:20:32 UTC
+Last updated 2021-05-05 14:31:17 UTC
 </div>
 </div>
 </body>
