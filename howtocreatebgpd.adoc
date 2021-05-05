@@ -85,7 +85,7 @@ state 電源ON
 ----
 
 本書ではステートマシン図では表しにくい動作の内容について、次のように付箋をつけることにします。
-この図では、状態が電源ONのときに、音量増加ボタンの押下が入力されたときには、状態を状態ONのままにするだけでなく、音量を増加させることを表しています。
+この図では、状態が電源ONのときに、音量増加ボタンの押下が入力されたときには、状態を電源ONのままにするだけでなく、音量を増加させることを表しています。
 
 [plantuml]
 ----
@@ -111,6 +111,156 @@ end note
 === イベント駆動ステートマシンの例
 イベント駆動ステートマシンをどのよう実装すればいいのかという勘所を掴んでもらうために<<what_is_event_driven_state_machine>>の章で例示したテレビをコードにします。
 次のようになります。
+
+[source,rust]
+----
+use rand::Rng;
+use std::collections::VecDeque;
+use std::thread;
+use std::time::Duration;
+
+#[derive(Debug)]
+enum State {
+    PowerOn,
+    PowerOff,
+}
+
+#[derive(Debug)]
+enum Event {
+    PushedPowerButton,
+    PushedVolumeIncreaseButton,
+    PushedVolumeDecreaseButton,
+}
+
+struct TV {
+    now_state: State,
+    event_queue: EventQueue,
+    volume: u8,
+}
+
+impl TV {
+    pub fn new() -> Self {
+        let now_state = State::PowerOff;
+        let event_queue = EventQueue::new();
+        let volume = 10;
+        Self {
+            now_state,
+            event_queue,
+            volume,
+        }
+    }
+
+    pub fn be_pushed_power_button(&mut self) {
+        self.event_queue.enqueue(Event::PushedPowerButton);
+    }
+
+    pub fn be_pushed_volume_increase_button(&mut self) {
+        self.event_queue.enqueue(Event::PushedVolumeIncreaseButton);
+    }
+
+    pub fn be_pushed_volume_decrease_button(&mut self) {
+        self.event_queue.enqueue(Event::PushedVolumeDecreaseButton);
+    }
+
+    pub fn handle_event(&mut self, event: Event) {
+        match &self.now_state {
+            &State::PowerOn => match event {
+                Event::PushedPowerButton => {
+                    self.now_state = State::PowerOff;
+                }
+                Event::PushedVolumeIncreaseButton => {
+                    self.volume += 1;
+                }
+                Event::PushedVolumeDecreaseButton => {
+                    self.volume -= 1;
+                }
+            },
+            &State::PowerOff => match event {
+                Event::PushedPowerButton => {
+                    self.now_state = State::PowerOn;
+                }
+                _ => (),
+            },
+        }
+    }
+}
+
+struct EventQueue(VecDeque<Event>);
+
+impl EventQueue {
+    pub fn new() -> Self {
+        let d = VecDeque::new();
+        EventQueue(d)
+    }
+
+    pub fn dequeue(&mut self) -> Option<Event> {
+        self.0.pop_front()
+    }
+
+    pub fn enqueue(&mut self, event: Event) {
+        self.0.push_back(event);
+    }
+}
+
+fn push_random_button_of_tv(tv: &mut TV) {
+    let mut rng = rand::thread_rng();
+    match rng.gen_range(0..4) {
+        1 => tv.be_pushed_power_button(),
+        2 => tv.be_pushed_volume_increase_button(),
+        3 => tv.be_pushed_volume_decrease_button(),
+        _ => (),
+    };
+}
+
+fn main() {
+    let mut tv = TV::new();
+    tv.be_pushed_power_button();
+    loop {
+        push_random_button_of_tv(&mut tv);
+        if let Some(event) = tv.event_queue.dequeue() {
+            println!(
+                "tv information: {{ now_state={:?}, volume={} }}, input_event: {:?}",
+                tv.now_state, tv.volume, event
+            );
+            tv.handle_event(event);
+        }
+        thread::sleep(Duration::from_secs(2));
+    }
+}
+----
+
+実行時のログです。
+
+[source, shell]
+----
+mrcsce@pop-os:~/programming/rustProjects/samplecode$ cargo run
+   Compiling samplecode v0.1.0 (/home/mrcsce/programming/rustProjects/samplecode)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.33s
+     Running `target/debug/samplecode`
+tv information: { now_state=PowerOff, volume=10 }, input_event: PushedPowerButton
+tv information: { now_state=PowerOn, volume=10 }, input_event: PushedVolumeDecreaseButton
+tv information: { now_state=PowerOn, volume=9 }, input_event: PushedPowerButton
+tv information: { now_state=PowerOff, volume=9 }, input_event: PushedPowerButton
+tv information: { now_state=PowerOn, volume=9 }, input_event: PushedPowerButton
+tv information: { now_state=PowerOff, volume=9 }, input_event: PushedPowerButton
+tv information: { now_state=PowerOn, volume=9 }, input_event: PushedVolumeIncreaseButton
+tv information: { now_state=PowerOn, volume=10 }, input_event: PushedPowerButton
+tv information: { now_state=PowerOff, volume=10 }, input_event: PushedVolumeIncreaseButton
+tv information: { now_state=PowerOff, volume=10 }, input_event: PushedVolumeDecreaseButton
+tv information: { now_state=PowerOff, volume=10 }, input_event: PushedVolumeDecreaseButton
+tv information: { now_state=PowerOff, volume=10 }, input_event: PushedPowerButton
+tv information: { now_state=PowerOn, volume=10 }, input_event: PushedVolumeIncreaseButton
+tv information: { now_state=PowerOn, volume=11 }, input_event: PushedVolumeIncreaseButton
+tv information: { now_state=PowerOn, volume=12 }, input_event: PushedVolumeIncreaseButton
+tv information: { now_state=PowerOn, volume=13 }, input_event: PushedVolumeIncreaseButton
+tv information: { now_state=PowerOn, volume=14 }, input_event: PushedPowerButton
+tv information: { now_state=PowerOff, volume=14 }, input_event: PushedVolumeIncreaseButton
+tv information: { now_state=PowerOff, volume=14 }, input_event: PushedVolumeDecreaseButton
+tv information: { now_state=PowerOff, volume=14 }, input_event: PushedVolumeDecreaseButton
+tv information: { now_state=PowerOff, volume=14 }, input_event: PushedVolumeIncreaseButton
+^C
+mrcsce@pop-os:~/programming/rustProjects/samplecode$ 
+----
 
 == 1つのピアを実装するまで
 === main関数の実装

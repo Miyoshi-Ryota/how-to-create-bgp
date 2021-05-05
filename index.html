@@ -607,7 +607,7 @@ BGPについて詳しくない方は、どちらかを読み、本章以降に�
 </div>
 <div class="paragraph">
 <p>本書ではステートマシン図では表しにくい動作の内容について、次のように付箋をつけることにします。
-この図では、状態が電源ONのときに、音量増加ボタンの押下が入力されたときには、状態を状態ONのままにするだけでなく、音量を増加させることを表しています。</p>
+この図では、状態が電源ONのときに、音量増加ボタンの押下が入力されたときには、状態を電源ONのままにするだけでなく、音量を増加させることを表しています。</p>
 </div>
 <div class="imageblock">
 <div class="content">
@@ -620,6 +620,157 @@ BGPについて詳しくない方は、どちらかを読み、本章以降に�
 <div class="paragraph">
 <p>イベント駆動ステートマシンをどのよう実装すればいいのかという勘所を掴んでもらうために<a href="#what_is_event_driven_state_machine">イベント駆動ステートマシンとは</a>の章で例示したテレビをコードにします。
 次のようになります。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-rust" data-lang="rust">use rand::Rng;
+use std::collections::VecDeque;
+use std::thread;
+use std::time::Duration;
+
+#[derive(Debug)]
+enum State {
+    PowerOn,
+    PowerOff,
+}
+
+#[derive(Debug)]
+enum Event {
+    PushedPowerButton,
+    PushedVolumeIncreaseButton,
+    PushedVolumeDecreaseButton,
+}
+
+struct TV {
+    now_state: State,
+    event_queue: EventQueue,
+    volume: u8,
+}
+
+impl TV {
+    pub fn new() -&gt; Self {
+        let now_state = State::PowerOff;
+        let event_queue = EventQueue::new();
+        let volume = 10;
+        Self {
+            now_state,
+            event_queue,
+            volume,
+        }
+    }
+
+    pub fn be_pushed_power_button(&amp;mut self) {
+        self.event_queue.enqueue(Event::PushedPowerButton);
+    }
+
+    pub fn be_pushed_volume_increase_button(&amp;mut self) {
+        self.event_queue.enqueue(Event::PushedVolumeIncreaseButton);
+    }
+
+    pub fn be_pushed_volume_decrease_button(&amp;mut self) {
+        self.event_queue.enqueue(Event::PushedVolumeDecreaseButton);
+    }
+
+    pub fn handle_event(&amp;mut self, event: Event) {
+        match &amp;self.now_state {
+            &amp;State::PowerOn =&gt; match event {
+                Event::PushedPowerButton =&gt; {
+                    self.now_state = State::PowerOff;
+                }
+                Event::PushedVolumeIncreaseButton =&gt; {
+                    self.volume += 1;
+                }
+                Event::PushedVolumeDecreaseButton =&gt; {
+                    self.volume -= 1;
+                }
+            },
+            &amp;State::PowerOff =&gt; match event {
+                Event::PushedPowerButton =&gt; {
+                    self.now_state = State::PowerOn;
+                }
+                _ =&gt; (),
+            },
+        }
+    }
+}
+
+struct EventQueue(VecDeque&lt;Event&gt;);
+
+impl EventQueue {
+    pub fn new() -&gt; Self {
+        let d = VecDeque::new();
+        EventQueue(d)
+    }
+
+    pub fn dequeue(&amp;mut self) -&gt; Option&lt;Event&gt; {
+        self.0.pop_front()
+    }
+
+    pub fn enqueue(&amp;mut self, event: Event) {
+        self.0.push_back(event);
+    }
+}
+
+fn push_random_button_of_tv(tv: &amp;mut TV) {
+    let mut rng = rand::thread_rng();
+    match rng.gen_range(0..4) {
+        1 =&gt; tv.be_pushed_power_button(),
+        2 =&gt; tv.be_pushed_volume_increase_button(),
+        3 =&gt; tv.be_pushed_volume_decrease_button(),
+        _ =&gt; (),
+    };
+}
+
+fn main() {
+    let mut tv = TV::new();
+    tv.be_pushed_power_button();
+    loop {
+        push_random_button_of_tv(&amp;mut tv);
+        if let Some(event) = tv.event_queue.dequeue() {
+            println!(
+                "tv information: {{ now_state={:?}, volume={} }}, input_event: {:?}",
+                tv.now_state, tv.volume, event
+            );
+            tv.handle_event(event);
+        }
+        thread::sleep(Duration::from_secs(2));
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>実行時のログです。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-shell" data-lang="shell">mrcsce@pop-os:~/programming/rustProjects/samplecode$ cargo run
+   Compiling samplecode v0.1.0 (/home/mrcsce/programming/rustProjects/samplecode)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.33s
+     Running `target/debug/samplecode`
+tv information: { now_state=PowerOff, volume=10 }, input_event: PushedPowerButton
+tv information: { now_state=PowerOn, volume=10 }, input_event: PushedVolumeDecreaseButton
+tv information: { now_state=PowerOn, volume=9 }, input_event: PushedPowerButton
+tv information: { now_state=PowerOff, volume=9 }, input_event: PushedPowerButton
+tv information: { now_state=PowerOn, volume=9 }, input_event: PushedPowerButton
+tv information: { now_state=PowerOff, volume=9 }, input_event: PushedPowerButton
+tv information: { now_state=PowerOn, volume=9 }, input_event: PushedVolumeIncreaseButton
+tv information: { now_state=PowerOn, volume=10 }, input_event: PushedPowerButton
+tv information: { now_state=PowerOff, volume=10 }, input_event: PushedVolumeIncreaseButton
+tv information: { now_state=PowerOff, volume=10 }, input_event: PushedVolumeDecreaseButton
+tv information: { now_state=PowerOff, volume=10 }, input_event: PushedVolumeDecreaseButton
+tv information: { now_state=PowerOff, volume=10 }, input_event: PushedPowerButton
+tv information: { now_state=PowerOn, volume=10 }, input_event: PushedVolumeIncreaseButton
+tv information: { now_state=PowerOn, volume=11 }, input_event: PushedVolumeIncreaseButton
+tv information: { now_state=PowerOn, volume=12 }, input_event: PushedVolumeIncreaseButton
+tv information: { now_state=PowerOn, volume=13 }, input_event: PushedVolumeIncreaseButton
+tv information: { now_state=PowerOn, volume=14 }, input_event: PushedPowerButton
+tv information: { now_state=PowerOff, volume=14 }, input_event: PushedVolumeIncreaseButton
+tv information: { now_state=PowerOff, volume=14 }, input_event: PushedVolumeDecreaseButton
+tv information: { now_state=PowerOff, volume=14 }, input_event: PushedVolumeDecreaseButton
+tv information: { now_state=PowerOff, volume=14 }, input_event: PushedVolumeIncreaseButton
+^C
+mrcsce@pop-os:~/programming/rustProjects/samplecode$</code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -659,7 +810,7 @@ BGPについて詳しくない方は、どちらかを読み、本章以降に�
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-05 14:34:48 UTC
+Last updated 2021-05-05 15:24:19 UTC
 </div>
 </div>
 </body>
