@@ -79,7 +79,13 @@ state 電源ON
 電源OFF --> 電源OFF : 音量減少ボタンの押下
 電源ON --> 電源OFF : 電源ボタンの押下
 電源ON --> 電源ON : 音量増加ボタンの押下
+note on link 
+   音量の増加
+end note
 電源ON --> 電源ON : 音量減少ボタンの押下
+note on link 
+  音量の減少
+end note
 
 @enduml
 ----
