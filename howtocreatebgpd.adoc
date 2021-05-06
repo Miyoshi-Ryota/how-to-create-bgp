@@ -236,7 +236,7 @@ fn main() {
 TVの現在の状態（State）はTVのインスタンスに保存されています。
 109行目でイベント（入力）を扱います。
 49行目〜69行目を見ると分かるように、`tv.handle_event(event)`はeventとtvインスタンスに保存されている現在の状態に応じて、動作し次の状態を決定します。
-このようにしてイベント駆動ステートマシンを実装することができました。
+それはイベント駆動ステートマシン、そのものでした。このようにしてイベント駆動ステートマシンを実装することができました。
 
 次が<<log_of_sample_state_machine>>です。
 
@@ -289,7 +289,7 @@ BGPはどのようなイベント駆動ステートマシンとして表すの�
 
 実は https://tools.ietf.org/html/rfc4271[RFC4271-A Border Gateway Protocol 4 (BGP-4)]の https://tools.ietf.org/html/rfc4271#section-8[8.  BGP Finite State Machine (FSM)]に、イベント駆動ステートマシンの定義の記載があります。
 
-ただ、最初から https://tools.ietf.org/html/rfc4271#section-8[8.  BGP Finite State Machine (FSM)]を参照して、完全なBGPを作成することは大変です。
+しかし最初から https://tools.ietf.org/html/rfc4271#section-8[8.  BGP Finite State Machine (FSM)]を参照して、完全なBGPを作成することは大変です。
 そのため本章ではBGPを次の段階に分けて開発します。
 
 1. まずは1つのピアがEstablishedに遷移可能
@@ -299,7 +299,14 @@ BGPはどのようなイベント駆動ステートマシンとして表すの�
 
 === 1つのピアがEstablishedに遷移するところまでの実装
 まずは1つのピアがEstablishedに至るまでの正常系のみのイベント駆動ステートマシンを実装します。
-<<first_impl_bgp, 以下に>>実装するイベント駆動ステートマシンを図示します。
+
+RFCの方針の通り、1つのBGPピアを1つのイベント駆動ステートマシンとして表します。
+BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConfirm, OpenSent, Establishedの5つ用意します。
+この状態は、https://www.infraexpert.com/study/bgpz02.html[BGP - 4つのメッセージ、6つのステータスと状態遷移]で説明しているBGPの6つの状態のうちActiveを除いたものと対応しています。Activeは非正常系パスでしか遷移しない状態のため、第一段階では除いています。
+
+イベントとしてはTCPコネクションの確立や、BGP OpenMessageの受信などを扱います。
+
+以下に<<first_impl_bgp>>を図示します。図中の黒丸はステートマシンの初期状態を表しています。
 
 [[first_impl_bgp]]
 [plantuml,title="第一段階で実装するステートマシン"]
@@ -308,7 +315,6 @@ BGPはどのようなイベント駆動ステートマシンとして表すの�
 
 state Idle
 state Connect
-state Active
 state OpenConfirm
 state OpenSent
 state Established
@@ -316,8 +322,17 @@ state Established
 [*] --> Idle
 Idle --> Connect : ManualStart event
 note on link
-   対向側機器とTCPコネクションを作成する。
+   対向側機器とTCPコネクションを作成を試みる。
 end note
+Connect --> OpenSent : TCP Cr Acked | TCP Connection Confirmed event
+note on link
+   対向側機器にBGP OpenMessageを送信する。
+end note
+OpenSent --> OpenConfirm : BGP Open event
+note on link
+    対向機器にBGP Keepalive Messageを送信する。
+end note
+OpenConfirm --> Established : Keep Alive Msg event
 
 @enduml
 ----

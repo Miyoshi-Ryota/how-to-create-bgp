@@ -936,7 +936,7 @@ BGPについて詳しくない方は、どちらかを読み、本章以降に�
 TVの現在の状態（State）はTVのインスタンスに保存されています。
 109行目でイベント（入力）を扱います。
 49行目〜69行目を見ると分かるように、`tv.handle_event(event)`はeventとtvインスタンスに保存されている現在の状態に応じて、動作し次の状態を決定します。
-このようにしてイベント駆動ステートマシンを実装することができました。</p>
+それはイベント駆動ステートマシン、そのものでした。このようにしてイベント駆動ステートマシンを実装することができました。</p>
 </div>
 <div class="paragraph">
 <p>次が<a href="#log_of_sample_state_machine">実行時のログ</a>です。</p>
@@ -1026,7 +1026,7 @@ BGPのステートマシンも前述の<a href="#example_of_state_machine_impl">
 <p>実は <a href="https://tools.ietf.org/html/rfc4271">RFC4271-A Border Gateway Protocol 4 (BGP-4)</a>の <a href="https://tools.ietf.org/html/rfc4271#section-8">8.  BGP Finite State Machine (FSM)</a>に、イベント駆動ステートマシンの定義の記載があります。</p>
 </div>
 <div class="paragraph">
-<p>ただ、最初から <a href="https://tools.ietf.org/html/rfc4271#section-8">8.  BGP Finite State Machine (FSM)</a>を参照して、完全なBGPを作成することは大変です。
+<p>しかし最初から <a href="https://tools.ietf.org/html/rfc4271#section-8">8.  BGP Finite State Machine (FSM)</a>を参照して、完全なBGPを作成することは大変です。
 そのため本章ではBGPを次の段階に分けて開発します。</p>
 </div>
 <div class="olist arabic">
@@ -1049,12 +1049,22 @@ BGPのステートマシンも前述の<a href="#example_of_state_machine_impl">
 <div class="sect2">
 <h3 id="_1つのピアがestablishedに遷移するところまでの実装">1つのピアがEstablishedに遷移するところまでの実装</h3>
 <div class="paragraph">
-<p>まずは1つのピアがEstablishedに至るまでの正常系のみのイベント駆動ステートマシンを実装します。
-<a href="#first_impl_bgp">以下に</a>実装するイベント駆動ステートマシンを図示します。</p>
+<p>まずは1つのピアがEstablishedに至るまでの正常系のみのイベント駆動ステートマシンを実装します。</p>
+</div>
+<div class="paragraph">
+<p>RFCの方針の通り、1つのBGPピアを1つのイベント駆動ステートマシンとして表します。
+BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConfirm, OpenSent, Establishedの5つ用意します。
+この状態は、https://www.infraexpert.com/study/bgpz02.html[BGP - 4つのメッセージ、6つのステータスと状態遷移]で説明しているBGPの6つの状態のうちActiveを除いたものと対応しています。Activeは非正常系パスでしか遷移しない状態のため、第一段階では除いています。</p>
+</div>
+<div class="paragraph">
+<p>イベントとしてはTCPコネクションの確立や、BGP OpenMessageの受信などを扱います。</p>
+</div>
+<div class="paragraph">
+<p>以下に<a href="#first_impl_bgp">第一段階で実装するステートマシン</a>を図示します。図中の黒丸はステートマシンの初期状態を表しています。</p>
 </div>
 <div id="first_impl_bgp" class="imageblock">
 <div class="content">
-<img src="diag-9f848ea370924d69a6d074fdfd359291.png" alt="Diagram" width="572" height="347">
+<img src="diag-58710f3b934705034cf7646059eceea6.png" alt="Diagram" width="390" height="775">
 </div>
 <div class="title">Figure 1. 第一段階で実装するステートマシン</div>
 </div>
@@ -1095,7 +1105,7 @@ BGPのステートマシンも前述の<a href="#example_of_state_machine_impl">
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-06 14:01:16 UTC
+Last updated 2021-05-06 23:05:48 UTC
 </div>
 </div>
 </body>
