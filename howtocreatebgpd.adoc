@@ -1,4 +1,3 @@
-
 :toc:
 :source-highlighter: pygments
 
@@ -274,6 +273,12 @@ mrcsce@pop-os:~/programming/rustProjects/samplecode$
 このようにステートマシンで定義した通りの動作が行われていることが確かめられました。
 
 == 1つのピアを実装するまで
+=== BGPはどんなイベント駆動ステートマシンなのか
+BGPはどのようなイベント駆動ステートマシンとして表すのが良いでしょうか。
+
+実はRFCに、hogehogeと記載があります。
+ここでは、完全なステートマシンを図にせず、まずは1つのピアがEstablishedに至るまでの正常系のみのステートマシンを図にします。
+
 === main関数の実装
 === 本章で作るものの全体像
 [plantuml]
