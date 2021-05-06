@@ -232,7 +232,7 @@ fn main() {
 
 実行時のログです。
 
-[source,shell,linenums]
+[source,linenums]
 ----
 mrcsce@pop-os:~/programming/rustProjects/samplecode$ cargo run
     Finished dev [unoptimized + debuginfo] target(s) in 0.00s
