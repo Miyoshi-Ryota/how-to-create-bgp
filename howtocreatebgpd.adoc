@@ -290,7 +290,7 @@ BGPはどのようなイベント駆動ステートマシンとして表すの�
 実は https://tools.ietf.org/html/rfc4271[RFC4271-A Border Gateway Protocol 4 (BGP-4)]の https://tools.ietf.org/html/rfc4271#section-8[8.  BGP Finite State Machine (FSM)]に、イベント駆動ステートマシンの定義の記載があります。
 
 しかし最初から https://tools.ietf.org/html/rfc4271#section-8[8.  BGP Finite State Machine (FSM)]を参照して、完全なBGPを作成することは大変です。
-そのため本章ではBGPを次の段階に分けて開発します。
+そのため本書ではBGPを次の段階に分けて開発します。
 
 1. まずは1つのピアがEstablishedに遷移可能
 2. 1つのピアでUpdate Messageの交換やUpdate Messageの内容にしたがってRouting Tableへの書き込みが可能
@@ -304,9 +304,20 @@ RFCの方針の通り、1つのBGPピアを1つのイベント駆動ステート
 BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConfirm, OpenSent, Establishedの5つ用意します。
 この状態は、https://www.infraexpert.com/study/bgpz02.html[BGP - 4つのメッセージ、6つのステータスと状態遷移]で説明しているBGPの6つの状態のうちActiveを除いたものと対応しています。Activeは非正常系パスでしか遷移しない状態のため、第一段階では除いています。
 
-イベントとしてはTCPコネクションの確立や、BGP OpenMessageの受信などを扱います。
+第一段階のイベントとして次の5個を使用します。イベントの名前と定義はRFCにしたがってしています。
 
-以下に<<first_impl_bgp>>を図示します。図中の黒丸はステートマシンの初期状態を表しています。
+[cols=2*, caption=BGPのイベント駆動ステートマシンのイベント]
+|===
+| イベント名 | 定義
+| ManualStart | システムの管理者が手動でピアのコネクションをスタートさせた際のイベント
+| Tcp_CR_Acked| TCPコネクションのリクエストを確立させた際のイベント。言い換えれば、システムがTCP SYNを送信し、TCP SYN/ACKを受信し、TCP ACKを送信したときのイベント。
+| TcpConnectionConfirmed | TCPコネクションが確立された際のイベント。言い換えれば、対向先からTCP SYNを受け取り、システムがTCP SYN/ACKを送信し、TCP ACKを受信したときのイベント
+| BGPOpen | 正常なOpen Messageを受信したときのイベント
+| KeepAliveMsg | Keepalive Messageを受信したときのイベント
+|===
+
+
+以下に<<first_impl_bgp>>を図示します。図中の黒丸はステートマシンの初期状態を表しています。図示していない（想定していない）遷移が発生した場合はすべてクラッシュすることにします。例えば、Connect状態で、BGP Open eventが発生した場合はクラッシュすることにします。
 
 [[first_impl_bgp]]
 [plantuml,title="第一段階で実装するステートマシン"]
@@ -324,15 +335,15 @@ Idle --> Connect : ManualStart event
 note on link
    対向側機器とTCPコネクションを作成を試みる。
 end note
-Connect --> OpenSent : TCP Cr Acked | TCP Connection Confirmed event
+Connect --> OpenSent : Tcp_CR_Acked | TcpConnectionConfirmed event
 note on link
    対向側機器にBGP OpenMessageを送信する。
 end note
-OpenSent --> OpenConfirm : BGP Open event
+OpenSent --> OpenConfirm : BGPOpen event
 note on link
     対向機器にBGP Keepalive Messageを送信する。
 end note
-OpenConfirm --> Established : Keep Alive Msg event
+OpenConfirm --> Established : KeepAliveMsg event
 
 @enduml
 ----
