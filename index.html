@@ -676,21 +676,23 @@ BGPについて詳しくない方は、どちらかを読み、本章以降に�
 <p>テレビの状態が2. 電源ONのときにa. 電源ボタンの押下が発生した場合はテレビの状態が2. 電源OFFに遷移します。テレビの状態が2. 電源ONのときb. 音量増加ボタンの押下、c. 音量減少ボタンの押下が発生した場合は、テレビの状態は2. 電源ONのまま音量が増減します。</p>
 </div>
 <div class="paragraph">
-<p>このように現在の状態と、入力によって動作が決定するモノとして表現することが可能です。これを図示すると次のようになります。</p>
+<p>このように現在の状態と、入力によって動作が決定するモノとして表現することが可能です。これを図示すると<a href="#example_state_machine_diagram">テレビのステートマシン図</a>になります。</p>
 </div>
-<div class="imageblock">
+<div id="example_state_machine_diagram" class="imageblock">
 <div class="content">
-<img src="diag-868aa3909d4fa0bd1abee240f457429a.png" alt="Diagram" width="456" height="197">
+<img src="diag-95fa917fdc8d0fc994b7257135719e26.png" alt="Diagram" width="456" height="197">
 </div>
+<div class="title">Figure 1. テレビのステートマシン図</div>
 </div>
 <div class="paragraph">
-<p>本書ではステートマシン図では表しにくい動作の内容について、次のように付箋をつけることにします。
+<p>本書ではステートマシン図では表しにくい動作の内容について、<a href="#example_state_machine_diagram_2">テレビのイベント駆動ステートマシンとしての表現（本書の記法）</a>のように付箋をつけることにします。
 この図では、状態が電源ONのときに、音量増加ボタンの押下が入力されたときには、状態を電源ONのままにするだけでなく、音量を増加させることを表しています。</p>
 </div>
-<div class="imageblock">
+<div id="example_state_machine_diagram_2" class="imageblock">
 <div class="content">
-<img src="diag-266a87bbd1a802145d0e1e58d707cddf.png" alt="Diagram" width="456" height="205">
+<img src="diag-e41e51f37737f9dea8a32125e9e7f18d.png" alt="Diagram" width="456" height="205">
 </div>
+<div class="title">Figure 2. テレビのイベント駆動ステートマシンとしての表現（本書の記法）</div>
 </div>
 </div>
 <div class="sect2">
@@ -1060,6 +1062,7 @@ BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConf
 <p>第一段階のイベントとして次の5個を使用します。イベントの名前と定義はRFCにしたがってしています。</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 1. BGPのイベント駆動ステートマシンのイベント</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -1098,7 +1101,7 @@ BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConf
 <div class="content">
 <img src="diag-e983b047b02e8c158eea3507a8d49459.png" alt="Diagram" width="390" height="775">
 </div>
-<div class="title">Figure 1. 第一段階で実装するステートマシン</div>
+<div class="title">Figure 3. 第一段階で実装するステートマシン</div>
 </div>
 </div>
 <div class="sect2">
@@ -1137,7 +1140,7 @@ BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConf
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-06 23:37:34 UTC
+Last updated 2021-05-06 23:43:19 UTC
 </div>
 </div>
 </body>
