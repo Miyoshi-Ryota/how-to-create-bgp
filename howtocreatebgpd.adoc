@@ -289,18 +289,20 @@ BGPはどのようなイベント駆動ステートマシンとして表すの�
 
 実は https://tools.ietf.org/html/rfc4271[RFC4271-A Border Gateway Protocol 4 (BGP-4)]の https://tools.ietf.org/html/rfc4271#section-8[8.  BGP Finite State Machine (FSM)]に、イベント駆動ステートマシンの定義の記載があります。
 
-1度に完全なBGPを作成することは難しいため、
-本章ではBGPを次の段階に分けて開発します。
+ただ、最初から https://tools.ietf.org/html/rfc4271#section-8[8.  BGP Finite State Machine (FSM)]を参照して、完全なBGPを作成することは大変です。
+そのため本章ではBGPを次の段階に分けて開発します。
 
 1. まずは1つのピアがEstablishedに遷移可能
 2. 1つのピアでUpdate Messageの交換やUpdate Messageの内容にしたがってRouting Tableへの書き込みが可能
 3. 複数のピアを扱うことが可能
 4. 細かい完成度を増加
 
-ですので、まずは1つのピアがEstablishedに至るまでの正常系のみのイベント駆動ステートマシンを実装します。
-まず実装するイベント駆動ステートマシンを図示します。
+=== 1つのピアがEstablishedに遷移するところまでの実装
+まずは1つのピアがEstablishedに至るまでの正常系のみのイベント駆動ステートマシンを実装します。
+<<first_impl_bgp, 以下に>>実装するイベント駆動ステートマシンを図示します。
 
-[plantuml]
+[[first_impl_bgp]]
+[plantuml,title="第一段階で実装するステートマシン"]
 ----
 @startuml
 
@@ -311,11 +313,15 @@ state OpenConfirm
 state OpenSent
 state Established
 
-[*] -> Idle
+[*] --> Idle
+Idle --> Connect : ManualStart event
+note on link
+   対向側機器とTCPコネクションを作成する。
+end note
+
 @enduml
 ----
 
-=== 1つのピアでEstablishedに遷移するところまでの実装
 === 1つのピアでUpdate Messageの交換やUpdate Messageの内容に従ってRouting Tableへの書き込みを可能にするところまでの実装
 
 === main関数の実装
