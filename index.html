@@ -533,7 +533,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <li><a href="#_1つのピアを実装するまで">1つのピアを実装するまで</a>
 <ul class="sectlevel2">
 <li><a href="#_bgpはどんなイベント駆動ステートマシンなのか">BGPはどんなイベント駆動ステートマシンなのか</a></li>
-<li><a href="#_1つのピアでestablishedに遷移するところまでの実装">1つのピアでEstablishedに遷移するところまでの実装</a></li>
+<li><a href="#_1つのピアがestablishedに遷移するところまでの実装">1つのピアがEstablishedに遷移するところまでの実装</a></li>
 <li><a href="#_1つのピアでupdate_messageの交換やupdate_messageの内容に従ってrouting_tableへの書き込みを可能にするところまでの実装">1つのピアでUpdate Messageの交換やUpdate Messageの内容に従ってRouting Tableへの書き込みを可能にするところまでの実装</a></li>
 <li><a href="#_main関数の実装">main関数の実装</a></li>
 <li><a href="#_本章で作るものの全体像">本章で作るものの全体像</a></li>
@@ -1026,8 +1026,8 @@ BGPのステートマシンも前述の<a href="#example_of_state_machine_impl">
 <p>実は <a href="https://tools.ietf.org/html/rfc4271">RFC4271-A Border Gateway Protocol 4 (BGP-4)</a>の <a href="https://tools.ietf.org/html/rfc4271#section-8">8.  BGP Finite State Machine (FSM)</a>に、イベント駆動ステートマシンの定義の記載があります。</p>
 </div>
 <div class="paragraph">
-<p>1度に完全なBGPを作成することは難しいため、
-本章ではBGPを次の段階に分けて開発します。</p>
+<p>ただ、最初から <a href="https://tools.ietf.org/html/rfc4271#section-8">8.  BGP Finite State Machine (FSM)</a>を参照して、完全なBGPを作成することは大変です。
+そのため本章ではBGPを次の段階に分けて開発します。</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
@@ -1045,19 +1045,19 @@ BGPのステートマシンも前述の<a href="#example_of_state_machine_impl">
 </li>
 </ol>
 </div>
-<div class="paragraph">
-<p>ですので、まずは1つのピアがEstablishedに至るまでの正常系のみのイベント駆動ステートマシンを実装します。
-まず実装するイベント駆動ステートマシンを図示します。</p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="diag-418895019d5b472079e4bd3956cc747b.png" alt="Diagram" width="741" height="70">
-</div>
-</div>
 </div>
 <div class="sect2">
-<h3 id="_1つのピアでestablishedに遷移するところまでの実装">1つのピアでEstablishedに遷移するところまでの実装</h3>
-
+<h3 id="_1つのピアがestablishedに遷移するところまでの実装">1つのピアがEstablishedに遷移するところまでの実装</h3>
+<div class="paragraph">
+<p>まずは1つのピアがEstablishedに至るまでの正常系のみのイベント駆動ステートマシンを実装します。
+<a href="#first_impl_bgp">以下に</a>実装するイベント駆動ステートマシンを図示します。</p>
+</div>
+<div id="first_impl_bgp" class="imageblock">
+<div class="content">
+<img src="diag-9f848ea370924d69a6d074fdfd359291.png" alt="Diagram" width="572" height="347">
+</div>
+<div class="title">Figure 1. 第一段階で実装するステートマシン</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_1つのピアでupdate_messageの交換やupdate_messageの内容に従ってrouting_tableへの書き込みを可能にするところまでの実装">1つのピアでUpdate Messageの交換やUpdate Messageの内容に従ってRouting Tableへの書き込みを可能にするところまでの実装</h3>
@@ -1095,7 +1095,7 @@ BGPのステートマシンも前述の<a href="#example_of_state_machine_impl">
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-06 13:49:47 UTC
+Last updated 2021-05-06 14:01:16 UTC
 </div>
 </div>
 </body>
