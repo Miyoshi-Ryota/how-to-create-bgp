@@ -276,7 +276,7 @@ mrcsce@pop-os:~/programming/rustProjects/samplecode$
 === BGPはどんなイベント駆動ステートマシンなのか
 BGPはどのようなイベント駆動ステートマシンとして表すのが良いでしょうか。
 
-実はRFCに、hogehogeと記載があります。
+実はhttps://tools.ietf.org/html/rfc4271[RFC4271]に、hogehogeと記載があります。
 ここでは、完全なステートマシンを図にせず、まずは1つのピアがEstablishedに至るまでの正常系のみのステートマシンを図にします。
 
 === main関数の実装
