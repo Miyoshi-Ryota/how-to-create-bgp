@@ -113,7 +113,8 @@ end note
 イベント駆動ステートマシンをどのよう実装すればいいのかという勘所を掴んでもらうために<<what_is_event_driven_state_machine>>の章で例示したテレビをコードにします。
 次のようになります。
 
-[source,rust,linenums]
+[[example_of_state_machine_impl]]
+[source,rust,linenums,title="イベント駆動ステートマシンの例（テレビ）"]
 ----
 use rand::Rng;
 use std::collections::VecDeque;
@@ -230,9 +231,18 @@ fn main() {
 }
 ----
 
-実行時のログです。
+次が<<log_of_sample_state_machine>>です。
 
-[source,linenums]
+ログの4行目を見ると、電源OFFの状態であることがわかります。
+次にログの5行目を見ると、電源ボタンが押されたことがわかります。
+次にログの6行目を見ると、電源ONの状態に遷移したことがわかります。
+次にログの7行目を見ると、音量増加ボタンが押されたことがわかります。
+次にログの8行目を見ると、電源ON状態のまま、音量が11に増加していることがわかります。
+
+一方でログの16、17、18行目を見ると、電源OFF状態のときに音量増加ボタンが押されても、電源OFF状態のままで音量の変動もないことがわかります。
+
+[[log_of_sample_state_machine]]
+[source,linenums,title="実行時のログ"]
 ----
 mrcsce@pop-os:~/programming/rustProjects/samplecode$ cargo run
     Finished dev [unoptimized + debuginfo] target(s) in 0.00s
@@ -261,16 +271,10 @@ input_event: PushedVolumeIncreaseButton
 mrcsce@pop-os:~/programming/rustProjects/samplecode$
 ----
 
-ログの4行目を見ると、電源OFFの状態であることがわかります。
-次にログの5行目を見ると、電源ボタンが押されたことがわかります。
-次にログの6行目を見ると、電源ONの状態に遷移したことがわかります。
-次にログの7行目を見ると、音量増加ボタンが押されたことがわかります。
-次にログの8行目を見ると、電源ON状態のまま、音量が11に増加していることがわかります。
-
-一方でログの16、17、18行目を見ると、電源OFF状態のときに音量増加ボタンが押されても、電源OFF状態のままで音量の変動もないことがわかります。
 
 これは<<what_is_event_driven_state_machine>>の章で例示した通りの動作です。
-このようにステートマシンで定義した通りの動作が行われていることが確かめられました。
+イベント駆動ステートマシンを実装できていることが確かめられました。
+BGPのステートマシンも前述の<<example_of_state_machine_impl>>に似た方針で実装していきます。
 
 == 1つのピアを実装するまで
 === BGPはどんなイベント駆動ステートマシンなのか

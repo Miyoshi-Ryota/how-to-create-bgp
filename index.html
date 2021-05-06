@@ -697,7 +697,8 @@ BGPについて詳しくない方は、どちらかを読み、本章以降に�
 <p>イベント駆動ステートマシンをどのよう実装すればいいのかという勘所を掴んでもらうために<a href="#what_is_event_driven_state_machine">イベント駆動ステートマシンとは</a>の章で例示したテレビをコードにします。
 次のようになります。</p>
 </div>
-<div class="listingblock">
+<div id="example_of_state_machine_impl" class="listingblock">
+<div class="title">イベント駆動ステートマシンの例（テレビ）</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">  1</span>
 <span class="normal">  2</span>
@@ -928,9 +929,20 @@ BGPについて詳しくない方は、どちらかを読み、本章以降に�
 </div>
 </div>
 <div class="paragraph">
-<p>実行時のログです。</p>
+<p>次が<a href="#log_of_sample_state_machine">実行時のログ</a>です。</p>
 </div>
-<div class="listingblock">
+<div class="paragraph">
+<p>ログの4行目を見ると、電源OFFの状態であることがわかります。
+次にログの5行目を見ると、電源ボタンが押されたことがわかります。
+次にログの6行目を見ると、電源ONの状態に遷移したことがわかります。
+次にログの7行目を見ると、音量増加ボタンが押されたことがわかります。
+次にログの8行目を見ると、電源ON状態のまま、音量が11に増加していることがわかります。</p>
+</div>
+<div class="paragraph">
+<p>一方でログの16、17、18行目を見ると、電源OFF状態のときに音量増加ボタンが押されても、電源OFF状態のままで音量の変動もないことがわかります。</p>
+</div>
+<div id="log_of_sample_state_machine" class="listingblock">
+<div class="title">実行時のログ</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="linenums"><span></span>mrcsce@pop-os:~/programming/rustProjects/samplecode$ cargo run
     Finished dev [unoptimized + debuginfo] target(s) in 0.00s
@@ -960,18 +972,9 @@ mrcsce@pop-os:~/programming/rustProjects/samplecode$</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>ログの4行目を見ると、電源OFFの状態であることがわかります。
-次にログの5行目を見ると、電源ボタンが押されたことがわかります。
-次にログの6行目を見ると、電源ONの状態に遷移したことがわかります。
-次にログの7行目を見ると、音量増加ボタンが押されたことがわかります。
-次にログの8行目を見ると、電源ON状態のまま、音量が11に増加していることがわかります。</p>
-</div>
-<div class="paragraph">
-<p>一方でログの16、17、18行目を見ると、電源OFF状態のときに音量増加ボタンが押されても、電源OFF状態のままで音量の変動もないことがわかります。</p>
-</div>
-<div class="paragraph">
 <p>これは<a href="#what_is_event_driven_state_machine">イベント駆動ステートマシンとは</a>の章で例示した通りの動作です。
-このようにステートマシンで定義した通りの動作が行われていることが確かめられました。</p>
+イベント駆動ステートマシンを実装できていることが確かめられました。
+BGPのステートマシンも前述の<a href="#example_of_state_machine_impl">イベント駆動ステートマシンの例（テレビ）</a>に似た方針で実装していきます。</p>
 </div>
 </div>
 </div>
@@ -1021,7 +1024,7 @@ mrcsce@pop-os:~/programming/rustProjects/samplecode$</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-06 12:56:12 UTC
+Last updated 2021-05-06 13:10:24 UTC
 </div>
 </div>
 </body>
