@@ -932,56 +932,31 @@ BGPについて詳しくない方は、どちらかを読み、本章以降に�
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code data-lang="shell"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span></pre></div></td><td class="code"><pre><span></span>mrcsce@pop-os:~/programming/rustProjects/samplecode$ cargo run
-    Finished dev <span class="tok-o">[</span>unoptimized + debuginfo<span class="tok-o">]</span> target<span class="tok-o">(</span>s<span class="tok-o">)</span> <span class="tok-k">in</span> <span class="tok-m">0</span>.00s
-     Running <span class="tok-sb">`</span>target/debug/samplecode<span class="tok-sb">`</span>
-tv information: <span class="tok-o">{</span> <span class="tok-nv">now_state</span><span class="tok-o">=</span>PowerOff, <span class="tok-nv">volume</span><span class="tok-o">=</span><span class="tok-m">10</span> <span class="tok-o">}</span>
+<pre class="pygments highlight"><code data-lang="linenums"><span></span>mrcsce@pop-os:~/programming/rustProjects/samplecode$ cargo run
+    Finished dev [unoptimized + debuginfo] target(s) in 0.00s
+     Running `target/debug/samplecode`
+tv information: { now_state=PowerOff, volume=10 }
 input_event: PushedPowerButton
-tv information: <span class="tok-o">{</span> <span class="tok-nv">now_state</span><span class="tok-o">=</span>PowerOn, <span class="tok-nv">volume</span><span class="tok-o">=</span><span class="tok-m">10</span> <span class="tok-o">}</span>
+tv information: { now_state=PowerOn, volume=10 }
 input_event: PushedVolumeIncreaseButton
-tv information: <span class="tok-o">{</span> <span class="tok-nv">now_state</span><span class="tok-o">=</span>PowerOn, <span class="tok-nv">volume</span><span class="tok-o">=</span><span class="tok-m">11</span> <span class="tok-o">}</span>
+tv information: { now_state=PowerOn, volume=11 }
 input_event: PushedVolumeDecreaseButton
-tv information: <span class="tok-o">{</span> <span class="tok-nv">now_state</span><span class="tok-o">=</span>PowerOn, <span class="tok-nv">volume</span><span class="tok-o">=</span><span class="tok-m">10</span> <span class="tok-o">}</span>
+tv information: { now_state=PowerOn, volume=10 }
 input_event: PushedVolumeIncreaseButton
-tv information: <span class="tok-o">{</span> <span class="tok-nv">now_state</span><span class="tok-o">=</span>PowerOn, <span class="tok-nv">volume</span><span class="tok-o">=</span><span class="tok-m">11</span> <span class="tok-o">}</span>
+tv information: { now_state=PowerOn, volume=11 }
 input_event: PushedVolumeDecreaseButton
-tv information: <span class="tok-o">{</span> <span class="tok-nv">now_state</span><span class="tok-o">=</span>PowerOn, <span class="tok-nv">volume</span><span class="tok-o">=</span><span class="tok-m">10</span> <span class="tok-o">}</span>
+tv information: { now_state=PowerOn, volume=10 }
 input_event: PushedPowerButton
-tv information: <span class="tok-o">{</span> <span class="tok-nv">now_state</span><span class="tok-o">=</span>PowerOff, <span class="tok-nv">volume</span><span class="tok-o">=</span><span class="tok-m">10</span> <span class="tok-o">}</span>
+tv information: { now_state=PowerOff, volume=10 }
 input_event: PushedVolumeIncreaseButton
-tv information: <span class="tok-o">{</span> <span class="tok-nv">now_state</span><span class="tok-o">=</span>PowerOff, <span class="tok-nv">volume</span><span class="tok-o">=</span><span class="tok-m">10</span> <span class="tok-o">}</span>
+tv information: { now_state=PowerOff, volume=10 }
 input_event: PushedPowerButton
-tv information: <span class="tok-o">{</span> <span class="tok-nv">now_state</span><span class="tok-o">=</span>PowerOn, <span class="tok-nv">volume</span><span class="tok-o">=</span><span class="tok-m">10</span> <span class="tok-o">}</span>
+tv information: { now_state=PowerOn, volume=10 }
 input_event: PushedVolumeIncreaseButton
-tv information: <span class="tok-o">{</span> <span class="tok-nv">now_state</span><span class="tok-o">=</span>PowerOn, <span class="tok-nv">volume</span><span class="tok-o">=</span><span class="tok-m">11</span> <span class="tok-o">}</span>
+tv information: { now_state=PowerOn, volume=11 }
 input_event: PushedVolumeIncreaseButton
 ^C
-mrcsce@pop-os:~/programming/rustProjects/samplecode$
-</pre></td></tr></table></code></pre>
+mrcsce@pop-os:~/programming/rustProjects/samplecode$</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1046,7 +1021,7 @@ mrcsce@pop-os:~/programming/rustProjects/samplecode$
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-06 12:46:12 UTC
+Last updated 2021-05-06 12:56:12 UTC
 </div>
 </div>
 </body>
