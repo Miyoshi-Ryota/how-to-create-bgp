@@ -1,7 +1,6 @@
 
 :toc:
-:source-highlighter: highlightjs
-:highlightjs-languages: rust
+:source-highlighter: coderay
 
 = 作って学ぶルーティングプロトコル〜RustでBGPを実装〜
 Miyoshi Ryota (@llp_qlv / mr-csce (miyoshi))
