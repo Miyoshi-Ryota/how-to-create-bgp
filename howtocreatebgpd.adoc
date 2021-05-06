@@ -221,7 +221,7 @@ fn main() {
         push_random_button_of_tv(&mut tv);
         if let Some(event) = tv.event_queue.dequeue() {
             println!(
-                "tv information: {{ now_state={:?}, volume={} }}, input_event: {:?}",
+                "tv information: {{ now_state={:?}, volume={} }}\ninput_event: {:?}",
                 tv.now_state, tv.volume, event
             );
             tv.handle_event(event);
@@ -233,36 +233,45 @@ fn main() {
 
 実行時のログです。
 
-[source, shell,linenums]
+[source,shell,linenums]
 ----
 mrcsce@pop-os:~/programming/rustProjects/samplecode$ cargo run
-   Compiling samplecode v0.1.0 (/home/mrcsce/programming/rustProjects/samplecode)
-    Finished dev [unoptimized + debuginfo] target(s) in 0.33s
+    Finished dev [unoptimized + debuginfo] target(s) in 0.00s
      Running `target/debug/samplecode`
-tv information: { now_state=PowerOff, volume=10 }, input_event: PushedPowerButton
-tv information: { now_state=PowerOn, volume=10 }, input_event: PushedVolumeDecreaseButton
-tv information: { now_state=PowerOn, volume=9 }, input_event: PushedPowerButton
-tv information: { now_state=PowerOff, volume=9 }, input_event: PushedPowerButton
-tv information: { now_state=PowerOn, volume=9 }, input_event: PushedPowerButton
-tv information: { now_state=PowerOff, volume=9 }, input_event: PushedPowerButton
-tv information: { now_state=PowerOn, volume=9 }, input_event: PushedVolumeIncreaseButton
-tv information: { now_state=PowerOn, volume=10 }, input_event: PushedPowerButton
-tv information: { now_state=PowerOff, volume=10 }, input_event: PushedVolumeIncreaseButton
-tv information: { now_state=PowerOff, volume=10 }, input_event: PushedVolumeDecreaseButton
-tv information: { now_state=PowerOff, volume=10 }, input_event: PushedVolumeDecreaseButton
-tv information: { now_state=PowerOff, volume=10 }, input_event: PushedPowerButton
-tv information: { now_state=PowerOn, volume=10 }, input_event: PushedVolumeIncreaseButton
-tv information: { now_state=PowerOn, volume=11 }, input_event: PushedVolumeIncreaseButton
-tv information: { now_state=PowerOn, volume=12 }, input_event: PushedVolumeIncreaseButton
-tv information: { now_state=PowerOn, volume=13 }, input_event: PushedVolumeIncreaseButton
-tv information: { now_state=PowerOn, volume=14 }, input_event: PushedPowerButton
-tv information: { now_state=PowerOff, volume=14 }, input_event: PushedVolumeIncreaseButton
-tv information: { now_state=PowerOff, volume=14 }, input_event: PushedVolumeDecreaseButton
-tv information: { now_state=PowerOff, volume=14 }, input_event: PushedVolumeDecreaseButton
-tv information: { now_state=PowerOff, volume=14 }, input_event: PushedVolumeIncreaseButton
+tv information: { now_state=PowerOff, volume=10 }
+input_event: PushedPowerButton
+tv information: { now_state=PowerOn, volume=10 }
+input_event: PushedVolumeIncreaseButton
+tv information: { now_state=PowerOn, volume=11 }
+input_event: PushedVolumeDecreaseButton
+tv information: { now_state=PowerOn, volume=10 }
+input_event: PushedVolumeIncreaseButton
+tv information: { now_state=PowerOn, volume=11 }
+input_event: PushedVolumeDecreaseButton
+tv information: { now_state=PowerOn, volume=10 }
+input_event: PushedPowerButton
+tv information: { now_state=PowerOff, volume=10 }
+input_event: PushedVolumeIncreaseButton
+tv information: { now_state=PowerOff, volume=10 }
+input_event: PushedPowerButton
+tv information: { now_state=PowerOn, volume=10 }
+input_event: PushedVolumeIncreaseButton
+tv information: { now_state=PowerOn, volume=11 }
+input_event: PushedVolumeIncreaseButton
 ^C
-mrcsce@pop-os:~/programming/rustProjects/samplecode$ 
+mrcsce@pop-os:~/programming/rustProjects/samplecode$
 ----
+
+ログの4行目を見ると、電源OFFの状態であることがわかります。
+次にログの5行目を見ると、電源ボタンが押されたことがわかります。
+次にログの6行目を見ると、電源ONの状態に遷移したことがわかります。
+次にログの7行目を見ると、音量増加ボタンが押されたことがわかります。
+次にログの8行目を見ると、電源ON状態のまま、音量が11に増加していることがわかります。
+
+一方でログの16、17、18行目を見ると、電源OFF状態のときに音量増加ボタンが押されても、電源OFF状態のままで音量の変動もないことがわかります。
+
+これは<<what_is_event_driven_state_machine>>の章で例示した通りの動作です。
+このようにステートマシンで定義した通りの動作が行われていることが確かめられました。
 
 == 1つのピアを実装するまで
 === main関数の実装
