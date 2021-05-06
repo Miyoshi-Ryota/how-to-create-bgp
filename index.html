@@ -457,6 +457,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#_1つのピアを実装するまで">1つのピアを実装するまで</a>
 <ul class="sectlevel2">
+<li><a href="#_bgpはどんなイベント駆動ステートマシンなのか">BGPはどんなイベント駆動ステートマシンなのか</a></li>
 <li><a href="#_main関数の実装">main関数の実装</a></li>
 <li><a href="#_本章で作るものの全体像">本章で作るものの全体像</a></li>
 </ul>
@@ -791,6 +792,16 @@ mrcsce@pop-os:~/programming/rustProjects/samplecode$</code></pre>
 <h2 id="_1つのピアを実装するまで">1つのピアを実装するまで</h2>
 <div class="sectionbody">
 <div class="sect2">
+<h3 id="_bgpはどんなイベント駆動ステートマシンなのか">BGPはどんなイベント駆動ステートマシンなのか</h3>
+<div class="paragraph">
+<p>BGPはどのようなイベント駆動ステートマシンとして表すのが良いでしょうか。</p>
+</div>
+<div class="paragraph">
+<p>実はRFCに、hogehogeと記載があります。
+ここでは、完全なステートマシンを図にせず、まずは1つのピアがEstablishedに至るまでの正常系のみのステートマシンを図にします。</p>
+</div>
+</div>
+<div class="sect2">
 <h3 id="_main関数の実装">main関数の実装</h3>
 
 </div>
@@ -822,7 +833,7 @@ mrcsce@pop-os:~/programming/rustProjects/samplecode$</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-06 12:20:39 UTC
+Last updated 2021-05-06 12:21:28 UTC
 </div>
 </div>
 </body>
