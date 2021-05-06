@@ -533,6 +533,8 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <li><a href="#_1つのピアを実装するまで">1つのピアを実装するまで</a>
 <ul class="sectlevel2">
 <li><a href="#_bgpはどんなイベント駆動ステートマシンなのか">BGPはどんなイベント駆動ステートマシンなのか</a></li>
+<li><a href="#_1つのピアでestablishedに遷移するところまでの実装">1つのピアでEstablishedに遷移するところまでの実装</a></li>
+<li><a href="#_1つのピアでupdate_messageの交換やupdate_messageの内容に従ってrouting_tableへの書き込みを可能にするところまでの実装">1つのピアでUpdate Messageの交換やUpdate Messageの内容に従ってRouting Tableへの書き込みを可能にするところまでの実装</a></li>
 <li><a href="#_main関数の実装">main関数の実装</a></li>
 <li><a href="#_本章で作るものの全体像">本章で作るものの全体像</a></li>
 </ul>
@@ -929,6 +931,14 @@ BGPについて詳しくない方は、どちらかを読み、本章以降に�
 </div>
 </div>
 <div class="paragraph">
+<p>103行目でTVのランダムなボタンを押下し、TVにイベント（入力）を送信しています。送信されたEventはイベントキュー、tv.event_queueにエンキューします。
+104でイベントキューに保存されているイベント（入力）を取り出します。
+TVの現在の状態（State）はTVのインスタンスに保存されています。
+109行目でイベント（入力）を扱います。
+49行目〜69行目を見ると分かるように、`tv.handle_event(event)`はeventとtvインスタンスに保存されている現在の状態に応じて、動作し次の状態を決定します。
+このようにしてイベント駆動ステートマシンを実装することができました。</p>
+</div>
+<div class="paragraph">
 <p>次が<a href="#log_of_sample_state_machine">実行時のログ</a>です。</p>
 </div>
 <div class="paragraph">
@@ -998,7 +1008,7 @@ mrcsce@pop-os:~/programming/rustProjects/samplecode$
 </div>
 <div class="paragraph">
 <p>これは<a href="#what_is_event_driven_state_machine">イベント駆動ステートマシンとは</a>の章で例示した通りの動作です。
-イベント駆動ステートマシンを実装できていることが確かめられました。
+例示したイベント駆動ステートマシンを実装できていることが確かめられました。
 BGPのステートマシンも前述の<a href="#example_of_state_machine_impl">イベント駆動ステートマシンの例（テレビ）</a>に似た方針で実装していきます。</p>
 </div>
 </div>
@@ -1013,9 +1023,45 @@ BGPのステートマシンも前述の<a href="#example_of_state_machine_impl">
 <p>BGPはどのようなイベント駆動ステートマシンとして表すのが良いでしょうか。</p>
 </div>
 <div class="paragraph">
-<p>実はhttps://tools.ietf.org/html/rfc4271[RFC4271]に、hogehogeと記載があります。
-ここでは、完全なステートマシンを図にせず、まずは1つのピアがEstablishedに至るまでの正常系のみのステートマシンを図にします。</p>
+<p>実は <a href="https://tools.ietf.org/html/rfc4271">RFC4271-A Border Gateway Protocol 4 (BGP-4)</a>の <a href="https://tools.ietf.org/html/rfc4271#section-8">8.  BGP Finite State Machine (FSM)</a>に、イベント駆動ステートマシンの定義の記載があります。</p>
 </div>
+<div class="paragraph">
+<p>1度に完全なBGPを作成することは難しいため、
+本章ではBGPを次の段階に分けて開発します。</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>まずは1つのピアがEstablishedに遷移可能</p>
+</li>
+<li>
+<p>1つのピアでUpdate Messageの交換やUpdate Messageの内容にしたがってRouting Tableへの書き込みが可能</p>
+</li>
+<li>
+<p>複数のピアを扱うことが可能</p>
+</li>
+<li>
+<p>細かい完成度を増加</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>ですので、まずは1つのピアがEstablishedに至るまでの正常系のみのイベント駆動ステートマシンを実装します。
+まず実装するイベント駆動ステートマシンを図示します。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="diag-418895019d5b472079e4bd3956cc747b.png" alt="Diagram" width="741" height="70">
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_1つのピアでestablishedに遷移するところまでの実装">1つのピアでEstablishedに遷移するところまでの実装</h3>
+
+</div>
+<div class="sect2">
+<h3 id="_1つのピアでupdate_messageの交換やupdate_messageの内容に従ってrouting_tableへの書き込みを可能にするところまでの実装">1つのピアでUpdate Messageの交換やUpdate Messageの内容に従ってRouting Tableへの書き込みを可能にするところまでの実装</h3>
+
 </div>
 <div class="sect2">
 <h3 id="_main関数の実装">main関数の実装</h3>
@@ -1049,7 +1095,7 @@ BGPのステートマシンも前述の<a href="#example_of_state_machine_impl">
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-06 13:14:58 UTC
+Last updated 2021-05-06 13:49:47 UTC
 </div>
 </div>
 </body>

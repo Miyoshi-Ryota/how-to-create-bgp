@@ -231,6 +231,13 @@ fn main() {
 }
 ----
 
+103行目でTVのランダムなボタンを押下し、TVにイベント（入力）を送信しています。送信されたEventはイベントキュー、tv.event_queueにエンキューします。
+104でイベントキューに保存されているイベント（入力）を取り出します。
+TVの現在の状態（State）はTVのインスタンスに保存されています。
+109行目でイベント（入力）を扱います。
+49行目〜69行目を見ると分かるように、`tv.handle_event(event)`はeventとtvインスタンスに保存されている現在の状態に応じて、動作し次の状態を決定します。
+このようにしてイベント駆動ステートマシンを実装することができました。
+
 次が<<log_of_sample_state_machine>>です。
 
 ログの4行目を見ると、電源OFFの状態であることがわかります。
@@ -273,15 +280,43 @@ mrcsce@pop-os:~/programming/rustProjects/samplecode$
 
 
 これは<<what_is_event_driven_state_machine>>の章で例示した通りの動作です。
-イベント駆動ステートマシンを実装できていることが確かめられました。
+例示したイベント駆動ステートマシンを実装できていることが確かめられました。
 BGPのステートマシンも前述の<<example_of_state_machine_impl>>に似た方針で実装していきます。
 
 == 1つのピアを実装するまで
 === BGPはどんなイベント駆動ステートマシンなのか
 BGPはどのようなイベント駆動ステートマシンとして表すのが良いでしょうか。
 
-実はhttps://tools.ietf.org/html/rfc4271[RFC4271]に、hogehogeと記載があります。
-ここでは、完全なステートマシンを図にせず、まずは1つのピアがEstablishedに至るまでの正常系のみのステートマシンを図にします。
+実は https://tools.ietf.org/html/rfc4271[RFC4271-A Border Gateway Protocol 4 (BGP-4)]の https://tools.ietf.org/html/rfc4271#section-8[8.  BGP Finite State Machine (FSM)]に、イベント駆動ステートマシンの定義の記載があります。
+
+1度に完全なBGPを作成することは難しいため、
+本章ではBGPを次の段階に分けて開発します。
+
+1. まずは1つのピアがEstablishedに遷移可能
+2. 1つのピアでUpdate Messageの交換やUpdate Messageの内容にしたがってRouting Tableへの書き込みが可能
+3. 複数のピアを扱うことが可能
+4. 細かい完成度を増加
+
+ですので、まずは1つのピアがEstablishedに至るまでの正常系のみのイベント駆動ステートマシンを実装します。
+まず実装するイベント駆動ステートマシンを図示します。
+
+[plantuml]
+----
+@startuml
+
+state Idle
+state Connect
+state Active
+state OpenConfirm
+state OpenSent
+state Established
+
+[*] -> Idle
+@enduml
+----
+
+=== 1つのピアでEstablishedに遷移するところまでの実装
+=== 1つのピアでUpdate Messageの交換やUpdate Messageの内容に従ってRouting Tableへの書き込みを可能にするところまでの実装
 
 === main関数の実装
 === 本章で作るものの全体像
