@@ -302,7 +302,7 @@ BGPはどのようなイベント駆動ステートマシンとして表すの�
 
 RFCの方針の通り、1つのBGPピアを1つのイベント駆動ステートマシンとして表します。
 BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConfirm, OpenSent, Establishedの5つ用意します。
-この状態は、https://www.infraexpert.com/study/bgpz02.html[BGP - 4つのメッセージ、6つのステータスと状態遷移]で説明しているBGPの6つの状態のうちActiveを除いたものと対応しています。Activeは非正常系パスでしか遷移しない状態のため、第一段階では除いています。
+この状態は、 https://www.infraexpert.com/study/bgpz02.html[BGP - 4つのメッセージ、6つのステータスと状態遷移]で説明しているBGPの6つの状態のうちActiveを除いたものと対応しています。Activeは非正常系パスでしか遷移しない状態のため、第一段階では除いています。
 
 第一段階のイベントとして次の5個を使用します。イベントの名前と定義はRFCにしたがってしています。
 
