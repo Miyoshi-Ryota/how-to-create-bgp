@@ -115,7 +115,7 @@ end note
 イベント駆動ステートマシンをどのよう実装すればいいのかという勘所を掴んでもらうために<<what_is_event_driven_state_machine>>の章で例示したテレビをコードにします。
 次のようになります。
 
-[source,rust]
+[source,rust,linenums]
 ----
 use rand::Rng;
 use std::collections::VecDeque;
@@ -234,7 +234,7 @@ fn main() {
 
 実行時のログです。
 
-[source, shell]
+[source, shell,linenums]
 ----
 mrcsce@pop-os:~/programming/rustProjects/samplecode$ cargo run
    Compiling samplecode v0.1.0 (/home/mrcsce/programming/rustProjects/samplecode)
