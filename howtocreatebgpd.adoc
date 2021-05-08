@@ -448,10 +448,12 @@ pub mod peer;
 
 まずテストを書きましょう。
 
+////
 [source,rust,linenums,title="src/bgp/peer.rs"]
 ----
 include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/connect-state-made/mrbgpdv2first/src/bgp/peer.rs[lines=58..69]
 ----
+////
 
 ==== Connect Stateに遷移する
 === 1つのピアでUpdate Messageの交換やUpdate Messageの内容に従ってRouting Tableへの書き込みを可能にするところまでの実装
