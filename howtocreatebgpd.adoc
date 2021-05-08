@@ -450,7 +450,7 @@ pub mod peer;
 
 [source,rust,linenums,title="src/bgp/peer.rs"]
 ----
-include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/connect-state-made/mrbgpdv2first/src/bgp/peer.rs[]
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/connect-state-made/mrbgpdv2first/src/bgp/peer.rs[lines=58:69]
 ----
 
 ==== Connect Stateに遷移する
