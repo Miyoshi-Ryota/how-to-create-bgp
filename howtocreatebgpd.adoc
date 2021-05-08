@@ -418,7 +418,7 @@ cargo new <プロジェクトの名前>
 
 [source,rust,linenums,title="src/bgp/peer.rs"]
 ----
-+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/connect-state-made/mrbgpdv2first/src/bgp/peer.rs[]
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/connect-state-made/mrbgpdv2first/src/bgp/peer.rs[]
 ----
 
 ==== Connect Stateに遷移する

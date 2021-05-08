@@ -30,7 +30,7 @@ jobs:
         id: adocbuild
         uses: Miyoshi-Ryota/asciidoctor-action@master
         with:
-            program: "asciidoctor -a allow-uri-read -r asciidoctor-diagram -o index.html howtocreatebgpd.adoc"
+            program: "asciidoctor --safe-mode server -a allow-uri-read -r asciidoctor-diagram -o index.html howtocreatebgpd.adoc"
       - name: Print execution time
         run: echo "Time ${{ steps.adocbuild.outputs.time }}"
       - name: Deploy docs to ghpages
