@@ -393,38 +393,6 @@ Rustは以下のコマンドで新しいプロジェクトを作成すること�
 cargo new <プロジェクトの名前>
 ----
 
-いくつかのファイルを追加し、以下のようなディレクトリ構造にします。
-
-[source]
-----
-mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ tree
-.
-├── Cargo.lock
-├── Cargo.toml
-├── src
-│   ├── bgp
-│   │   ├── mod.rs
-│   │   └── peer.rs
-│   ├── lib.rs
-│   └── main.rs
-----
-
-自動生成されない内容を記載します。
-[source,rust,linenums,title"./lib.rs]
-----
-pub mod bgp;
-----
-
-[source,rust,linenums,title"./bgp/mod.rs]
-----
-pub mod peer;
-----
-
-[source,rust,linenums,title"./bgp/peer.rs]
-----
-// 空ファイルです
-----
-
 [title=タスクリスト]
 * [x] プロジェクトを作成する
 * [ ] Connect Stateに遷移する
@@ -442,17 +410,121 @@ pub mod peer;
 
 
 ==== Connect Stateに遷移する
-つぎに下記に取り組みます。
-
+それでは中身に入っていきましょう。
+下記に取り組みます。
 * [ ] Connect Stateに遷移する
+    - [ ] ManualStart Eventを発生させる
+
+BGPは1つのピアが1つのイベント駆動ステートマシンとして表せます。
+ピアに関するソースコードは./src/bgp/peer.rsに書くことにしましょう。
+
+ ./src/bgp/peer.rsを追加するとディレクトリ構造は下記のようになります。
+[source]
+----
+mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ tree
+.
+├── Cargo.lock
+├── Cargo.toml
+├── src
+│   ├── bgp
+│   │   ├── mod.rs
+│   │   └── peer.rs
+│   ├── lib.rs
+│   └── main.rs
+----
+
+[source,rust,linenums,title="./lib.rs]
+----
+pub mod bgp;
+----
+
+[source,rust,linenums,title="./bgp/mod.rs]
+----
+pub mod peer;
+----
+
+[source,rust,linenums,title="./bgp/peer.rs]
+----
+// 空ファイルです
+----
 
 まずテストを書きましょう。
+Connectに遷移するまでの過程は<<bgp_first_test, 次>>のようにしてみましょう。
 
-
+[[bgp_first_test]]
 [source,rust,linenums,title="src/bgp/peer.rs"]
 ----
 include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/connect-state-made/mrbgpdv2first/src/bgp/peer.rs[lines=58..69]
 ----
+
+bgp_peer.start()でピアのコネクションを開始（ManualStartイベントを発火）させ、bgp_peer.next_step()で、そのピアのイベントキューからイベントを1つ取り出しハンドリングするつもりのコードです。
+
+実はConnect Stateに遷移するところまででは、Configは不要です。しかしこの後、すぐに使用するので、この段階で合わせて実装しています。
+
+
+このテストが通るまでコンパイラのエラーにしたがってコードを追加していくと下記のようになります。
+
+[source,title="ディレクトリ構造"]
+----
+├── src
+│   ├── bgp
+│   │   ├── config.rs
+│   │   ├── event_queue.rs
+│   │   ├── mod.rs
+│   │   └── peer.rs
+│   ├── lib.rs
+│   └── main.rs
+----
+
+[source,rust,linenums,title="src/bgp/mod.rs"]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/4028dd5957849b2ed4b3d7432f56667125163f92/mrbgpdv2first/src/bgp/mod.rs[]
+----
+
+
+[source,rust,linenums,title="src/bgp/peer.rs"]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/4028dd5957849b2ed4b3d7432f56667125163f92/mrbgpdv2first/src/bgp/peer.rs[]
+----
+
+[source,rust,linenums,title="src/bgp/event_queue.rs"]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/4028dd5957849b2ed4b3d7432f56667125163f92/mrbgpdv2first/src/bgp/event_queue.rs[]
+----
+
+[source,rust,linenums,title="src/bgp/config.rs"]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/4028dd5957849b2ed4b3d7432f56667125163f92/mrbgpdv2first/src/bgp/config.rs[]
+----
+
+
+それではテストを実行し、OKになることを確認しましょう。
+----
+mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ cargo test
+   Compiling mrbgpdv2first v0.1.0 (/home/mrcsce/programming/rustProjects/mrbgpdv2/mrbgpdv2first)
+    Finished test [unoptimized + debuginfo] target(s) in 0.48s
+     Running unittests (target/debug/deps/mrbgpdv2first-773462fadd3e9533)
+
+running 1 tests
+test bgp::peer::tests::peer_can_transition_to_connect_start ... ok
+----
+
+これでまた1つタスクが完了しました。
+
+[title=タスクリスト]
+* [x] プロジェクトを作成する
+* [x] Connect Stateに遷移する
+    - [x] ManualStart Eventを発生させる
+* [ ] OpenSent Stateに遷移する
+    - [ ] TCPコネクションを作成する
+    - [ ] BGP Open Messageを送信する
+* [ ] OpenConfirm Stateに遷移する
+    - [ ] BGP Open Messageを受信する
+    - [ ] BGP Keepalive Messageを送信する
+* Established Stateに遷移する
+    - [ ] BGP Keepalive Messageを受信する
+* [ ] main関数を作成する
+* [ ] テストする
 
 
 ==== Connect Stateに遷移する

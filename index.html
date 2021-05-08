@@ -1212,44 +1212,6 @@ BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConf
 <pre class="pygments highlight"><code><span></span>cargo new &lt;プロジェクトの名前&gt;</code></pre>
 </div>
 </div>
-<div class="paragraph">
-<p>いくつかのファイルを追加し、以下のようなディレクトリ構造にします。</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code><span></span>mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ tree
-.
-├── Cargo.lock
-├── Cargo.toml
-├── src
-│   ├── bgp
-│   │   ├── mod.rs
-│   │   └── peer.rs
-│   ├── lib.rs
-│   └── main.rs</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>自動生成されない内容を記載します。</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><pre><span></span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">mod</span> <span class="tok-nn">bgp</span><span class="tok-p">;</span><span class="tok-w"></span>
-</pre></td></tr></table></code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><pre><span></span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">mod</span> <span class="tok-nn">peer</span><span class="tok-p">;</span><span class="tok-w"></span>
-</pre></td></tr></table></code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><pre><span></span><span class="tok-c1">// 空ファイルです</span>
-</pre></td></tr></table></code></pre>
-</div>
-</div>
 <div class="ulist checklist">
 <div class="title">タスクリスト</div>
 <ul class="checklist">
@@ -1314,19 +1276,60 @@ BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConf
 <div class="sect3">
 <h4 id="_connect_stateに遷移する">Connect Stateに遷移する</h4>
 <div class="paragraph">
-<p>つぎに下記に取り組みます。</p>
-</div>
-<div class="ulist checklist">
-<ul class="checklist">
-<li>
-<p>&#10063; Connect Stateに遷移する</p>
-</li>
-</ul>
+<p>それでは中身に入っていきましょう。
+下記に取り組みます。
+* [ ] Connect Stateに遷移する
+    - [ ] ManualStart Eventを発生させる</p>
 </div>
 <div class="paragraph">
-<p>まずテストを書きましょう。</p>
+<p>BGPは1つのピアが1つのイベント駆動ステートマシンとして表せます。
+ピアに関するソースコードは./src/bgp/peer.rsに書くことにしましょう。</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>./src/bgp/peer.rsを追加するとディレクトリ構造は下記のようになります。</pre>
+</div>
 </div>
 <div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code><span></span>mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ tree
+.
+├── Cargo.lock
+├── Cargo.toml
+├── src
+│   ├── bgp
+│   │   ├── mod.rs
+│   │   └── peer.rs
+│   ├── lib.rs
+│   └── main.rs</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">"./lib.rs</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><pre><span></span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">mod</span> <span class="tok-nn">bgp</span><span class="tok-p">;</span><span class="tok-w"></span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">"./bgp/mod.rs</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><pre><span></span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">mod</span> <span class="tok-nn">peer</span><span class="tok-p">;</span><span class="tok-w"></span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">"./bgp/peer.rs</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><pre><span></span><span class="tok-c1">// 空ファイルです</span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>まずテストを書きましょう。
+Connectに遷移するまでの過程は<a href="#bgp_first_test">次</a>のようにしてみましょう。</p>
+</div>
+<div id="bgp_first_test" class="listingblock">
 <div class="title">src/bgp/peer.rs</div>
 <div class="content">
 <pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
@@ -1354,6 +1357,425 @@ BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConf
 <span class="tok-p">}</span><span class="tok-w"></span>
 </pre></td></tr></table></code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>bgp_peer.start()でピアのコネクションを開始（ManualStartイベントを発火）させ、bgp_peer.next_step()で、そのピアのイベントキューからイベントを1つ取り出しハンドリングするつもりのコードです。</p>
+</div>
+<div class="paragraph">
+<p>実はConnect Stateに遷移するところまででは、Configは不要です。しかしこの後、すぐに使用するので、この段階で合わせて実装しています。</p>
+</div>
+<div class="paragraph">
+<p>このテストが通るまでコンパイラのエラーにしたがってコードを追加していくと下記のようになります。</p>
+</div>
+<div class="listingblock">
+<div class="title">ディレクトリ構造</div>
+<div class="content">
+<pre class="pygments highlight"><code><span></span>├── src
+│   ├── bgp
+│   │   ├── config.rs
+│   │   ├── event_queue.rs
+│   │   ├── mod.rs
+│   │   └── peer.rs
+│   ├── lib.rs
+│   └── main.rs</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">src/bgp/mod.rs</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><pre><span></span><span class="tok-k">mod</span> <span class="tok-nn">config</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-k">mod</span> <span class="tok-nn">event_queue</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">mod</span> <span class="tok-nn">peer</span><span class="tok-p">;</span><span class="tok-w"></span>
+
+<span class="tok-k">struct</span> <span class="tok-nc">AutonomousSystemNumber</span><span class="tok-p">(</span><span class="tok-kt">u16</span><span class="tok-p">);</span><span class="tok-w"></span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">src/bgp/peer.rs</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span></pre></div></td><td class="code"><pre><span></span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">super</span>::<span class="tok-n">event_queue</span>::<span class="tok-n">EventQueue</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span>::<span class="tok-n">config</span>::<span class="tok-n">Config</span><span class="tok-p">;</span><span class="tok-w"></span>
+
+<span class="tok-k">struct</span> <span class="tok-nc">Peer</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-n">config</span>: <span class="tok-nc">Config</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-n">event_queue</span>: <span class="tok-nc">EventQueue</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-n">now_state</span>: <span class="tok-nc">State</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-p">}</span><span class="tok-w"></span>
+
+<span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">Peer</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">fn</span> <span class="tok-nf">new</span><span class="tok-p">(</span><span class="tok-n">config</span>: <span class="tok-nc">Config</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-nc">Self</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">event_queue</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">EventQueue</span>::<span class="tok-n">new</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">now_state</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">State</span>::<span class="tok-n">Idle</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-bp">Self</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">            </span><span class="tok-n">config</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">            </span><span class="tok-n">event_queue</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">            </span><span class="tok-n">now_state</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+
+<span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">fn</span> <span class="tok-nf">start</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">event_queue</span><span class="tok-p">.</span><span class="tok-n">enqueue</span><span class="tok-p">(</span><span class="tok-n">Event</span>::<span class="tok-n">ManualStart</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+
+<span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">fn</span> <span class="tok-nf">next_step</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-nb">Some</span><span class="tok-p">(</span><span class="tok-n">event</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">event_queue</span><span class="tok-p">.</span><span class="tok-n">dequeue</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">            </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">handle_event</span><span class="tok-p">(</span><span class="tok-n">event</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+
+<span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">handle_event</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">event</span>: <span class="tok-nc">Event</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-k">match</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">now_state</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">            </span><span class="tok-n">State</span>::<span class="tok-n">Idle</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-k">match</span><span class="tok-w"> </span><span class="tok-n">event</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">                </span><span class="tok-n">Event</span>::<span class="tok-n">ManualStart</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">                    </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">now_state</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">State</span>::<span class="tok-n">Connect</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-w">                </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-w">                </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{}</span><span class="tok-w"></span>
+<span class="tok-w">            </span><span class="tok-p">},</span><span class="tok-w"></span>
+<span class="tok-w">            </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">(),</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-p">}</span><span class="tok-w"></span>
+
+<span class="tok-cp">#[derive(Debug, PartialEq, Eq, Clone, Copy)]</span><span class="tok-w"></span>
+<span class="tok-k">enum</span> <span class="tok-nc">State</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-n">Idle</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-n">Connect</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-n">OpenSent</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-p">}</span><span class="tok-w"></span>
+
+<span class="tok-cp">#[derive(PartialEq, Eq, Clone, Copy)]</span><span class="tok-w"></span>
+<span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">enum</span> <span class="tok-nc">Event</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-n">ManualStart</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-n">TcpCrAcked</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-n">TcpConnectionConfirmed</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-p">}</span><span class="tok-w"></span>
+
+<span class="tok-cp">#[cfg(test)]</span><span class="tok-w"></span>
+<span class="tok-k">mod</span> <span class="tok-nn">tests</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">super</span>::<span class="tok-o">*</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-cp">#[test]</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">peer_can_transition_to_connect_start</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">config</span>: <span class="tok-nc">Config</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;64512 127.0.0.1 64513 127.0.0.2 active&quot;</span><span class="tok-p">.</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">bgp_peer</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">Peer</span>::<span class="tok-n">new</span><span class="tok-p">(</span><span class="tok-n">config</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-n">bgp_peer</span><span class="tok-p">.</span><span class="tok-n">start</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-n">bgp_peer</span><span class="tok-p">.</span><span class="tok-n">next_step</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-fm">assert_eq!</span><span class="tok-p">(</span><span class="tok-n">bgp_peer</span><span class="tok-p">.</span><span class="tok-n">now_state</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">State</span>::<span class="tok-n">Connect</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-p">}</span><span class="tok-w"></span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">src/bgp/event_queue.rs</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span></pre></div></td><td class="code"><pre><span></span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span>::<span class="tok-n">peer</span>::<span class="tok-n">Event</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-n">collections</span>::<span class="tok-n">VecDeque</span><span class="tok-p">;</span><span class="tok-w"></span>
+
+<span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">struct</span> <span class="tok-nc">EventQueue</span><span class="tok-p">(</span><span class="tok-n">VecDeque</span><span class="tok-o">&lt;</span><span class="tok-n">Event</span><span class="tok-o">&gt;</span><span class="tok-p">);</span><span class="tok-w"></span>
+
+<span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">EventQueue</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">fn</span> <span class="tok-nf">new</span><span class="tok-p">()</span><span class="tok-w"> </span>-&gt; <span class="tok-nc">Self</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-n">EventQueue</span><span class="tok-p">(</span><span class="tok-n">VecDeque</span>::<span class="tok-n">new</span><span class="tok-p">())</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+
+<span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">fn</span> <span class="tok-nf">enqueue</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">event</span>: <span class="tok-nc">Event</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-mf">0.</span><span class="tok-n">push_front</span><span class="tok-p">(</span><span class="tok-n">event</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+
+<span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">fn</span> <span class="tok-nf">dequeue</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-nb">Option</span><span class="tok-o">&lt;</span><span class="tok-n">Event</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-mf">0.</span><span class="tok-n">pop_back</span><span class="tok-p">()</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-p">}</span><span class="tok-w"></span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">src/bgp/config.rs</div>
+<div class="content">
+<pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span></pre></div></td><td class="code"><pre><span></span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-p">{</span><span class="tok-n">net</span>::<span class="tok-n">Ipv4Addr</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-kt">str</span>::<span class="tok-n">FromStr</span><span class="tok-p">};</span><span class="tok-w"></span>
+<span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">struct</span> <span class="tok-nc">Config</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-n">local_as_number</span>: <span class="tok-nc">bgp</span>::<span class="tok-n">AutonomousSystemNumber</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-n">local_ip_address</span>: <span class="tok-nc">Ipv4Addr</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-n">remote_as_number</span>: <span class="tok-nc">bgp</span>::<span class="tok-n">AutonomousSystemNumber</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-n">remote_ip_address</span>: <span class="tok-nc">Ipv4Addr</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-n">mode</span>: <span class="tok-nc">Mode</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-p">}</span><span class="tok-w"></span>
+
+<span class="tok-k">enum</span> <span class="tok-nc">Mode</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-n">Passive</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-n">Active</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-p">}</span><span class="tok-w"></span>
+
+<span class="tok-cp">#[derive(Debug)]</span><span class="tok-w"></span>
+<span class="tok-k">struct</span> <span class="tok-nc">ModeParseError</span><span class="tok-p">;</span><span class="tok-w"></span>
+
+<span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">FromStr</span><span class="tok-w"> </span><span class="tok-k">for</span><span class="tok-w"> </span><span class="tok-n">Mode</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-k">type</span> <span class="tok-nb">Err</span> <span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">ModeParseError</span><span class="tok-p">;</span><span class="tok-w"></span>
+
+<span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">from_str</span><span class="tok-p">(</span><span class="tok-n">s</span>: <span class="tok-kp">&amp;</span><span class="tok-kt">str</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-nb">Result</span><span class="tok-o">&lt;</span><span class="tok-bp">Self</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-bp">Self</span>::<span class="tok-nb">Err</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-k">match</span><span class="tok-w"> </span><span class="tok-n">s</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">            </span><span class="tok-s">&quot;active&quot;</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-nb">Ok</span><span class="tok-p">(</span><span class="tok-n">Mode</span>::<span class="tok-n">Active</span><span class="tok-p">),</span><span class="tok-w"></span>
+<span class="tok-w">            </span><span class="tok-s">&quot;passive&quot;</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-nb">Ok</span><span class="tok-p">(</span><span class="tok-n">Mode</span>::<span class="tok-n">Passive</span><span class="tok-p">),</span><span class="tok-w"></span>
+<span class="tok-w">            </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-nb">Err</span><span class="tok-p">(</span><span class="tok-n">ModeParseError</span><span class="tok-p">),</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-p">}</span><span class="tok-w"></span>
+
+<span class="tok-cp">#[derive(Debug)]</span><span class="tok-w"></span>
+<span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">struct</span> <span class="tok-nc">ConfigParseError</span><span class="tok-p">;</span><span class="tok-w"></span>
+
+<span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">FromStr</span><span class="tok-w"> </span><span class="tok-k">for</span><span class="tok-w"> </span><span class="tok-n">Config</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-k">type</span> <span class="tok-nb">Err</span> <span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">ConfigParseError</span><span class="tok-p">;</span><span class="tok-w"></span>
+
+<span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">from_str</span><span class="tok-p">(</span><span class="tok-n">s</span>: <span class="tok-kp">&amp;</span><span class="tok-kt">str</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-nb">Result</span><span class="tok-o">&lt;</span><span class="tok-bp">Self</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-bp">Self</span>::<span class="tok-nb">Err</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-c1">// 64512 127.0.0.1 64513 127.0.0.2 activeのようなテキストがパース対象</span>
+<span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">c</span>: <span class="tok-nb">Vec</span><span class="tok-o">&lt;&amp;</span><span class="tok-kt">str</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">s</span><span class="tok-p">.</span><span class="tok-n">split</span><span class="tok-p">(</span><span class="tok-s">&quot; &quot;</span><span class="tok-p">).</span><span class="tok-n">collect</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">local_as_number</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"></span>
+<span class="tok-w">            </span><span class="tok-n">bgp</span>::<span class="tok-n">AutonomousSystemNumber</span><span class="tok-p">(</span><span class="tok-n">c</span><span class="tok-p">[</span><span class="tok-mi">0</span><span class="tok-p">].</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">expect</span><span class="tok-p">(</span><span class="tok-s">&quot;cannot parse local as number&quot;</span><span class="tok-p">));</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">local_ip_address</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">c</span><span class="tok-p">[</span><span class="tok-mi">1</span><span class="tok-p">].</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">expect</span><span class="tok-p">(</span><span class="tok-s">&quot;cannot parse local ip address&quot;</span><span class="tok-p">);</span><span class="tok-w"></span>
+
+<span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">remote_as_number</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"></span>
+<span class="tok-w">            </span><span class="tok-n">bgp</span>::<span class="tok-n">AutonomousSystemNumber</span><span class="tok-p">(</span><span class="tok-n">c</span><span class="tok-p">[</span><span class="tok-mi">2</span><span class="tok-p">].</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">expect</span><span class="tok-p">(</span><span class="tok-s">&quot;cannot parse local as number&quot;</span><span class="tok-p">));</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">remote_ip_address</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">c</span><span class="tok-p">[</span><span class="tok-mi">3</span><span class="tok-p">].</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">expect</span><span class="tok-p">(</span><span class="tok-s">&quot;cannot parse local ip address&quot;</span><span class="tok-p">);</span><span class="tok-w"></span>
+
+<span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">mode</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">c</span><span class="tok-p">[</span><span class="tok-mi">4</span><span class="tok-p">].</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">expect</span><span class="tok-p">(</span><span class="tok-s">&quot;cannot parse mode&quot;</span><span class="tok-p">);</span><span class="tok-w"></span>
+
+<span class="tok-w">        </span><span class="tok-nb">Ok</span><span class="tok-p">(</span><span class="tok-n">Config</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">            </span><span class="tok-n">local_as_number</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">            </span><span class="tok-n">local_ip_address</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">            </span><span class="tok-n">remote_as_number</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">            </span><span class="tok-n">remote_ip_address</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">            </span><span class="tok-n">mode</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">        </span><span class="tok-p">})</span><span class="tok-w"></span>
+<span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-p">}</span><span class="tok-w"></span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>それではテストを実行し、OKになることを確認しましょう。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ cargo test
+   Compiling mrbgpdv2first v0.1.0 (/home/mrcsce/programming/rustProjects/mrbgpdv2/mrbgpdv2first)
+    Finished test [unoptimized + debuginfo] target(s) in 0.48s
+     Running unittests (target/debug/deps/mrbgpdv2first-773462fadd3e9533)
+
+running 1 tests
+test bgp::peer::tests::peer_can_transition_to_connect_start ... ok</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>これでまた1つタスクが完了しました。</p>
+</div>
+<div class="ulist checklist">
+<div class="title">タスクリスト</div>
+<ul class="checklist">
+<li>
+<p>&#10003; プロジェクトを作成する</p>
+</li>
+<li>
+<p>&#10003; Connect Stateに遷移する</p>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10003; ManualStart Eventを発生させる</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>&#10063; OpenSent Stateに遷移する</p>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10063; TCPコネクションを作成する</p>
+</li>
+<li>
+<p>&#10063; BGP Open Messageを送信する</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>&#10063; OpenConfirm Stateに遷移する</p>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10063; BGP Open Messageを受信する</p>
+</li>
+<li>
+<p>&#10063; BGP Keepalive Messageを送信する</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Established Stateに遷移する</p>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10063; BGP Keepalive Messageを受信する</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>&#10063; main関数を作成する</p>
+</li>
+<li>
+<p>&#10063; テストする</p>
+</li>
+</ul>
 </div>
 </div>
 <div class="sect3">
@@ -1397,7 +1819,7 @@ BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConf
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-08 07:00:46 UTC
+Last updated 2021-05-08 10:54:38 UTC
 </div>
 </div>
 </body>
