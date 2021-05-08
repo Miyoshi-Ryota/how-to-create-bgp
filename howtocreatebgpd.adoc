@@ -373,8 +373,8 @@ OpenConfirm --> Established : KeepAliveMsg event
 * [ ] プロジェクトを作成する
 * [ ] Connect Stateに遷移する
     - [ ] ManualStart Eventを発生させる
-    - [ ] TCPコネクションを作成する
 * [ ] OpenSent Stateに遷移する
+    - [ ] TCPコネクションを作成する
     - [ ] BGP Open Messageを送信する
 * [ ] OpenConfirm Stateに遷移する
     - [ ] BGP Open Messageを受信する
@@ -397,8 +397,8 @@ cargo new <プロジェクトの名前>
 * [x] プロジェクトを作成する
 * [ ] Connect Stateに遷移する
     - [ ] ManualStart Eventを発生させる
-    - [ ] TCPコネクションを作成する
 * [ ] OpenSent Stateに遷移する
+    - [ ] TCPコネクションを作成する
     - [ ] BGP Open Messageを送信する
 * [ ] OpenConfirm Stateに遷移する
     - [ ] BGP Open Messageを受信する
@@ -411,9 +411,15 @@ cargo new <プロジェクトの名前>
 
 ==== Connect Stateに遷移する
 つぎに下記に取り組みます。
+
 * [ ] Connect Stateに遷移する
 
 まずテストを書きましょう。
+
+[source]
+----
++include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/connect-state-made/mrbgpdv2first/src/bgp/peer.rs
+----
 
 ==== Connect Stateに遷移する
 === 1つのピアでUpdate Messageの交換やUpdate Messageの内容に従ってRouting Tableへの書き込みを可能にするところまでの実装
