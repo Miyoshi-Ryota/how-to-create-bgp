@@ -537,7 +537,7 @@ test bgp::peer::tests::peer_can_transition_to_connect_start ... ok
 
 [source,rust,linenums,title="src/bgp/peer.rs"]
 ----
-include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f133fc092a43103322ceadb4b40d9d9f28952548/mrbgpdv2first/src/bgp/peer.rs[90..91;93..94;105..128]
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f133fc092a43103322ceadb4b40d9d9f28952548/mrbgpdv2first/src/bgp/peer.rs[lines=90..91;93..94;105..128]
 ----
 
 このテストが通れば、上記のタスクは完了したと言えます。
