@@ -1154,9 +1154,6 @@ BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConf
 <li>
 <p>&#10063; ManualStart Eventを発生させる</p>
 </li>
-<li>
-<p>&#10063; TCPコネクションを作成する</p>
-</li>
 </ul>
 </div>
 </li>
@@ -1164,6 +1161,9 @@ BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConf
 <p>&#10063; OpenSent Stateに遷移する</p>
 <div class="ulist checklist">
 <ul class="checklist">
+<li>
+<p>&#10063; TCPコネクションを作成する</p>
+</li>
 <li>
 <p>&#10063; BGP Open Messageを送信する</p>
 </li>
@@ -1225,9 +1225,6 @@ BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConf
 <li>
 <p>&#10063; ManualStart Eventを発生させる</p>
 </li>
-<li>
-<p>&#10063; TCPコネクションを作成する</p>
-</li>
 </ul>
 </div>
 </li>
@@ -1235,6 +1232,9 @@ BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConf
 <p>&#10063; OpenSent Stateに遷移する</p>
 <div class="ulist checklist">
 <ul class="checklist">
+<li>
+<p>&#10063; TCPコネクションを作成する</p>
+</li>
 <li>
 <p>&#10063; BGP Open Messageを送信する</p>
 </li>
@@ -1276,11 +1276,22 @@ BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConf
 <div class="sect3">
 <h4 id="_connect_stateに遷移する">Connect Stateに遷移する</h4>
 <div class="paragraph">
-<p>つぎに下記に取り組みます。
-* [ ] Connect Stateに遷移する</p>
+<p>つぎに下記に取り組みます。</p>
+</div>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10063; Connect Stateに遷移する</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
 <p>まずテストを書きましょう。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code><span></span>+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/connect-state-made/mrbgpdv2first/src/bgp/peer.rs</code></pre>
+</div>
 </div>
 </div>
 <div class="sect3">
@@ -1324,7 +1335,7 @@ BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConf
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-08 05:25:25 UTC
+Last updated 2021-05-08 06:13:14 UTC
 </div>
 </div>
 </body>
