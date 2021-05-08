@@ -995,7 +995,42 @@ BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConf
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-bash" data-lang="bash">cargo new &lt;プロジェクトの名前&gt;</code></pre>
+<pre class="highlight"><code class="language-html" data-lang="html">cargo new &lt;プロジェクトの名前&gt;</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>いくつかのファイルを追加し、以下のようなディレクトリ構造にします。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-html" data-lang="html">mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ tree
+.
+├── Cargo.lock
+├── Cargo.toml
+├── src
+│   ├── bgp
+│   │   ├── mod.rs
+│   │   └── peer.rs
+│   ├── lib.rs
+│   └── main.rs</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>自動生成されない内容を記載します。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-rust" data-lang="rust">pub mod bgp;</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-rust" data-lang="rust">pub mod peer;</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-rust" data-lang="rust">// 空ファイルです</code></pre>
 </div>
 </div>
 <div class="ulist checklist">
@@ -1190,7 +1225,7 @@ mod tests {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-08 06:28:41 UTC
+Last updated 2021-05-08 06:41:35 UTC
 </div>
 </div>
 </body>

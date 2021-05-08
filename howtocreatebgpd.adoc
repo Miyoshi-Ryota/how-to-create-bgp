@@ -388,9 +388,41 @@ OpenConfirm --> Established : KeepAliveMsg event
 ==== プロジェクトの作成
 
 Rustは以下のコマンドで新しいプロジェクトを作成することが出来ます。
-[source,bash]
+[source,html]
 ----
 cargo new <プロジェクトの名前>
+----
+
+いくつかのファイルを追加し、以下のようなディレクトリ構造にします。
+
+[source,html]
+----
+mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ tree
+.
+├── Cargo.lock
+├── Cargo.toml
+├── src
+│   ├── bgp
+│   │   ├── mod.rs
+│   │   └── peer.rs
+│   ├── lib.rs
+│   └── main.rs
+----
+
+自動生成されない内容を記載します。
+[source,rust,linenums,title"./lib.rs]
+----
+pub mod bgp;
+----
+
+[source,rust,linenums,title"./bgp/mod.rs]
+----
+pub mod peer;
+----
+
+[source,rust,linenums,title"./bgp/peer.rs]
+----
+// 空ファイルです
 ----
 
 [title=タスクリスト]
