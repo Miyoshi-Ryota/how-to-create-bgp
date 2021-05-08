@@ -1112,75 +1112,7 @@ BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConf
 <div class="listingblock">
 <div class="title">src/bgp/peer.rs</div>
 <div class="content">
-<pre class="highlight"><code class="language-rust" data-lang="rust">use super::event_queue::EventQueue;
-use crate::bgp::config::Config;
-
-struct Peer {
-    config: Config,
-    event_queue: EventQueue,
-    now_state: State,
-}
-
-impl Peer {
-    pub fn new(config: Config) -&gt; Self {
-        let event_queue = EventQueue::new();
-        let now_state = State::Idle;
-        Self {
-            config,
-            event_queue,
-            now_state,
-        }
-    }
-
-    pub fn start(&amp;mut self) {
-        self.event_queue.enqueue(Event::ManualStart);
-    }
-
-    pub fn next_step(&amp;mut self) {
-        if let Some(event) = self.event_queue.dequeue() {
-            self.handle_event(event);
-        }
-    }
-
-    fn handle_event(&amp;mut self, event: Event) {
-        match self.now_state {
-            State::Idle =&gt; match event {
-                Event::ManualStart =&gt; {
-                    self.now_state = State::Connect;
-                }
-                _ =&gt; {}
-            },
-            _ =&gt; (),
-        }
-    }
-}
-
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-enum State {
-    Idle,
-    Connect,
-    OpenSent,
-}
-
-#[derive(PartialEq, Eq, Clone, Copy)]
-pub enum Event {
-    ManualStart,
-    TcpCrAcked,
-    TcpConnectionConfirmed,
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn peer_can_transition_to_connect_start() {
-        let config: Config = "64512 127.0.0.1 64513 127.0.0.2 active".parse().unwrap();
-        let mut bgp_peer = Peer::new(config);
-        bgp_peer.start();
-        bgp_peer.next_step();
-        assert_eq!(bgp_peer.now_state, State::Connect);
-    }
-}</code></pre>
+<pre class="highlight"><code class="language-rust" data-lang="rust">#[cfg(test)]</code></pre>
 </div>
 </div>
 </div>
@@ -1225,7 +1157,7 @@ mod tests {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-08 06:41:35 UTC
+Last updated 2021-05-08 06:46:57 UTC
 </div>
 </div>
 </body>
