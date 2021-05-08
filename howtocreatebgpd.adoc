@@ -375,11 +375,11 @@ OpenConfirm --> Established : KeepAliveMsg event
     - [ ] ManualStart Eventを発生させる
 * [ ] OpenSent Stateに遷移する
     - [ ] TCPコネクションを作成する
-    - [ ] BGP Open Messageを送信する
 * [ ] OpenConfirm Stateに遷移する
+    - [ ] BGP Open Messageを送信する
     - [ ] BGP Open Messageを受信する
+* [ ] Established Stateに遷移する
     - [ ] BGP Keepalive Messageを送信する
-* Established Stateに遷移する
     - [ ] BGP Keepalive Messageを受信する
 * [ ] main関数を作成する
 * [ ] テストする
@@ -399,11 +399,11 @@ cargo new <プロジェクトの名前>
     - [ ] ManualStart Eventを発生させる
 * [ ] OpenSent Stateに遷移する
     - [ ] TCPコネクションを作成する
-    - [ ] BGP Open Messageを送信する
 * [ ] OpenConfirm Stateに遷移する
+    - [ ] BGP Open Messageを送信する
     - [ ] BGP Open Messageを受信する
+* [ ] Established Stateに遷移する
     - [ ] BGP Keepalive Messageを送信する
-* Established Stateに遷移する
     - [ ] BGP Keepalive Messageを受信する
 * [ ] main関数を作成する
 * [ ] テストする
@@ -517,17 +517,31 @@ test bgp::peer::tests::peer_can_transition_to_connect_start ... ok
     - [x] ManualStart Eventを発生させる
 * [ ] OpenSent Stateに遷移する
     - [ ] TCPコネクションを作成する
-    - [ ] BGP Open Messageを送信する
 * [ ] OpenConfirm Stateに遷移する
+    - [ ] BGP Open Messageを送信する
     - [ ] BGP Open Messageを受信する
+* [ ] Established Stateに遷移する
     - [ ] BGP Keepalive Messageを送信する
-* Established Stateに遷移する
     - [ ] BGP Keepalive Messageを受信する
 * [ ] main関数を作成する
 * [ ] テストする
 
 
 ==== Connect Stateに遷移する
+次に下記に取り組みます。
+
+* [ ] OpenSent Stateに遷移する
+    - [ ] TCPコネクションを作成する
+
+まずはテストを書きます。
+
+[source,rust,linenums,title="src/bgp/peer.rs"]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f133fc092a43103322ceadb4b40d9d9f28952548/mrbgpdv2first/src/bgp/peer.rs[90..91,93..94,105..128]
+----
+
+このテストが通れば、上記のタスクは完了したと言えます。
+
 === 1つのピアでUpdate Messageの交換やUpdate Messageの内容に従ってRouting Tableへの書き込みを可能にするところまでの実装
 
 === main関数の実装
