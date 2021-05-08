@@ -13,7 +13,7 @@ Miyoshi Ryota (@llp_qlv / mr-csce (miyoshi))
 <iframe src="https://ghbtns.com/github-btn.html?user=Miyoshi-Ryota&repo=how-to-create-bgp
 &type=star&count=true&size=large" frameborder="0" scrolling="0" width="170" height="30" title="GitHub"></iframe>
 本書で作成したBGPデーモンのリポジトリ：
-<iframe src="https://ghbtns.com/github-btn.html?user=Miyoshi-Ryota&repo=mrbgpd
+<iframe src="https://ghbtns.com/github-btn.html?user=Miyoshi-Ryota&repo=mrbgpdv2
 &type=star&count=true&size=large" frameborder="0" scrolling="0" width="170" height="30" title="GitHub"></iframe>
 ++++
 
@@ -28,6 +28,17 @@ Miyoshi Ryota (@llp_qlv / mr-csce (miyoshi))
 以下の経験があるとよりわかりやすいかもしれません。
 
 . BGPの運用経験
+
+=== 執筆環境
+筆者は以下の環境で作成・動作確認しています。
+
+* Ubuntu 20.04 LTS / Pop!_OS 20.04 LTS
+* cargo 1.53.0-nightly (f3e13226d 2021-04-30)
+* rustc 1.54.0-nightly (676ee1472 2021-05-06)
+
+おそらくほとんど全てのLinux Distribution、MacOSでも動作するものと考えていますが、確認・テストはしていません。
+RustのVersionについてもどうようにテストしていませんが、
+1.53以降であれば動作すると考えています。
 
 == BGPの実装に必要な知識の学習
 === BGPとは
@@ -299,7 +310,12 @@ BGPはどのようなイベント駆動ステートマシンとして表すの�
 3. 複数のピアを扱うことが可能
 4. 細かい完成度を増加
 
-=== 1つのピアがEstablishedに遷移するところまでの実装
+本章のコードは GitHubの https://github.com/Miyoshi-Ryota/mrbgpdv2[本書のリポジトリ]にすべて公開しています。
+本書中にすべてのコードを乗せるつもりですが、断片のコードではなくすべてのコードを一気に閲覧したい方はリポジトリを参照してください。
+また本章の第一段階「<<first_rev>>」のコードは同リポジトリの https://github.com/Miyoshi-Ryota/mrbgpdv2/tree/main/mrbgpdv2first[同リポジトリのmrbgpdv2first/] に存在します。
+
+
+=== 1つのピアがEstablishedに遷移するところまでの実装 [[first_rev]]
 まずは1つのピアがEstablishedに至るまでの正常系のみのイベント駆動ステートマシンを実装します。
 
 RFCの方針の通り、1つのBGPピアを1つのイベント駆動ステートマシンとして表します。
@@ -350,6 +366,56 @@ OpenConfirm --> Established : KeepAliveMsg event
 @enduml
 ----
 
+==== 作業の明確化
+ここまででなんとなく作るものが見えてきたでしょうか。本章では、<<first_rev>>をToDoレベルに明確化します。
+
+[title=タスクリスト]
+* [ ] プロジェクトを作成する
+* [ ] Connect Stateに遷移する
+    - [ ] ManualStart Eventを発生させる
+    - [ ] TCPコネクションを作成する
+* [ ] OpenSent Stateに遷移する
+    - [ ] BGP Open Messageを送信する
+* [ ] OpenConfirm Stateに遷移する
+    - [ ] BGP Open Messageを受信する
+    - [ ] BGP Keepalive Messageを送信する
+* Established Stateに遷移する
+    - [ ] BGP Keepalive Messageを受信する
+* [ ] main関数を作成する
+* [ ] テストする
+
+
+==== プロジェクトの作成
+
+Rustは以下のコマンドで新しいプロジェクトを作成することが出来ます。
+[source,bash]
+----
+cargo new <プロジェクトの名前>
+----
+
+[title=タスクリスト]
+* [x] プロジェクトを作成する
+* [ ] Connect Stateに遷移する
+    - [ ] ManualStart Eventを発生させる
+    - [ ] TCPコネクションを作成する
+* [ ] OpenSent Stateに遷移する
+    - [ ] BGP Open Messageを送信する
+* [ ] OpenConfirm Stateに遷移する
+    - [ ] BGP Open Messageを受信する
+    - [ ] BGP Keepalive Messageを送信する
+* Established Stateに遷移する
+    - [ ] BGP Keepalive Messageを受信する
+* [ ] main関数を作成する
+* [ ] テストする
+
+
+==== Connect Stateに遷移する
+つぎに下記に取り組みます。
+* [ ] Connect Stateに遷移する
+
+まずテストを書きましょう。
+
+==== Connect Stateに遷移する
 === 1つのピアでUpdate Messageの交換やUpdate Messageの内容に従ってRouting Tableへの書き込みを可能にするところまでの実装
 
 === main関数の実装
