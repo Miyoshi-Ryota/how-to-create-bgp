@@ -1,5 +1,7 @@
 :toc:
 :source-highlighter: pygments
+:prewrap!:
+
 
 = 作って学ぶルーティングプロトコル〜RustでBGPを実装〜
 Miyoshi Ryota (@llp_qlv / mr-csce (miyoshi))
