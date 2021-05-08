@@ -521,7 +521,11 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
-<li><a href="#_はじめに">はじめに</a></li>
+<li><a href="#_はじめに">はじめに</a>
+<ul class="sectlevel2">
+<li><a href="#_執筆環境">執筆環境</a></li>
+</ul>
+</li>
 <li><a href="#_bgpの実装に必要な知識の学習">BGPの実装に必要な知識の学習</a>
 <ul class="sectlevel2">
 <li><a href="#_bgpとは">BGPとは</a></li>
@@ -533,7 +537,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <li><a href="#_1つのピアを実装するまで">1つのピアを実装するまで</a>
 <ul class="sectlevel2">
 <li><a href="#_bgpはどんなイベント駆動ステートマシンなのか">BGPはどんなイベント駆動ステートマシンなのか</a></li>
-<li><a href="#_1つのピアがestablishedに遷移するところまでの実装">1つのピアがEstablishedに遷移するところまでの実装</a></li>
+<li><a href="#first_rev">1つのピアがEstablishedに遷移するところまでの実装</a></li>
 <li><a href="#_1つのピアでupdate_messageの交換やupdate_messageの内容に従ってrouting_tableへの書き込みを可能にするところまでの実装">1つのピアでUpdate Messageの交換やUpdate Messageの内容に従ってRouting Tableへの書き込みを可能にするところまでの実装</a></li>
 <li><a href="#_main関数の実装">main関数の実装</a></li>
 <li><a href="#_本章で作るものの全体像">本章で作るものの全体像</a></li>
@@ -562,7 +566,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <iframe src="https://ghbtns.com/github-btn.html?user=Miyoshi-Ryota&repo=how-to-create-bgp
 &type=star&count=true&size=large" frameborder="0" scrolling="0" width="170" height="30" title="GitHub"></iframe>
 本書で作成したBGPデーモンのリポジトリ：
-<iframe src="https://ghbtns.com/github-btn.html?user=Miyoshi-Ryota&repo=mrbgpd
+<iframe src="https://ghbtns.com/github-btn.html?user=Miyoshi-Ryota&repo=mrbgpdv2
 &type=star&count=true&size=large" frameborder="0" scrolling="0" width="170" height="30" title="GitHub"></iframe>
 <div class="paragraph">
 <p>本書ではルーティングプロトコルの1つであるBGP（特に今回はEBGP4）をRustで実装する本です。
@@ -593,6 +597,30 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <p>BGPの運用経験</p>
 </li>
 </ol>
+</div>
+<div class="sect2">
+<h3 id="_執筆環境">執筆環境</h3>
+<div class="paragraph">
+<p>筆者は以下の環境で作成・動作確認しています。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Ubuntu 20.04 LTS / Pop!_OS 20.04 LTS</p>
+</li>
+<li>
+<p>cargo 1.53.0-nightly (f3e13226d 2021-04-30)</p>
+</li>
+<li>
+<p>rustc 1.54.0-nightly (676ee1472 2021-05-06)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>おそらくほとんど全てのLinux Distribution、MacOSでも動作するものと考えていますが、確認・テストはしていません。
+RustのVersionについてもどうようにテストしていませんが、
+1.53以降であれば動作すると考えています。</p>
+</div>
 </div>
 </div>
 </div>
@@ -1047,9 +1075,14 @@ BGPのステートマシンも前述の<a href="#example_of_state_machine_impl">
 </li>
 </ol>
 </div>
+<div class="paragraph">
+<p>本章のコードは GitHubの <a href="https://github.com/Miyoshi-Ryota/mrbgpdv2">本書のリポジトリ</a>にすべて公開しています。
+本書中にすべてのコードを乗せるつもりですが、断片のコードではなくすべてのコードを一気に閲覧したい方はリポジトリを参照してください。
+また本章の第一段階「<a href="#first_rev">1つのピアがEstablishedに遷移するところまでの実装</a>」のコードは同リポジトリの <a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/tree/main/mrbgpdv2first">同リポジトリのmrbgpdv2first/</a> に存在します。</p>
+</div>
 </div>
 <div class="sect2">
-<h3 id="_1つのピアがestablishedに遷移するところまでの実装">1つのピアがEstablishedに遷移するところまでの実装</h3>
+<h3 id="first_rev">1つのピアがEstablishedに遷移するところまでの実装</h3>
 <div class="paragraph">
 <p>まずは1つのピアがEstablishedに至るまでの正常系のみのイベント駆動ステートマシンを実装します。</p>
 </div>
@@ -1103,6 +1136,157 @@ BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConf
 </div>
 <div class="title">Figure 3. 第一段階で実装するステートマシン</div>
 </div>
+<div class="sect3">
+<h4 id="_作業の明確化">作業の明確化</h4>
+<div class="paragraph">
+<p>ここまででなんとなく作るものが見えてきたでしょうか。本章では、<a href="#first_rev">1つのピアがEstablishedに遷移するところまでの実装</a>をToDoレベルに明確化します。</p>
+</div>
+<div class="ulist checklist">
+<div class="title">タスクリスト</div>
+<ul class="checklist">
+<li>
+<p>&#10063; プロジェクトを作成する</p>
+</li>
+<li>
+<p>&#10063; Connect Stateに遷移する</p>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10063; ManualStart Eventを発生させる</p>
+</li>
+<li>
+<p>&#10063; TCPコネクションを作成する</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>&#10063; OpenSent Stateに遷移する</p>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10063; BGP Open Messageを送信する</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>&#10063; OpenConfirm Stateに遷移する</p>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10063; BGP Open Messageを受信する</p>
+</li>
+<li>
+<p>&#10063; BGP Keepalive Messageを送信する</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Established Stateに遷移する</p>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10063; BGP Keepalive Messageを受信する</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>&#10063; main関数を作成する</p>
+</li>
+<li>
+<p>&#10063; テストする</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_プロジェクトの作成">プロジェクトの作成</h4>
+<div class="paragraph">
+<p>Rustは以下のコマンドで新しいプロジェクトを作成することが出来ます。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="pygments highlight"><code data-lang="bash"><span></span>cargo new &lt;プロジェクトの名前&gt;</code></pre>
+</div>
+</div>
+<div class="ulist checklist">
+<div class="title">タスクリスト</div>
+<ul class="checklist">
+<li>
+<p>&#10003; プロジェクトを作成する</p>
+</li>
+<li>
+<p>&#10063; Connect Stateに遷移する</p>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10063; ManualStart Eventを発生させる</p>
+</li>
+<li>
+<p>&#10063; TCPコネクションを作成する</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>&#10063; OpenSent Stateに遷移する</p>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10063; BGP Open Messageを送信する</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>&#10063; OpenConfirm Stateに遷移する</p>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10063; BGP Open Messageを受信する</p>
+</li>
+<li>
+<p>&#10063; BGP Keepalive Messageを送信する</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Established Stateに遷移する</p>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10063; BGP Keepalive Messageを受信する</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>&#10063; main関数を作成する</p>
+</li>
+<li>
+<p>&#10063; テストする</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_connect_stateに遷移する">Connect Stateに遷移する</h4>
+<div class="paragraph">
+<p>つぎに下記に取り組みます。
+* [ ] Connect Stateに遷移する</p>
+</div>
+<div class="paragraph">
+<p>まずテストを書きましょう。</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_connect_stateに遷移する_2">Connect Stateに遷移する</h4>
+
+</div>
 </div>
 <div class="sect2">
 <h3 id="_1つのピアでupdate_messageの交換やupdate_messageの内容に従ってrouting_tableへの書き込みを可能にするところまでの実装">1つのピアでUpdate Messageの交換やUpdate Messageの内容に従ってRouting Tableへの書き込みを可能にするところまでの実装</h3>
@@ -1140,7 +1324,7 @@ BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConf
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-07 11:05:11 UTC
+Last updated 2021-05-08 05:25:25 UTC
 </div>
 </div>
 </body>
