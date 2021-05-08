@@ -732,7 +732,7 @@ BGPについて詳しくない方は、どちらかを読み、本章以降に�
 <div id="example_of_state_machine_impl" class="listingblock">
 <div class="title">イベント駆動ステートマシンの例（テレビ）</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">  1</span>
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">  1</span>
 <span class="normal">  2</span>
 <span class="normal">  3</span>
 <span class="normal">  4</span>
@@ -984,7 +984,7 @@ TVの現在の状態（State）はTVのインスタンスに保存されてい�
 <div id="log_of_sample_state_machine" class="listingblock">
 <div class="title">実行時のログ</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="html"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<pre class="pygments highlight nowrap"><code data-lang="html"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1209,7 +1209,7 @@ BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConf
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code><span></span>cargo new &lt;プロジェクトの名前&gt;</code></pre>
+<pre class="pygments highlight nowrap"><code><span></span>cargo new &lt;プロジェクトの名前&gt;</code></pre>
 </div>
 </div>
 <div class="ulist checklist">
@@ -1287,12 +1287,12 @@ BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConf
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>./src/bgp/peer.rsを追加するとディレクトリ構造は下記のようになります。</pre>
+<pre class="nowrap">./src/bgp/peer.rsを追加するとディレクトリ構造は下記のようになります。</pre>
 </div>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="pygments highlight"><code><span></span>mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ tree
+<pre class="pygments highlight nowrap"><code><span></span>mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ tree
 .
 ├── Cargo.lock
 ├── Cargo.toml
@@ -1307,21 +1307,21 @@ BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConf
 <div class="listingblock">
 <div class="title">"./lib.rs</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><pre><span></span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">mod</span> <span class="tok-nn">bgp</span><span class="tok-p">;</span><span class="tok-w"></span>
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><pre><span></span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">mod</span> <span class="tok-nn">bgp</span><span class="tok-p">;</span><span class="tok-w"></span>
 </pre></td></tr></table></code></pre>
 </div>
 </div>
 <div class="listingblock">
 <div class="title">"./bgp/mod.rs</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><pre><span></span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">mod</span> <span class="tok-nn">peer</span><span class="tok-p">;</span><span class="tok-w"></span>
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><pre><span></span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">mod</span> <span class="tok-nn">peer</span><span class="tok-p">;</span><span class="tok-w"></span>
 </pre></td></tr></table></code></pre>
 </div>
 </div>
 <div class="listingblock">
 <div class="title">"./bgp/peer.rs</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><pre><span></span><span class="tok-c1">// 空ファイルです</span>
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span></pre></div></td><td class="code"><pre><span></span><span class="tok-c1">// 空ファイルです</span>
 </pre></td></tr></table></code></pre>
 </div>
 </div>
@@ -1332,7 +1332,7 @@ Connectに遷移するまでの過程は<a href="#bgp_first_test">次</a>のよ�
 <div id="bgp_first_test" class="listingblock">
 <div class="title">src/bgp/peer.rs</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1370,7 +1370,7 @@ Connectに遷移するまでの過程は<a href="#bgp_first_test">次</a>のよ�
 <div class="listingblock">
 <div class="title">ディレクトリ構造</div>
 <div class="content">
-<pre class="pygments highlight"><code><span></span>├── src
+<pre class="pygments highlight nowrap"><code><span></span>├── src
 │   ├── bgp
 │   │   ├── config.rs
 │   │   ├── event_queue.rs
@@ -1383,7 +1383,7 @@ Connectに遷移するまでの過程は<a href="#bgp_first_test">次</a>のよ�
 <div class="listingblock">
 <div class="title">src/bgp/mod.rs</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
@@ -1398,7 +1398,7 @@ Connectに遷移するまでの過程は<a href="#bgp_first_test">次</a>のよ�
 <div class="listingblock">
 <div class="title">src/bgp/peer.rs</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1541,7 +1541,7 @@ Connectに遷移するまでの過程は<a href="#bgp_first_test">次</a>のよ�
 <div class="listingblock">
 <div class="title">src/bgp/event_queue.rs</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1582,7 +1582,7 @@ Connectに遷移するまでの過程は<a href="#bgp_first_test">次</a>のよ�
 <div class="listingblock">
 <div class="title">src/bgp/config.rs</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1705,7 +1705,7 @@ Connectに遷移するまでの過程は<a href="#bgp_first_test">次</a>のよ�
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ cargo test
+<pre class="nowrap">mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ cargo test
    Compiling mrbgpdv2first v0.1.0 (/home/mrcsce/programming/rustProjects/mrbgpdv2/mrbgpdv2first)
     Finished test [unoptimized + debuginfo] target(s) in 0.48s
      Running unittests (target/debug/deps/mrbgpdv2first-773462fadd3e9533)
@@ -1803,7 +1803,7 @@ test bgp::peer::tests::peer_can_transition_to_connect_start ... ok</pre>
 <div class="listingblock">
 <div class="title">src/bgp/peer.rs</div>
 <div class="content">
-<pre class="pygments highlight"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
 <span class="normal"> 2</span>
 <span class="normal"> 3</span>
 <span class="normal"> 4</span>
@@ -1902,7 +1902,7 @@ test bgp::peer::tests::peer_can_transition_to_connect_start ... ok</pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-08 13:01:11 UTC
+Last updated 2021-05-08 13:54:23 UTC
 </div>
 </div>
 </body>
