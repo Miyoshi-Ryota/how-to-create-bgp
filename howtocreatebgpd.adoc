@@ -551,6 +551,15 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f133fc092a4310
 <<diff_of_before>>、
 https://github.com/Miyoshi-Ryota/mrbgpdv2/tree/f133fc092a43103322ceadb4b40d9d9f28952548/mrbgpdv2first[テストが通る全体のコード]
 
+[source,rust,title="github上の差分"]
+----
+include::https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92..f133fc092a43103322ceadb4b40d9d9f28952548?diff=split
+----
+
+++++
+<iframe src="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92..f133fc092a43103322ceadb4b40d9d9f28952548?diff=split" frameborder="0" title="GitHub"></iframe>
+++++
+
 [[diff_of_before]]
 [source,rust,linenums,title="前回のソースコードとの差分"]
 ----
