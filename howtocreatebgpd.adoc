@@ -8,6 +8,8 @@ Miyoshi Ryota (@llp_qlv / mr-csce (miyoshi))
 
 == はじめに
 現在執筆中です。
+なお本書の一部はChrome / Firefoxでしか動作しません。
+Safari / IE / Edgeでは動作しません。
 
 次の本書のGitHubリポジトリや、本書で作成したBGPデーモンのリポジトリにStarをいただけると嬉しいです。
 ++++
@@ -551,16 +553,9 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f133fc092a4310
 <<diff_of_before>>、
 https://github.com/Miyoshi-Ryota/mrbgpdv2/tree/f133fc092a43103322ceadb4b40d9d9f28952548/mrbgpdv2first[テストが通る全体のコード]
 
-[source,rust,title="github上の差分"]
-----
-include::https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92...f133fc092a43103322ceadb4b40d9d9f28952548?diff=split
-----
-
-https://api.github.com/repos/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92...f133fc092a43103322ceadb4b40d9d9f28952548
-
 ++++
  <script type="module" src="https://unpkg.com/x-frame-bypass"></script>
-<iframe is="x-frame-bypass" src="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92...f133fc092a43103322ceadb4b40d9d9f28952548?diff=split" frameborder="0" title="GitHub"></iframe>
+<iframe is="x-frame-bypass" src="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92...f133fc092a43103322ceadb4b40d9d9f28952548?diff=split" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:200px;width:100%;border:none;overflow:hidden;" frameborder="0" title="GitHub"></iframe>
 ++++
 
 [[diff_of_before]]
