@@ -620,9 +620,7 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$
 * [ ] テストする
 
 
-現段階の全体のコードはこちらです。
-
-https://github.com/Miyoshi-Ryota/mrbgpdv2/tree/f133fc092a43103322ceadb4b40d9d9f28952548/mrbgpdv2first[テストが通る全体のコード]
+現段階の全体のコードを記載します。GitHub上で閲覧したい方は、 https://github.com/Miyoshi-Ryota/mrbgpdv2/tree/f133fc092a43103322ceadb4b40d9d9f28952548/mrbgpdv2first[GitHub-現段階の全体のコード]を参照してください。
 
 [source,rust,linenums,title="src/bgp/mod.rs"]
 ----
