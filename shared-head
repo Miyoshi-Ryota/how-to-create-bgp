@@ -1,0 +1,5 @@
+<style>
+#header, #content, #footer, #footnotes {
+  max-width: none;
+}
+</style>
