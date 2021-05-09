@@ -558,6 +558,11 @@ https://github.com/Miyoshi-Ryota/mrbgpdv2/tree/f133fc092a43103322ceadb4b40d9d9f2
 <iframe is="x-frame-bypass" src="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92...f133fc092a43103322ceadb4b40d9d9f28952548?diff=split" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:200px;width:100%;border:none;overflow:hidden;" frameborder="0" title="GitHub"></iframe>
 ++++
 
+++++
+ <script type="module" src="https://unpkg.com/x-frame-bypass"></script>
+<iframe is="x-frame-bypass" src="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92...f133fc092a43103322ceadb4b40d9d9f28952548" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:200px;width:100%;border:none;overflow:hidden;" frameborder="0" title="GitHub"></iframe>
+++++
+
 [[diff_of_before]]
 [source,rust,linenums,title="前回のソースコードとの差分"]
 ----
