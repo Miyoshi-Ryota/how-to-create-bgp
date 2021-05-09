@@ -2104,12 +2104,14 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>テストを走らせてみましょう。</p>
+<p>テストを走らせてみましょう。
+下記が結果です。無事にテストが通っていることが確認できました。</p>
 </div>
 <div class="listingblock">
 <div class="title">テスト結果</div>
 <div class="content">
-<pre class="pygments highlight nowrap"><code><span></span>    Finished test [unoptimized + debuginfo] target(s) in 0.00s
+<pre class="pygments highlight nowrap"><code><span></span>mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ cargo test
+    Finished test [unoptimized + debuginfo] target(s) in 0.00s
      Running unittests (target/debug/deps/mrbgpdv2first-773462fadd3e9533)
 
 running 2 tests
@@ -2132,6 +2134,68 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 
 mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>これで、またタスクが一つ完了しました。</p>
+</div>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10003; プロジェクトを作成する</p>
+</li>
+<li>
+<p>&#10003; Connect Stateに遷移する</p>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10003; ManualStart Eventを発生させる</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>&#10003; OpenSent Stateに遷移する</p>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10003; TCPコネクションを作成する</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>&#10063; OpenConfirm Stateに遷移する</p>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10063; BGP Open Messageを送信する</p>
+</li>
+<li>
+<p>&#10063; BGP Open Messageを受信する</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>&#10063; Established Stateに遷移する</p>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10063; BGP Keepalive Messageを送信する</p>
+</li>
+<li>
+<p>&#10063; BGP Keepalive Messageを受信する</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>&#10063; main関数を作成する</p>
+</li>
+<li>
+<p>&#10063; テストする</p>
+</li>
+</ul>
 </div>
 </div>
 </div>
@@ -2171,7 +2235,7 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-09 10:51:11 UTC
+Last updated 2021-05-09 10:53:27 UTC
 </div>
 </div>
 </body>
