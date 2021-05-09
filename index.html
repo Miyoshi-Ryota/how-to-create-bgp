@@ -618,8 +618,8 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 </div>
 <div class="paragraph">
 <p>おそらくほとんど全てのLinux Distribution、MacOSでも動作するものと考えていますが、確認・テストはしていません。
-RustのVersionについてもどうようにテストしていませんが、
-1.53以降であれば動作すると考えています。</p>
+RustのVersionについても同様にテストしていませんが、
+ある程度新しければ動作すると考えています。</p>
 </div>
 </div>
 </div>
@@ -1277,9 +1277,21 @@ BGPのイベント駆動ステートマシンの状態もIdle, Connect, OpenConf
 <h4 id="_connect_stateに遷移する">Connect Stateに遷移する</h4>
 <div class="paragraph">
 <p>それでは中身に入っていきましょう。
-下記に取り組みます。
-* [ ] Connect Stateに遷移する
-    - [ ] ManualStart Eventを発生させる</p>
+下記に取り組みます。</p>
+</div>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10063; Connect Stateに遷移する</p>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10063; ManualStart Eventを発生させる</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
 </div>
 <div class="paragraph">
 <p>BGPは1つのピアが1つのイベント駆動ステートマシンとして表せます。
@@ -2235,7 +2247,7 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-09 10:53:27 UTC
+Last updated 2021-05-09 21:57:08 UTC
 </div>
 </div>
 </body>
