@@ -505,6 +505,7 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/4028dd5957849b
 
 
 それではテストを実行し、OKになることを確認しましょう。
+[source]
 ----
 mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ cargo test
    Compiling mrbgpdv2first v0.1.0 (/home/mrcsce/programming/rustProjects/mrbgpdv2/mrbgpdv2first)
@@ -548,23 +549,24 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f133fc092a4310
 ----
 
 このテストが通れば、上記のタスクは完了したと言えます。
-以下のようなコードでテストを通すことが可能です。
-
-<<diff_of_before>>、
-https://github.com/Miyoshi-Ryota/mrbgpdv2/tree/f133fc092a43103322ceadb4b40d9d9f28952548/mrbgpdv2first[テストが通る全体のコード]
+以下のようなコードの更新でテストを通すことが可能です。
 
 ++++
  <script type="module" src="https://unpkg.com/x-frame-bypass"></script>
 <iframe is="x-frame-bypass" src="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92...f133fc092a43103322ceadb4b40d9d9f28952548?diff=split" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:200px;width:100%;border:none;overflow:hidden;" frameborder="0" title="GitHub"></iframe>
 ++++
 
+現段階の全体のコードはこちらです。
+https://github.com/Miyoshi-Ryota/mrbgpdv2/tree/f133fc092a43103322ceadb4b40d9d9f28952548/mrbgpdv2first[テストが通る全体のコード]
+
+
 ++++
  <script type="module" src="https://unpkg.com/x-frame-bypass"></script>
-<iframe is="x-frame-bypass" src="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92...f133fc092a43103322ceadb4b40d9d9f28952548" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:200px;width:100%;border:none;overflow:hidden;" frameborder="0" title="GitHub"></iframe>
+<iframe is="x-frame-bypass" src="https://github.com/Miyoshi-Ryota/mrbgpdv2/tree/f133fc092a43103322ceadb4b40d9d9f28952548/mrbgpdv2first" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:200px;width:100%;border:none;overflow:hidden;" frameborder="0" title="GitHub"></iframe>
 ++++
 
 
-本コードでは76行目〜77行目でバインドしています。
+本コードでは`create_tcp_connection_to_remote_ip`メソッドでバインドしています。
 これはroot権限が必要な操作です。
 root権限でテストを実行可能にする必要があります。
 cargoのコンフィグファイルにrunner = 'sudo -E'と指定することで
