@@ -556,15 +556,6 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f133fc092a4310
 <iframe is="x-frame-bypass" src="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92...f133fc092a43103322ceadb4b40d9d9f28952548?diff=split" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:200px;width:100%;border:none;overflow:hidden;" frameborder="0" title="GitHub"></iframe>
 ++++
 
-現段階の全体のコードはこちらです。
-https://github.com/Miyoshi-Ryota/mrbgpdv2/tree/f133fc092a43103322ceadb4b40d9d9f28952548/mrbgpdv2first[テストが通る全体のコード]
-
-
-++++
- <script type="module" src="https://unpkg.com/x-frame-bypass"></script>
-<iframe is="x-frame-bypass" src="https://github.com/Miyoshi-Ryota/mrbgpdv2/tree/f133fc092a43103322ceadb4b40d9d9f28952548/mrbgpdv2first" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:200px;width:100%;border:none;overflow:hidden;" frameborder="0" title="GitHub"></iframe>
-++++
-
 
 本コードでは`create_tcp_connection_to_remote_ip`メソッドでバインドしています。
 これはroot権限が必要な操作です。
@@ -627,6 +618,33 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$
     - [ ] BGP Keepalive Messageを受信する
 * [ ] main関数を作成する
 * [ ] テストする
+
+
+現段階の全体のコードはこちらです。
+
+https://github.com/Miyoshi-Ryota/mrbgpdv2/tree/f133fc092a43103322ceadb4b40d9d9f28952548/mrbgpdv2first[テストが通る全体のコード]
+
+[source,rust,linenums,title="src/bgp/mod.rs"]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f133fc092a43103322ceadb4b40d9d9f28952548/mrbgpdv2first/src/bgp/mod.rs[]
+----
+
+
+[source,rust,linenums,title="src/bgp/peer.rs"]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f133fc092a43103322ceadb4b40d9d9f28952548/mrbgpdv2first/src/bgp/peer.rs[]
+----
+
+[source,rust,linenums,title="src/bgp/event_queue.rs"]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f133fc092a43103322ceadb4b40d9d9f28952548/mrbgpdv2first/src/bgp/event_queue.rs[]
+----
+
+[source,rust,linenums,title="src/bgp/config.rs"]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f133fc092a43103322ceadb4b40d9d9f28952548/mrbgpdv2first/src/bgp/config.rs[]
+----
+
 
 
 === 1つのピアでUpdate Messageの交換やUpdate Messageの内容に従ってRouting Tableへの書き込みを可能にするところまでの実装
