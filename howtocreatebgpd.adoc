@@ -553,11 +553,14 @@ https://github.com/Miyoshi-Ryota/mrbgpdv2/tree/f133fc092a43103322ceadb4b40d9d9f2
 
 [source,rust,title="github上の差分"]
 ----
-include::https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92..f133fc092a43103322ceadb4b40d9d9f28952548?diff=split
+include::https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92...f133fc092a43103322ceadb4b40d9d9f28952548?diff=split
 ----
 
+https://api.github.com/repos/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92...f133fc092a43103322ceadb4b40d9d9f28952548
+
 ++++
-<iframe src="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92..f133fc092a43103322ceadb4b40d9d9f28952548?diff=split" frameborder="0" title="GitHub"></iframe>
+ <script type="module" src="https://unpkg.com/x-frame-bypass"></script>
+<iframe is="x-frame-bypass" src="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92...f133fc092a43103322ceadb4b40d9d9f28952548?diff=split" frameborder="0" title="GitHub"></iframe>
 ++++
 
 [[diff_of_before]]
