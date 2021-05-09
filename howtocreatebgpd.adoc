@@ -39,8 +39,8 @@ Miyoshi Ryota (@llp_qlv / mr-csce (miyoshi))
 * rustc 1.54.0-nightly (676ee1472 2021-05-06)
 
 おそらくほとんど全てのLinux Distribution、MacOSでも動作するものと考えていますが、確認・テストはしていません。
-RustのVersionについてもどうようにテストしていませんが、
-1.53以降であれば動作すると考えています。
+RustのVersionについても同様にテストしていませんが、
+ある程度新しければ動作すると考えています。
 
 == BGPの実装に必要な知識の学習
 === BGPとは
@@ -414,6 +414,7 @@ cargo new <プロジェクトの名前>
 ==== Connect Stateに遷移する
 それでは中身に入っていきましょう。
 下記に取り組みます。
+
 * [ ] Connect Stateに遷移する
     - [ ] ManualStart Eventを発生させる
 
@@ -421,6 +422,7 @@ BGPは1つのピアが1つのイベント駆動ステートマシンとして表
 ピアに関するソースコードは./src/bgp/peer.rsに書くことにしましょう。
 
  ./src/bgp/peer.rsを追加するとディレクトリ構造は下記のようになります。
+
 [source]
 ----
 mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ tree
