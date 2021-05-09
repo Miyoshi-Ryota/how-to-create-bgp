@@ -677,8 +677,10 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$
 
 
 テストを走らせてみましょう。
+下記が結果です。無事にテストが通っていることが確認できました。
 [source, title=テスト結果]
 ----
+mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ cargo test 
     Finished test [unoptimized + debuginfo] target(s) in 0.00s
      Running unittests (target/debug/deps/mrbgpdv2first-773462fadd3e9533)
 
@@ -702,6 +704,23 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 
 mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ 
 ----
+
+これで、またタスクが一つ完了しました。
+
+* [x] プロジェクトを作成する
+* [x] Connect Stateに遷移する
+    - [x] ManualStart Eventを発生させる
+* [x] OpenSent Stateに遷移する
+    - [x] TCPコネクションを作成する
+* [ ] OpenConfirm Stateに遷移する
+    - [ ] BGP Open Messageを送信する
+    - [ ] BGP Open Messageを受信する
+* [ ] Established Stateに遷移する
+    - [ ] BGP Keepalive Messageを送信する
+    - [ ] BGP Keepalive Messageを受信する
+* [ ] main関数を作成する
+* [ ] テストする
+
 
 === 1つのピアでUpdate Messageの交換やUpdate Messageの内容に従ってRouting Tableへの書き込みを可能にするところまでの実装
 
