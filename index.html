@@ -2085,6 +2085,54 @@ threadを使用して擬似的にリモート側のコンピュータを表し�
 </pre></td></tr></table></code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>本コードでは76行目〜77行目でバインドしています。
+これはroot権限が必要な操作です。
+root権限でテストを実行可能にする必要があります。
+cargoのコンフィグファイルにrunner = 'sudo -E&#8217;と指定することで
+root権限でテストを実行してくれます。</p>
+</div>
+<div class="listingblock">
+<div class="title">~/.cargo/config</div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code><span></span>mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ cat ~/.cargo/config
+
+# nightly-x86_64-unknown-linux-gnu
+[target.x86_64-unknown-linux-gnu]
+runner = &#39;sudo -E&#39;
+mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>テストを走らせてみましょう。</p>
+</div>
+<div class="listingblock">
+<div class="title">テスト結果</div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code><span></span>    Finished test [unoptimized + debuginfo] target(s) in 0.00s
+     Running unittests (target/debug/deps/mrbgpdv2first-773462fadd3e9533)
+
+running 2 tests
+test bgp::peer::tests::peer_can_transition_to_connect_start ... ok
+test bgp::peer::tests::peer_can_transition_to_open_sent_start ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.50s
+
+     Running unittests (target/debug/deps/mrbgpdv2first-eb97df666ba678c7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests mrbgpdv2first
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
+</div>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -2123,7 +2171,7 @@ threadを使用して擬似的にリモート側のコンピュータを表し�
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-09 10:41:22 UTC
+Last updated 2021-05-09 10:51:11 UTC
 </div>
 </div>
 </body>
