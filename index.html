@@ -1719,13 +1719,13 @@ Connectに遷移するまでの過程は<a href="#bgp_first_test">次</a>のよ�
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="nowrap">mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ cargo test
+<pre class="pygments highlight nowrap"><code><span></span>mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ cargo test
    Compiling mrbgpdv2first v0.1.0 (/home/mrcsce/programming/rustProjects/mrbgpdv2/mrbgpdv2first)
     Finished test [unoptimized + debuginfo] target(s) in 0.48s
      Running unittests (target/debug/deps/mrbgpdv2first-773462fadd3e9533)
 
 running 1 tests
-test bgp::peer::tests::peer_can_transition_to_connect_start ... ok</pre>
+test bgp::peer::tests::peer_can_transition_to_connect_start ... ok</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1878,18 +1878,18 @@ threadを使用して擬似的にリモート側のコンピュータを表し�
 </div>
 <div class="paragraph">
 <p>このテストが通れば、上記のタスクは完了したと言えます。
-以下のようなコードでテストを通すことが可能です。</p>
-</div>
-<div class="paragraph">
-<p><a href="#diff_of_before">[diff_of_before]</a>、
-<a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/tree/f133fc092a43103322ceadb4b40d9d9f28952548/mrbgpdv2first">テストが通る全体のコード</a></p>
+以下のようなコードの更新でテストを通すことが可能です。</p>
 </div>
  <script type="module" src="https://unpkg.com/x-frame-bypass"></script>
 <iframe is="x-frame-bypass" src="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92...f133fc092a43103322ceadb4b40d9d9f28952548?diff=split" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:200px;width:100%;border:none;overflow:hidden;" frameborder="0" title="GitHub"></iframe>
- <script type="module" src="https://unpkg.com/x-frame-bypass"></script>
-<iframe is="x-frame-bypass" src="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92...f133fc092a43103322ceadb4b40d9d9f28952548" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:200px;width:100%;border:none;overflow:hidden;" frameborder="0" title="GitHub"></iframe>
 <div class="paragraph">
-<p>本コードでは76行目〜77行目でバインドしています。
+<p>現段階の全体のコードはこちらです。
+<a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/tree/f133fc092a43103322ceadb4b40d9d9f28952548/mrbgpdv2first">テストが通る全体のコード</a></p>
+</div>
+ <script type="module" src="https://unpkg.com/x-frame-bypass"></script>
+<iframe is="x-frame-bypass" src="https://github.com/Miyoshi-Ryota/mrbgpdv2/tree/f133fc092a43103322ceadb4b40d9d9f28952548/mrbgpdv2first" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:200px;width:100%;border:none;overflow:hidden;" frameborder="0" title="GitHub"></iframe>
+<div class="paragraph">
+<p>本コードでは`create_tcp_connection_to_remote_ip`メソッドでバインドしています。
 これはroot権限が必要な操作です。
 root権限でテストを実行可能にする必要があります。
 cargoのコンフィグファイルにrunner = 'sudo -E&#8217;と指定することで
@@ -2038,7 +2038,7 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-09 23:42:10 UTC
+Last updated 2021-05-09 23:47:33 UTC
 </div>
 </div>
 </body>
