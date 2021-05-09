@@ -659,6 +659,50 @@ index a0b8121..523979c 100644
  }
 ----
 
+本コードでは76行目〜77行目でバインドしています。
+これはroot権限が必要な操作です。
+root権限でテストを実行可能にする必要があります。
+cargoのコンフィグファイルにrunner = 'sudo -E'と指定することで
+root権限でテストを実行してくれます。
+
+[source,title=~/.cargo/config]
+----
+mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ cat ~/.cargo/config 
+
+# nightly-x86_64-unknown-linux-gnu
+[target.x86_64-unknown-linux-gnu]
+runner = 'sudo -E'
+mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ 
+----
+
+
+テストを走らせてみましょう。
+[source, title=テスト結果]
+----
+    Finished test [unoptimized + debuginfo] target(s) in 0.00s
+     Running unittests (target/debug/deps/mrbgpdv2first-773462fadd3e9533)
+
+running 2 tests
+test bgp::peer::tests::peer_can_transition_to_connect_start ... ok
+test bgp::peer::tests::peer_can_transition_to_open_sent_start ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.50s
+
+     Running unittests (target/debug/deps/mrbgpdv2first-eb97df666ba678c7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests mrbgpdv2first
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ 
+----
+
 === 1つのピアでUpdate Messageの交換やUpdate Messageの内容に従ってRouting Tableへの書き込みを可能にするところまでの実装
 
 === main関数の実装
