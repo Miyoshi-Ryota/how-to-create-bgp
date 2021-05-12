@@ -1880,6 +1880,22 @@ threadを使用して擬似的にリモート側のコンピュータを表し�
 <p>このテストが通れば、上記のタスクは完了したと言えます。
 以下のようなコードの更新でテストを通すことが可能です。</p>
 </div>
+<div class="ulist">
+<ul>
+<li>
+<p>handle_eventにcreate_tcp_connection_to_remote_ipが増えている。</p>
+</li>
+<li>
+<p>create_tcp_connection_to_remote_ipでリモートとコネクションを張っている。</p>
+</li>
+<li>
+<p>コネクションがはれたらその旨を知らせるイベントをenqueueしている</p>
+</li>
+<li>
+<p>そのイベントをhandle_eventして状態を遷移している</p>
+</li>
+</ul>
+</div>
  <script type="module" src="https://unpkg.com/x-frame-bypass"></script>
 <iframe is="x-frame-bypass" src="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92...f133fc092a43103322ceadb4b40d9d9f28952548" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:200px;width:100%;border:none;overflow:hidden;" frameborder="0" title="GitHub"></iframe>
 <div class="paragraph">
@@ -2461,7 +2477,16 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 </ul>
 </div>
 <div class="paragraph">
-<p>まず、テストを書きます。</p>
+<p>まず、テストを書きます。
+ここからは通信が発生するため、正確に何度.next_step()を呼んだときにお目当ての状態に遷移するのかわかりません。
+そのため、50回以内に想定のステータスに遷移することでテストOKとしています。
+また複数のテストケースで同じソケットアドレスにbindします。複数のテストが同時に動き、同時に複数回同じソケットアドレスにbindすることを防ぐために、テストは1つづつ実行することとします。また、ここからは少しずつ複雑になるためロガーも仕込んでいます。
+そのためテストを走らせるときは次のようなコマンドを使用します。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="nowrap">RUST_LOG=info cargo test -- --nocapture --test-threads=1</pre>
+</div>
 </div>
 <div class="listingblock">
 <div class="title">src/bgp/peer.rs</div>
@@ -2553,8 +2578,57 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>このテストが通れば、上記のタスクは完了したと言えます。
-以下のようなコードの更新でテストを通すことが可能です。</p>
+<p>このテストが通れば、上記のタスクは完了したと言えます。</p>
+</div>
+<div class="paragraph">
+<p>以下のようなコードの更新でテストを通すことが可能です。
+差分をGitHubで閲覧したい方は、 <a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/f133fc092a43103322ceadb4b40d9d9f28952548&#8230;&#8203;87771a19f2f90e16546a4603a235cb9f02b4313d">GitHub上の差分</a>を閲覧してください。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>OpenMessageを送信するところを説明する。</p>
+</li>
+<li>
+<p>Peerのnext_step()にsend_bgp_messageが生えていること</p>
+</li>
+<li>
+<p>OpenMessageはhogeのように書くことが出来ること</p>
+</li>
+<li>
+<p>BGPメッセージはどんな構造になっているのか</p>
+</li>
+<li>
+<p>OpenMessageはどんな構造をしているのか</p>
+</li>
+<li>
+<p>src/bgp/message.rsの内容</p>
+</li>
+<li>
+<p>OpenMessageを受信するところを説明する。</p>
+</li>
+<li>
+<p>non_blocking modeに変更していること</p>
+</li>
+<li>
+<p>next_stepにrecive_one_message()を入れていること</p>
+</li>
+<li>
+<p>handle_bgp_messageでハンドルしてイベントを注入していること</p>
+</li>
+<li>
+<p>recieve_one_messageの説明</p>
+</li>
+<li>
+<p>transfer_data_tcp-connection_to_self_bufferは、該当のコネクションで受信したデータをすべてself.bufferに移している</p>
+</li>
+<li>
+<p>retrive_one_message_from_bufferはself.bufferから1つのBGPメッセージのバイト列を取得している。</p>
+</li>
+<li>
+<p>そのバイト列をモデルに変換している</p>
+</li>
+</ul>
 </div>
 <div class="listingblock">
 <div class="title">Cargo.toml</div>
@@ -3534,8 +3608,6 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 </pre></td></tr></table></code></pre>
 </div>
 </div>
- <script type="module" src="https://unpkg.com/x-frame-bypass"></script>
-<iframe is="x-frame-bypass" src="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/f133fc092a43103322ceadb4b40d9d9f28952548...87771a19f2f90e16546a4603a235cb9f02b4313d" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:200px;width:100%;border:none;overflow:hidden;" frameborder="0" title="GitHub"></iframe>
 <div class="paragraph">
 <p>テストを走らせてみましょう。
 下記が結果です。無事にテストが通っていることが確認できました。</p>
@@ -4713,7 +4785,7 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-12 22:48:09 UTC
+Last updated 2021-05-12 23:24:47 UTC
 </div>
 </div>
 </body>
