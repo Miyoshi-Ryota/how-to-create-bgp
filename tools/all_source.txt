@@ -1,0 +1,2 @@
+NOWCOMMITHASH=`git rev-parse HEAD` git ls-files | sed -e "s/\(^.*$\)/[source,rust,linenums,title=\1]\n----\ninclude::https:\/\/raw.githubusercontent.com\/Miyoshi-Ryota\/mrbgpdv2\/$NOWCOMMITHASH\/mrbgpdv2first\/\1[]\n----\n/g"
+
