@@ -661,6 +661,534 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/87771a19f2f90e
 このテストが通れば、上記のタスクは完了したと言えます。
 以下のようなコードの更新でテストを通すことが可能です。
 
+[source,rust,linenums,title="sabun"]
+----
+diff --git a/mrbgpdv2first/Cargo.toml b/mrbgpdv2first/Cargo.toml
+index 4e302b5..3f08cee 100644
+--- a/mrbgpdv2first/Cargo.toml
++++ b/mrbgpdv2first/Cargo.toml
+@@ -6,3 +6,5 @@ edition = "2018"
+ # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+ 
+ [dependencies]
++log = "0.4.0"
++ env_logger = "0.8.3"
+diff --git a/mrbgpdv2first/src/bgp/config.rs b/mrbgpdv2first/src/bgp/config.rs
+index 979c19c..33e4121 100644
+--- a/mrbgpdv2first/src/bgp/config.rs
++++ b/mrbgpdv2first/src/bgp/config.rs
+@@ -1,7 +1,7 @@
+ use crate::bgp;
+ use std::{net::Ipv4Addr, str::FromStr};
+ pub struct Config {
+-    local_as_number: bgp::AutonomousSystemNumber,
++    pub local_as_number: bgp::AutonomousSystemNumber,
+     pub local_ip_address: Ipv4Addr,
+     remote_as_number: bgp::AutonomousSystemNumber,
+     pub remote_ip_address: Ipv4Addr,
+diff --git a/mrbgpdv2first/src/bgp/event_queue.rs b/mrbgpdv2first/src/bgp/event_queue.rs
+deleted file mode 100644
+index ceecac2..0000000
+--- a/mrbgpdv2first/src/bgp/event_queue.rs
++++ /dev/null
+@@ -1,18 +0,0 @@
+-use crate::bgp::peer::Event;
+-use std::collections::VecDeque;
+-
+-pub struct EventQueue(VecDeque<Event>);
+-
+-impl EventQueue {
+-    pub fn new() -> Self {
+-        EventQueue(VecDeque::new())
+-    }
+-
+-    pub fn enqueue(&mut self, event: Event) {
+-        self.0.push_front(event);
+-    }
+-
+-    pub fn dequeue(&mut self) -> Option<Event> {
+-        self.0.pop_back()
+-    }
+-}
+diff --git a/mrbgpdv2first/src/bgp/message.rs b/mrbgpdv2first/src/bgp/message.rs
+new file mode 100644
+index 0000000..2afc987
+--- /dev/null
++++ b/mrbgpdv2first/src/bgp/message.rs
+@@ -0,0 +1,149 @@
++use super::timer::HoldTime;
++use super::AutonomousSystemNumber;
++use std::{convert::TryInto, net::Ipv4Addr};
++
++#[derive(Debug)]
++pub enum BgpMessage {
++    Open(BgpOpenMessage),
++}
++impl BgpMessage {
++    pub fn serialize(&self) -> Vec<u8> {
++        match self {
++            BgpMessage::Open(open) => open.serialize(),
++            _ => panic!(),
++        }
++    }
++
++    pub fn deserialize(bytes: &Vec<u8>) -> Self {
++        let bgp_type = BgpMessageType::from_type_number(bytes[18]);
++        match bgp_type {
++            BgpMessageType::Open => BgpMessage::Open(BgpOpenMessage::deserialize(bytes)),
++        }
++    }
++
++    pub fn get_type(&self) -> BgpMessageType {
++        match self {
++            BgpMessage::Open(_) => BgpMessageType::Open,
++        }
++    }
++}
++
++#[derive(Debug)]
++pub struct BgpMessageHeader {
++    pub length: u16,
++    pub type_: BgpMessageType,
++}
++
++impl BgpMessageHeader {
++    fn serialize(&self) -> Vec<u8> {
++        let marker = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
++        let length = self.length.to_be_bytes();
++        let type_ = self.type_.to_type_number();
++        let mut bytes = vec![];
++        bytes.append(&mut marker.to_vec());
++        bytes.append(&mut length.to_vec());
++        bytes.push(type_);
++        bytes
++    }
++
++    pub fn deserialize(bytes: &Vec<u8>) -> Self {
++        let length = u16::from_be_bytes(bytes[16..18].try_into().unwrap());
++        let type_ = BgpMessageType::from_type_number(bytes[18]);
++        Self { length, type_ }
++    }
++}
++
++#[derive(Debug, Clone, Copy)]
++pub enum BgpMessageType {
++    Open,
++}
++
++impl BgpMessageType {
++    fn to_type_number(&self) -> u8 {
++        match self {
++            BgpMessageType::Open => 1,
++        }
++    }
++
++    fn from_type_number(type_number: u8) -> Self {
++        match type_number {
++            1 => BgpMessageType::Open,
++            _ => panic!(),
++        }
++    }
++}
++
++#[derive(Debug)]
++struct BgpVersion(u8);
++
++#[derive(Debug)]
++pub struct BgpOpenMessage {
++    header: BgpMessageHeader,
++    version: BgpVersion,
++    my_autonomous_system_number: AutonomousSystemNumber,
++    hold_time: HoldTime,
++    bgp_identifier: Ipv4Addr,
++    optional_parameter_length: u8,
++    // optional_parameterは実装・使用しないが、
++    // 相手から受信したときに一応保存しておくためにプロパティとして用意している。
++    optional_parameters: Vec<u8>,
++}
++
++impl BgpOpenMessage {
++    pub fn new(my_as_number: AutonomousSystemNumber, my_ip_addr: Ipv4Addr) -> Self {
++        let header = BgpMessageHeader {
++            length: 29,
++            type_: BgpMessageType::Open,
++        };
++        let version = BgpVersion(4);
++        let my_autonomous_system_number = my_as_number;
++        let hold_time = HoldTime(240);
++        let bgp_identifier = my_ip_addr;
++        let optional_parameter_length = 0;
++        let optional_parameters = vec![];
++        Self {
++            header,
++            version,
++            my_autonomous_system_number,
++            hold_time,
++            bgp_identifier,
++            optional_parameter_length,
++            optional_parameters,
++        }
++    }
++}
++
++impl BgpOpenMessage {
++    fn serialize(&self) -> Vec<u8> {
++        let mut bytes = vec![];
++        bytes.append(&mut self.header.serialize());
++        bytes.push(self.version.0);
++        bytes.append(&mut self.my_autonomous_system_number.0.to_be_bytes().to_vec());
++        bytes.append(&mut self.hold_time.0.to_be_bytes().to_vec());
++        bytes.append(&mut self.bgp_identifier.octets().to_vec());
++        bytes.push(self.optional_parameter_length);
++        bytes.append(&mut self.optional_parameters.clone());
++        bytes
++    }
++
++    fn deserialize(bytes: &Vec<u8>) -> Self {
++        let header = BgpMessageHeader::deserialize(&bytes[0..19].to_vec());
++        let version = BgpVersion(bytes[19]);
++        let my_autonomous_system_number =
++            AutonomousSystemNumber(u16::from_be_bytes(bytes[20..22].try_into().unwrap()));
++        let hold_time = HoldTime(u16::from_be_bytes(bytes[22..24].try_into().unwrap()));
++        let bgp_identifier: Ipv4Addr = Ipv4Addr::new(bytes[24], bytes[25], bytes[26], bytes[27]);
++        let optional_parameter_length = bytes[28];
++        let optional_parameters = bytes[29..].to_vec();
++
++        Self {
++            header,
++            version,
++            my_autonomous_system_number,
++            hold_time,
++            bgp_identifier,
++            optional_parameter_length,
++            optional_parameters,
++        }
++    }
++}
+diff --git a/mrbgpdv2first/src/bgp/mod.rs b/mrbgpdv2first/src/bgp/mod.rs
+index 4a5fb38..b03828b 100644
+--- a/mrbgpdv2first/src/bgp/mod.rs
++++ b/mrbgpdv2first/src/bgp/mod.rs
+@@ -1,5 +1,8 @@
+-mod config;
+-mod event_queue;
++pub mod config;
++mod message;
+ pub mod peer;
++mod queue;
++mod timer;
+ 
+-struct AutonomousSystemNumber(u16);
++#[derive(Debug, Copy, Clone)]
++pub struct AutonomousSystemNumber(u16);
+diff --git a/mrbgpdv2first/src/bgp/peer.rs b/mrbgpdv2first/src/bgp/peer.rs
+index 523979c..6f08198 100644
+--- a/mrbgpdv2first/src/bgp/peer.rs
++++ b/mrbgpdv2first/src/bgp/peer.rs
+@@ -1,25 +1,38 @@
+-use super::event_queue::EventQueue;
++use super::{
++    message::BgpOpenMessage,
++    queue::{EventQueue, MessageQueue},
++};
+ use crate::bgp::config::Config;
+ use crate::bgp::config::Mode;
+-use std::net::{TcpListener, TcpStream};
++use crate::bgp::message::{BgpMessage, BgpMessageHeader, BgpMessageType};
++use std::{
++    io::{self, Read, Write},
++    net::{TcpListener, TcpStream},
++};
+ 
+-struct Peer {
++pub struct Peer {
+     config: Config,
+     event_queue: EventQueue,
++    message_queue: MessageQueue,
+     now_state: State,
+     tcp_connection: Option<TcpStream>,
++    buffer: Vec<u8>,
+ }
+ 
+ impl Peer {
+     pub fn new(config: Config) -> Self {
+         let event_queue = EventQueue::new();
++        let message_queue = MessageQueue::new();
+         let now_state = State::Idle;
+         let tcp_connection = None;
++        let buffer = vec![];
+         Self {
+             config,
+             event_queue,
++            message_queue,
+             now_state,
+             tcp_connection,
++            buffer,
+         }
+     }
+ 
+@@ -28,11 +41,68 @@ impl Peer {
+     }
+ 
+     pub fn next_step(&mut self) {
++        if let Some(bgp_message) = self.recieve_one_message() {
++            info!("Recive bgp message {:?}", bgp_message);
++            self.handle_bgp_message(bgp_message)
++        }
++
+         if let Some(event) = self.event_queue.dequeue() {
++            debug!("Now state {:?}, handling event {:?}", self.now_state, event);
+             self.handle_event(event);
+         }
+     }
+ 
++    fn transfer_data_tcp_connection_to_self_buffer(&mut self) {
++        let mut buffer = vec![];
++        if self.tcp_connection.is_some() {
++            match self
++                .tcp_connection
++                .as_ref()
++                .unwrap()
++                .read_to_end(&mut buffer)
++            {
++                Ok(_) => (), // Tcp ConnectionがCloseしているときにOk()が返ってくる。
++                Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
++                    self.buffer.append(&mut buffer)
++                }
++                Err(e) => error!("{:?}", e),
++            }
++        }
++    }
++
++    fn handle_bgp_message(&mut self, bgp_message: BgpMessage) {
++        match bgp_message.get_type() {
++            BgpMessageType::Open => {
++                self.event_queue.enqueue(Event::BgpOpen);
++            }
++            _ => {}
++        }
++        self.message_queue.enqueue(bgp_message);
++    }
++
++    fn retrive_one_message_from_buffer(&mut self) -> Option<Vec<u8>> {
++        let minimum_length_of_bgp_message = 19;
++        if self.buffer.len() >= minimum_length_of_bgp_message {
++            let bgp_message_header = BgpMessageHeader::deserialize(&self.buffer[0..19].to_vec());
++            let bgp_message_length: u16 = bgp_message_header.length;
++            let (bgp_message_bytes, buf) = self.buffer.split_at(bgp_message_length as usize);
++            let bgp_message_bytes = bgp_message_bytes.to_vec();
++            self.buffer = buf.to_vec();
++            Some(bgp_message_bytes)
++        } else {
++            None
++        }
++    }
++
++    fn recieve_one_message(&mut self) -> Option<BgpMessage> {
++        self.transfer_data_tcp_connection_to_self_buffer();
++        if let Some(bgp_message_byte) = self.retrive_one_message_from_buffer() {
++            Some(BgpMessage::deserialize(&bgp_message_byte))
++        } else {
++            None
++        }
++    }
++
+     fn create_tcp_connection_to_remote_ip(&mut self) -> Option<TcpStream> {
+         let remote_addr = self.config.remote_ip_address;
+         let bgp_port = 179;
+@@ -40,6 +110,11 @@ impl Peer {
+             let tcp_connection = TcpStream::connect((remote_addr, bgp_port)).ok();
+             if tcp_connection.is_some() {
+                 self.event_queue.enqueue(Event::TcpCrAcked);
++                tcp_connection
++                    .as_ref()
++                    .unwrap()
++                    .set_nonblocking(true)
++                    .unwrap();
+             };
+             tcp_connection
+         } else {
+@@ -48,11 +123,25 @@ impl Peer {
+             let tcp_connection = tcp_listener.accept().map(|v| v.0).ok();
+             if tcp_connection.is_some() {
+                 self.event_queue.enqueue(Event::TcpConnectionConfirmed);
++                tcp_connection
++                    .as_ref()
++                    .unwrap()
++                    .set_nonblocking(true)
++                    .unwrap();
+             };
+             tcp_connection
+         }
+     }
+ 
++    fn send_bgp_message_to_remote_peer(&self, bgp_message: BgpMessage) {
++        self.tcp_connection
++            .as_ref()
++            .unwrap()
++            .write(&bgp_message.serialize()[..])
++            .expect("Failed send open message");
++        info!("Send bgp message {:?}", bgp_message);
++    }
++
+     fn handle_event(&mut self, event: Event) {
+         match self.now_state {
+             State::Idle => match event {
+@@ -64,10 +153,21 @@ impl Peer {
+             },
+             State::Connect => match event {
+                 Event::TcpConnectionConfirmed | Event::TcpCrAcked => {
++                    let open_message = BgpOpenMessage::new(
++                        self.config.local_as_number,
++                        self.config.local_ip_address,
++                    );
++                    self.send_bgp_message_to_remote_peer(BgpMessage::Open(open_message));
+                     self.now_state = State::OpenSent;
+                 }
+                 _ => {}
+             },
++            State::OpenSent => match event {
++                Event::BgpOpen => {
++                    self.now_state = State::OpenConfirm;
++                }
++                _ => {}
++            },
+             _ => {}
+         }
+     }
+@@ -78,13 +178,15 @@ enum State {
+     Idle,
+     Connect,
+     OpenSent,
++    OpenConfirm,
+ }
+ 
+-#[derive(PartialEq, Eq, Clone, Copy)]
++#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+ pub enum Event {
+     ManualStart,
+     TcpCrAcked,
+     TcpConnectionConfirmed,
++    BgpOpen,
+ }
+ 
+ #[cfg(test)]
+@@ -93,8 +195,13 @@ mod tests {
+     use std::thread;
+     use std::time;
+ 
++    fn init() {
++        let _ = env_logger::builder().is_test(true).try_init();
++    }
++
+     #[test]
+-    fn peer_can_transition_to_connect_start() {
++    fn peer_can_transition_to_connect() {
++        init();
+         let config: Config = "64512 127.0.0.1 64513 127.0.0.2 active".parse().unwrap();
+         let mut bgp_peer = Peer::new(config);
+         bgp_peer.start();
+@@ -103,7 +210,8 @@ mod tests {
+     }
+ 
+     #[test]
+-    fn peer_can_transition_to_open_sent_start() {
++    fn peer_can_transition_to_open_sent() {
++        init();
+         let _remote_bgp = thread::spawn(|| {
+             let remote_config: Config = "64513 127.0.0.2 64512 127.0.0.1 passive".parse().unwrap();
+             let mut remote_bgp_peer = Peer::new(remote_config);
+@@ -125,4 +233,43 @@ mod tests {
+ 
+         assert_eq!(local_bgp_peer.now_state, State::OpenSent);
+     }
++
++    #[test]
++    fn peer_can_transition_to_open_confirm() {
++        init();
++        let _remote_bgp = thread::spawn(|| {
++            let remote_config: Config = "64513 127.0.0.2 64512 127.0.0.1 passive".parse().unwrap();
++            let mut remote_bgp_peer = Peer::new(remote_config);
++            remote_bgp_peer.start();
++
++            let max_steps = 50;
++            for _ in 0..max_steps {
++                remote_bgp_peer.next_step();
++                thread::sleep(time::Duration::from_secs_f32(0.1));
++                if remote_bgp_peer.now_state == State::OpenConfirm {
++                    break;
++                };
++            }
++
++            assert_eq!(remote_bgp_peer.now_state, State::OpenConfirm);
++        });
++
++        // 先にPassiveモード側の処理が進むことを保証する。
++        thread::sleep(time::Duration::from_secs_f32(0.5));
++
++        let local_config: Config = "64512 127.0.0.1 64513 127.0.0.2 active".parse().unwrap();
++        let mut local_bgp_peer = Peer::new(local_config);
++
++        local_bgp_peer.start();
++        let max_steps = 50;
++        for _ in 0..max_steps {
++            local_bgp_peer.next_step();
++            thread::sleep(time::Duration::from_secs_f32(0.1));
++            if local_bgp_peer.now_state == State::OpenConfirm {
++                break;
++            };
++        }
++
++        assert_eq!(local_bgp_peer.now_state, State::OpenConfirm);
++    }
+ }
+diff --git a/mrbgpdv2first/src/bgp/queue.rs b/mrbgpdv2first/src/bgp/queue.rs
+new file mode 100644
+index 0000000..f93502b
+--- /dev/null
++++ b/mrbgpdv2first/src/bgp/queue.rs
+@@ -0,0 +1,22 @@
++use crate::bgp::message::BgpMessage;
++use crate::bgp::peer::Event;
++use std::collections::VecDeque;
++
++pub struct Queue<T>(VecDeque<T>);
++
++impl<T> Queue<T> {
++    pub fn new() -> Self {
++        Queue(VecDeque::new())
++    }
++
++    pub fn enqueue(&mut self, data: T) {
++        self.0.push_front(data);
++    }
++
++    pub fn dequeue(&mut self) -> Option<T> {
++        self.0.pop_back()
++    }
++}
++
++pub type EventQueue = Queue<Event>;
++pub type MessageQueue = Queue<BgpMessage>;
+diff --git a/mrbgpdv2first/src/bgp/timer.rs b/mrbgpdv2first/src/bgp/timer.rs
+new file mode 100644
+index 0000000..2eef9d9
+--- /dev/null
++++ b/mrbgpdv2first/src/bgp/timer.rs
+@@ -0,0 +1,2 @@
++#[derive(Debug)]
++pub struct HoldTime(pub u16);
+diff --git a/mrbgpdv2first/src/lib.rs b/mrbgpdv2first/src/lib.rs
+index 5b4dc21..e2db1bd 100644
+--- a/mrbgpdv2first/src/lib.rs
++++ b/mrbgpdv2first/src/lib.rs
+@@ -1 +1,4 @@
++#[macro_use]
++extern crate log;
++
+ pub mod bgp;
+----
+
 ++++
  <script type="module" src="https://unpkg.com/x-frame-bypass"></script>
 <iframe is="x-frame-bypass" src="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/f133fc092a43103322ceadb4b40d9d9f28952548...87771a19f2f90e16546a4603a235cb9f02b4313d" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:200px;width:100%;border:none;overflow:hidden;" frameborder="0" title="GitHub"></iframe>
@@ -717,7 +1245,6 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ tree
 │   ├── lib.rs
 │   └── main.rs
 ----
-
 
 [source,rust,linenums,title="src/bgp/config.rs"]
 ----
