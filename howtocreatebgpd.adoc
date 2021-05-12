@@ -534,7 +534,7 @@ test bgp::peer::tests::peer_can_transition_to_connect_start ... ok
 * [ ] テストする
 
 
-==== Connect Stateに遷移する
+==== OpenSent Stateに遷移する
 次に下記に取り組みます。
 
 * [ ] OpenSent Stateに遷移する
@@ -644,6 +644,124 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f133fc092a4310
 ----
 
 
+==== OpenConfirm Stateに遷移する
+次は下記に取り組みましょう。
+
+* [ ] OpenConfirm Stateに遷移する
+    - [ ] BGP Open Messageを送信する
+    - [ ] BGP Open Messageを受信する
+
+まず、テストを書きます。
+
+[source,rust,linenums,title="src/bgp/peer.rs"]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/87771a19f2f90e16546a4603a235cb9f02b4313d/mrbgpdv2first/src/bgp/peer.rs[lines=198..201;237..274]
+----
+
+このテストが通れば、上記のタスクは完了したと言えます。
+以下のようなコードの更新でテストを通すことが可能です。
+
+++++
+ <script type="module" src="https://unpkg.com/x-frame-bypass"></script>
+<iframe is="x-frame-bypass" src="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/f133fc092a43103322ceadb4b40d9d9f28952548...87771a19f2f90e16546a4603a235cb9f02b4313d" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:200px;width:100%;border:none;overflow:hidden;" frameborder="0" title="GitHub"></iframe>
+++++
+
+
+テストを走らせてみましょう。
+下記が結果です。無事にテストが通っていることが確認できました。
+
+----
+mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ RUST_LOG=mrbgpdv2=INFO cargo test -- --nocapture --test-threads=1
+   Compiling mrbgpdv2first v0.1.0 (/home/mrcsce/programming/rustProjects/mrbgpdv2/mrbgpdv2first)
+running 3 tests
+test bgp::peer::tests::peer_can_transition_to_connect ... ok
+test bgp::peer::tests::peer_can_transition_to_open_confirm ... [2021-05-12T13:42:37Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64512), hold_time: HoldTime(240), bgp_identifier: 127.0.0.1, optional_parameter_length: 0, optional_parameters: [] })
+[2021-05-12T13:42:37Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64513), hold_time: HoldTime(240), bgp_identifier: 127.0.0.2, optional_parameter_length: 0, optional_parameters: [] })
+[2021-05-12T13:42:37Z INFO  mrbgpdv2first::bgp::peer] Recive bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64513), hold_time: HoldTime(240), bgp_identifier: 127.0.0.2, optional_parameter_length: 0, optional_parameters: [] })
+[2021-05-12T13:42:37Z INFO  mrbgpdv2first::bgp::peer] Recive bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64512), hold_time: HoldTime(240), bgp_identifier: 127.0.0.1, optional_parameter_length: 0, optional_parameters: [] })
+ok
+test bgp::peer::tests::peer_can_transition_to_open_sent ... [2021-05-12T13:42:38Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64512), hold_time: HoldTime(240), bgp_identifier: 127.0.0.1, optional_parameter_length: 0, optional_parameters: [] })
+[2021-05-12T13:42:38Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64513), hold_time: HoldTime(240), bgp_identifier: 127.0.0.2, optional_parameter_length: 0, optional_parameters: [] })
+ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.30s
+
+     Running unittests (target/debug/deps/mrbgpdv2first-229e56fd8674fb31)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests mrbgpdv2first
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+----
+
+現段階の全体のコードを記載します。GitHub上で閲覧したい方は、 https://github.com/Miyoshi-Ryota/mrbgpdv2/tree/87771a19f2f90e16546a4603a235cb9f02b4313d/mrbgpdv2first[GitHub-現段階の全体のコード]を参照してください。
+
+----
+mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ tree
+.
+├── Cargo.lock
+├── Cargo.toml
+├── src
+│   ├── bgp
+│   │   ├── config.rs
+│   │   ├── message.rs
+│   │   ├── mod.rs
+│   │   ├── peer.rs
+│   │   ├── queue.rs
+│   │   └── timer.rs
+│   ├── lib.rs
+│   └── main.rs
+----
+
+
+[source,rust,linenums,title="src/bgp/config.rs"]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/87771a19f2f90e16546a4603a235cb9f02b4313d/mrbgpdv2first/src/bgp/config.rs[]
+----
+
+[source,rust,linenums,title="src/bgp/message.rs"]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/87771a19f2f90e16546a4603a235cb9f02b4313d/mrbgpdv2first/src/bgp/message.rs[]
+----
+
+
+[source,rust,linenums,title="src/bgp/mod.rs"]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/87771a19f2f90e16546a4603a235cb9f02b4313d/mrbgpdv2first/src/bgp/mod.rs[]
+----
+
+
+[source,rust,linenums,title="src/bgp/peer.rs"]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/87771a19f2f90e16546a4603a235cb9f02b4313d/mrbgpdv2first/src/bgp/peer.rs[]
+----
+
+
+[source,rust,linenums,title="src/bgp/queue.rs"]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/87771a19f2f90e16546a4603a235cb9f02b4313d/mrbgpdv2first/src/bgp/queue.rs[]
+----
+
+
+[source,rust,linenums,title="src/bgp/timer.rs"]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/87771a19f2f90e16546a4603a235cb9f02b4313d/mrbgpdv2first/src/bgp/timer.rs[]
+----
+
+[source,rust,linenums,title="src/lib.rs"]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/87771a19f2f90e16546a4603a235cb9f02b4313d/mrbgpdv2first/src/lib.rs[]
+----
+
+[source,rust,linenums,title="src/main.rs"]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/87771a19f2f90e16546a4603a235cb9f02b4313d/mrbgpdv2first/src/main.rs[]
+----
 
 === 1つのピアでUpdate Messageの交換やUpdate Messageの内容に従ってRouting Tableへの書き込みを可能にするところまでの実装
 
