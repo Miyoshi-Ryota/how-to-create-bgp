@@ -2601,52 +2601,14 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 <span class="normal">25</span>
 <span class="normal">26</span>
 <span class="normal">27</span>
-<span class="normal">28</span>
-<span class="normal">29</span>
-<span class="normal">30</span>
-<span class="normal">31</span>
-<span class="normal">32</span>
-<span class="normal">33</span>
-<span class="normal">34</span>
-<span class="normal">35</span>
-<span class="normal">36</span>
-<span class="normal">37</span>
-<span class="normal">38</span>
-<span class="normal">39</span>
-<span class="normal">40</span>
-<span class="normal">41</span>
-<span class="normal">42</span>
-<span class="normal">43</span>
-<span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
-<span class="normal">47</span></pre></div></td><td class="code"><pre><span></span><span class="tok-w"> </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="normal">28</span></pre></div></td><td class="code"><pre><span></span><span class="tok-w"> </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span><span class="tok-p">;</span><span class="tok-w"></span>
 <span class="tok-w"> </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-p">{</span><span class="tok-n">net</span>::<span class="tok-n">Ipv4Addr</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-kt">str</span>::<span class="tok-n">FromStr</span><span class="tok-p">};</span><span class="tok-w"></span>
 <span class="tok-w"> </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">struct</span> <span class="tok-nc">Config</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-o">-</span><span class="tok-w">    </span><span class="tok-n">local_as_number</span>: <span class="tok-nc">bgp</span>::<span class="tok-n">AutonomousSystemNumber</span><span class="tok-p">,</span><span class="tok-w"></span>
-<span class="tok-o">-</span><span class="tok-w">    </span><span class="tok-n">local_ip_address</span>: <span class="tok-nc">Ipv4Addr</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-n">local_as_number</span>: <span class="tok-nc">bgp</span>::<span class="tok-n">AutonomousSystemNumber</span><span class="tok-p">,</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-n">local_ip_address</span>: <span class="tok-nc">Ipv4Addr</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-n">local_ip_address</span>: <span class="tok-nc">Ipv4Addr</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-w">     </span><span class="tok-n">remote_as_number</span>: <span class="tok-nc">bgp</span>::<span class="tok-n">AutonomousSystemNumber</span><span class="tok-p">,</span><span class="tok-w"></span>
-<span class="tok-o">-</span><span class="tok-w">    </span><span class="tok-n">remote_ip_address</span>: <span class="tok-nc">Ipv4Addr</span><span class="tok-p">,</span><span class="tok-w"></span>
-<span class="tok-o">-</span><span class="tok-w">    </span><span class="tok-n">mode</span>: <span class="tok-nc">Mode</span><span class="tok-p">,</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-n">remote_ip_address</span>: <span class="tok-nc">Ipv4Addr</span><span class="tok-p">,</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-n">mode</span>: <span class="tok-nc">Mode</span><span class="tok-p">,</span><span class="tok-w"></span>
-<span class="tok-w"> </span><span class="tok-p">}</span><span class="tok-w"></span>
-
-<span class="tok-o">-</span><span class="tok-k">enum</span> <span class="tok-nc">Mode</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-cp">#[derive(Debug, Clone, Copy, PartialEq, Eq)]</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">enum</span> <span class="tok-nc">Mode</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-w">     </span><span class="tok-n">Passive</span><span class="tok-p">,</span><span class="tok-w"></span>
-<span class="tok-w">     </span><span class="tok-n">Active</span><span class="tok-p">,</span><span class="tok-w"></span>
-<span class="tok-w"> </span><span class="tok-p">}</span><span class="tok-w"></span>
-
-<span class="tok-w"> </span><span class="tok-cp">#[derive(Debug)]</span><span class="tok-w"></span>
-<span class="tok-o">-</span><span class="tok-k">struct</span> <span class="tok-nc">ModeParseError</span><span class="tok-p">;</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">struct</span> <span class="tok-nc">ModeParseError</span><span class="tok-p">;</span><span class="tok-w"></span>
-
-<span class="tok-w"> </span><span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">FromStr</span><span class="tok-w"> </span><span class="tok-k">for</span><span class="tok-w"> </span><span class="tok-n">Mode</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-w">     </span><span class="tok-k">type</span> <span class="tok-nb">Err</span> <span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">ModeParseError</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-n">remote_ip_address</span>: <span class="tok-nc">Ipv4Addr</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-n">deleted</span><span class="tok-w"> </span><span class="tok-n">file</span><span class="tok-w"> </span><span class="tok-n">mode</span><span class="tok-w"> </span><span class="tok-mi">100644</span><span class="tok-w"></span>
 <span class="tok-o">+++</span><span class="tok-w"> </span><span class="tok-o">/</span><span class="tok-n">dev</span><span class="tok-o">/</span><span class="tok-n">null</span><span class="tok-w"></span>
 <span class="tok-o">-</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span>::<span class="tok-n">peer</span>::<span class="tok-n">Event</span><span class="tok-p">;</span><span class="tok-w"></span>
@@ -3250,40 +3212,14 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 <span class="normal">245</span>
 <span class="normal">246</span>
 <span class="normal">247</span>
-<span class="normal">248</span>
-<span class="normal">249</span>
-<span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
-<span class="normal">259</span>
-<span class="normal">260</span>
-<span class="normal">261</span>
-<span class="normal">262</span>
-<span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span>
-<span class="normal">274</span>
-<span class="normal">275</span></pre></div></td><td class="code"><pre><span></span><span class="tok-o">-</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">super</span>::<span class="tok-n">event_queue</span>::<span class="tok-n">EventQueue</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="normal">248</span></pre></div></td><td class="code"><pre><span></span><span class="tok-o">-</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">super</span>::<span class="tok-n">event_queue</span>::<span class="tok-n">EventQueue</span><span class="tok-p">;</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">super</span>::<span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">message</span>::<span class="tok-n">BgpOpenMessage</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">queue</span>::<span class="tok-p">{</span><span class="tok-n">EventQueue</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">MessageQueue</span><span class="tok-p">},</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-p">};</span><span class="tok-w"></span>
 <span class="tok-w"> </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span>::<span class="tok-n">config</span>::<span class="tok-n">Config</span><span class="tok-p">;</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span>::<span class="tok-n">config</span>::<span class="tok-n">Mode</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span>::<span class="tok-n">config</span>::<span class="tok-n">Mode</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">-</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-n">net</span>::<span class="tok-p">{</span><span class="tok-n">TcpListener</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">TcpStream</span><span class="tok-p">};</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span>::<span class="tok-n">message</span>::<span class="tok-p">{</span><span class="tok-n">BgpMessage</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">BgpMessageHeader</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">BgpMessageType</span><span class="tok-p">};</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">io</span>::<span class="tok-p">{</span><span class="tok-bp">self</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">Read</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">Write</span><span class="tok-p">},</span><span class="tok-w"></span>
@@ -3296,7 +3232,7 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 <span class="tok-w">     </span><span class="tok-n">event_queue</span>: <span class="tok-nc">EventQueue</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">message_queue</span>: <span class="tok-nc">MessageQueue</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-w">     </span><span class="tok-n">now_state</span>: <span class="tok-nc">State</span><span class="tok-p">,</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">tcp_connection</span>: <span class="tok-nb">Option</span><span class="tok-o">&lt;</span><span class="tok-n">TcpStream</span><span class="tok-o">&gt;</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-n">tcp_connection</span>: <span class="tok-nb">Option</span><span class="tok-o">&lt;</span><span class="tok-n">TcpStream</span><span class="tok-o">&gt;</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">buffer</span>: <span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-kt">u8</span><span class="tok-o">&gt;</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-w"> </span><span class="tok-p">}</span><span class="tok-w"></span>
 
@@ -3305,14 +3241,14 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 <span class="tok-w">         </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">event_queue</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">EventQueue</span>::<span class="tok-n">new</span><span class="tok-p">();</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">message_queue</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">MessageQueue</span>::<span class="tok-n">new</span><span class="tok-p">();</span><span class="tok-w"></span>
 <span class="tok-w">         </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">now_state</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">State</span>::<span class="tok-n">Idle</span><span class="tok-p">;</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">tcp_connection</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-nb">None</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-w">         </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">tcp_connection</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-nb">None</span><span class="tok-p">;</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">buffer</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-fm">vec!</span><span class="tok-p">[];</span><span class="tok-w"></span>
 <span class="tok-w">         </span><span class="tok-bp">Self</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-w">             </span><span class="tok-n">config</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-w">             </span><span class="tok-n">event_queue</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">message_queue</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-w">             </span><span class="tok-n">now_state</span><span class="tok-p">,</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">tcp_connection</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">             </span><span class="tok-n">tcp_connection</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">buffer</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-w">         </span><span class="tok-p">}</span><span class="tok-w"></span>
 <span class="tok-w">     </span><span class="tok-p">}</span><span class="tok-w"></span>
@@ -3382,36 +3318,33 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 <span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">create_tcp_connection_to_remote_ip</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-nb">Option</span><span class="tok-o">&lt;</span><span class="tok-n">TcpStream</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">remote_addr</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">config</span><span class="tok-p">.</span><span class="tok-n">remote_ip_address</span><span class="tok-p">;</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">bgp_port</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-mi">179</span><span class="tok-p">;</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">config</span><span class="tok-p">.</span><span class="tok-n">mode</span><span class="tok-w"> </span><span class="tok-o">==</span><span class="tok-w"> </span><span class="tok-n">Mode</span>::<span class="tok-n">Active</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">tcp_connection</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">TcpStream</span>::<span class="tok-n">connect</span><span class="tok-p">((</span><span class="tok-n">remote_addr</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">bgp_port</span><span class="tok-p">)).</span><span class="tok-n">ok</span><span class="tok-p">();</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-n">tcp_connection</span><span class="tok-p">.</span><span class="tok-n">is_some</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">event_queue</span><span class="tok-p">.</span><span class="tok-n">enqueue</span><span class="tok-p">(</span><span class="tok-n">Event</span>::<span class="tok-n">TcpCrAcked</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-k">fn</span> <span class="tok-nf">create_tcp_connection_to_remote_ip</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-nb">Option</span><span class="tok-o">&lt;</span><span class="tok-n">TcpStream</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">         </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">remote_addr</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">config</span><span class="tok-p">.</span><span class="tok-n">remote_ip_address</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-w">         </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">bgp_port</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-mi">179</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-w">             </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">tcp_connection</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">TcpStream</span>::<span class="tok-n">connect</span><span class="tok-p">((</span><span class="tok-n">remote_addr</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">bgp_port</span><span class="tok-p">)).</span><span class="tok-n">ok</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-w">             </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-n">tcp_connection</span><span class="tok-p">.</span><span class="tok-n">is_some</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">                 </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">event_queue</span><span class="tok-p">.</span><span class="tok-n">enqueue</span><span class="tok-p">(</span><span class="tok-n">Event</span>::<span class="tok-n">TcpCrAcked</span><span class="tok-p">);</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-n">tcp_connection</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-p">.</span><span class="tok-n">as_ref</span><span class="tok-p">()</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-p">.</span><span class="tok-n">unwrap</span><span class="tok-p">()</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-p">.</span><span class="tok-n">set_nonblocking</span><span class="tok-p">(</span><span class="tok-kc">true</span><span class="tok-p">)</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-p">.</span><span class="tok-n">unwrap</span><span class="tok-p">();</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">};</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">tcp_connection</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"> </span><span class="tok-k">else</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">tcp_listener</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">TcpListener</span>::<span class="tok-n">bind</span><span class="tok-p">((</span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">config</span><span class="tok-p">.</span><span class="tok-n">local_ip_address</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">bgp_port</span><span class="tok-p">))</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-p">.</span><span class="tok-n">expect</span><span class="tok-p">(</span><span class="tok-s">&quot;port 179にbind出来ません。&quot;</span><span class="tok-p">);</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">tcp_connection</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">tcp_listener</span><span class="tok-p">.</span><span class="tok-n">accept</span><span class="tok-p">().</span><span class="tok-n">map</span><span class="tok-p">(</span><span class="tok-o">|</span><span class="tok-n">v</span><span class="tok-o">|</span><span class="tok-w"> </span><span class="tok-n">v</span><span class="tok-p">.</span><span class="tok-mi">0</span><span class="tok-p">).</span><span class="tok-n">ok</span><span class="tok-p">();</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-n">tcp_connection</span><span class="tok-p">.</span><span class="tok-n">is_some</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">event_queue</span><span class="tok-p">.</span><span class="tok-n">enqueue</span><span class="tok-p">(</span><span class="tok-n">Event</span>::<span class="tok-n">TcpConnectionConfirmed</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-w">             </span><span class="tok-p">};</span><span class="tok-w"></span>
+<span class="tok-w">             </span><span class="tok-n">tcp_connection</span><span class="tok-w"></span>
+<span class="tok-w">         </span><span class="tok-p">}</span><span class="tok-w"> </span><span class="tok-k">else</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">             </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">tcp_connection</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">tcp_listener</span><span class="tok-p">.</span><span class="tok-n">accept</span><span class="tok-p">().</span><span class="tok-n">map</span><span class="tok-p">(</span><span class="tok-o">|</span><span class="tok-n">v</span><span class="tok-o">|</span><span class="tok-w"> </span><span class="tok-n">v</span><span class="tok-p">.</span><span class="tok-mi">0</span><span class="tok-p">).</span><span class="tok-n">ok</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-w">             </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-n">tcp_connection</span><span class="tok-p">.</span><span class="tok-n">is_some</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">                 </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">event_queue</span><span class="tok-p">.</span><span class="tok-n">enqueue</span><span class="tok-p">(</span><span class="tok-n">Event</span>::<span class="tok-n">TcpConnectionConfirmed</span><span class="tok-p">);</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-n">tcp_connection</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-p">.</span><span class="tok-n">as_ref</span><span class="tok-p">()</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-p">.</span><span class="tok-n">unwrap</span><span class="tok-p">()</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-p">.</span><span class="tok-n">set_nonblocking</span><span class="tok-p">(</span><span class="tok-kc">true</span><span class="tok-p">)</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-p">.</span><span class="tok-n">unwrap</span><span class="tok-p">();</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">};</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">tcp_connection</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-w">             </span><span class="tok-p">};</span><span class="tok-w"></span>
+<span class="tok-w">             </span><span class="tok-n">tcp_connection</span><span class="tok-w"></span>
+<span class="tok-w">         </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-p">}</span><span class="tok-w"></span>
+
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">send_bgp_message_to_remote_peer</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-bp">self</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">bgp_message</span>: <span class="tok-nc">BgpMessage</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">tcp_connection</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">.</span><span class="tok-n">as_ref</span><span class="tok-p">()</span><span class="tok-w"></span>
@@ -3424,34 +3357,27 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 <span class="tok-w">     </span><span class="tok-k">fn</span> <span class="tok-nf">handle_event</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">event</span>: <span class="tok-nc">Event</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-w">         </span><span class="tok-k">match</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">now_state</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-w">             </span><span class="tok-n">State</span>::<span class="tok-n">Idle</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-k">match</span><span class="tok-w"> </span><span class="tok-n">event</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-w">                 </span><span class="tok-n">Event</span>::<span class="tok-n">ManualStart</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">tcp_connection</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">create_tcp_connection_to_remote_ip</span><span class="tok-p">();</span><span class="tok-w"></span>
-<span class="tok-w">                     </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">now_state</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">State</span>::<span class="tok-n">Connect</span><span class="tok-p">;</span><span class="tok-w"></span>
-<span class="tok-w">                 </span><span class="tok-p">}</span><span class="tok-w"></span>
-<span class="tok-w">                 </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{}</span><span class="tok-w"></span>
 <span class="tok-w">             </span><span class="tok-p">},</span><span class="tok-w"></span>
-<span class="tok-o">-</span><span class="tok-w">            </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">(),</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">State</span>::<span class="tok-n">Connect</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-k">match</span><span class="tok-w"> </span><span class="tok-n">event</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-n">Event</span>::<span class="tok-n">TcpConnectionConfirmed</span><span class="tok-w"> </span><span class="tok-o">|</span><span class="tok-w"> </span><span class="tok-n">Event</span>::<span class="tok-n">TcpCrAcked</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">             </span><span class="tok-n">State</span>::<span class="tok-n">Connect</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-k">match</span><span class="tok-w"> </span><span class="tok-n">event</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">                 </span><span class="tok-n">Event</span>::<span class="tok-n">TcpConnectionConfirmed</span><span class="tok-w"> </span><span class="tok-o">|</span><span class="tok-w"> </span><span class="tok-n">Event</span>::<span class="tok-n">TcpCrAcked</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">open_message</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">BgpOpenMessage</span>::<span class="tok-n">new</span><span class="tok-p">(</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                        </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">config</span><span class="tok-p">.</span><span class="tok-n">local_as_number</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                        </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">config</span><span class="tok-p">.</span><span class="tok-n">local_ip_address</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-p">);</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">send_bgp_message_to_remote_peer</span><span class="tok-p">(</span><span class="tok-n">BgpMessage</span>::<span class="tok-n">Open</span><span class="tok-p">(</span><span class="tok-n">open_message</span><span class="tok-p">));</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">now_state</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">State</span>::<span class="tok-n">OpenSent</span><span class="tok-p">;</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-p">}</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{}</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">},</span><span class="tok-w"></span>
+<span class="tok-w">                     </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">now_state</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">State</span>::<span class="tok-n">OpenSent</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-w">                 </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-w">                 </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{}</span><span class="tok-w"></span>
+<span class="tok-w">             </span><span class="tok-p">},</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">State</span>::<span class="tok-n">OpenSent</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-k">match</span><span class="tok-w"> </span><span class="tok-n">event</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-n">Event</span>::<span class="tok-n">BgpOpen</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">now_state</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">State</span>::<span class="tok-n">OpenConfirm</span><span class="tok-p">;</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-p">}</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{}</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">},</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{}</span><span class="tok-w"></span>
+<span class="tok-w">             </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{}</span><span class="tok-w"></span>
 <span class="tok-w">         </span><span class="tok-p">}</span><span class="tok-w"></span>
 <span class="tok-w">     </span><span class="tok-p">}</span><span class="tok-w"></span>
-<span class="tok-w"> </span><span class="tok-p">}</span><span class="tok-w"></span>
 <span class="tok-w">     </span><span class="tok-n">Idle</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-w">     </span><span class="tok-n">Connect</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-w">     </span><span class="tok-n">OpenSent</span><span class="tok-p">,</span><span class="tok-w"></span>
@@ -3468,11 +3394,9 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 <span class="tok-w"> </span><span class="tok-p">}</span><span class="tok-w"></span>
 
 <span class="tok-w"> </span><span class="tok-cp">#[cfg(test)]</span><span class="tok-w"></span>
-<span class="tok-w"> </span><span class="tok-k">mod</span> <span class="tok-nn">tests</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-w">     </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">super</span>::<span class="tok-o">*</span><span class="tok-p">;</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-n">thread</span><span class="tok-p">;</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-n">time</span><span class="tok-p">;</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-n">thread</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-n">time</span><span class="tok-p">;</span><span class="tok-w"></span>
+
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">init</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">env_logger</span>::<span class="tok-n">builder</span><span class="tok-p">().</span><span class="tok-n">is_test</span><span class="tok-p">(</span><span class="tok-kc">true</span><span class="tok-p">).</span><span class="tok-n">try_init</span><span class="tok-p">();</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
@@ -3484,34 +3408,18 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 <span class="tok-w">         </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">config</span>: <span class="tok-nc">Config</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;64512 127.0.0.1 64513 127.0.0.2 active&quot;</span><span class="tok-p">.</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">();</span><span class="tok-w"></span>
 <span class="tok-w">         </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">bgp_peer</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">Peer</span>::<span class="tok-n">new</span><span class="tok-p">(</span><span class="tok-n">config</span><span class="tok-p">);</span><span class="tok-w"></span>
 <span class="tok-w">         </span><span class="tok-n">bgp_peer</span><span class="tok-p">.</span><span class="tok-n">start</span><span class="tok-p">();</span><span class="tok-w"></span>
-<span class="tok-w">         </span><span class="tok-n">bgp_peer</span><span class="tok-p">.</span><span class="tok-n">next_step</span><span class="tok-p">();</span><span class="tok-w"></span>
-<span class="tok-w">         </span><span class="tok-fm">assert_eq!</span><span class="tok-p">(</span><span class="tok-n">bgp_peer</span><span class="tok-p">.</span><span class="tok-n">now_state</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">State</span>::<span class="tok-n">Connect</span><span class="tok-p">);</span><span class="tok-w"></span>
 <span class="tok-w">     </span><span class="tok-p">}</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-cp">#[test]</span><span class="tok-w"></span>
+
+<span class="tok-w">     </span><span class="tok-cp">#[test]</span><span class="tok-w"></span>
+<span class="tok-o">-</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">peer_can_transition_to_open_sent_start</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">peer_can_transition_to_open_sent</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">init</span><span class="tok-p">();</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">_remote_bgp</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">thread</span>::<span class="tok-n">spawn</span><span class="tok-p">(</span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">remote_config</span>: <span class="tok-nc">Config</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;64513 127.0.0.2 64512 127.0.0.1 passive&quot;</span><span class="tok-p">.</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">();</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">remote_bgp_peer</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">Peer</span>::<span class="tok-n">new</span><span class="tok-p">(</span><span class="tok-n">remote_config</span><span class="tok-p">);</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">remote_bgp_peer</span><span class="tok-p">.</span><span class="tok-n">start</span><span class="tok-p">();</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">remote_bgp_peer</span><span class="tok-p">.</span><span class="tok-n">next_step</span><span class="tok-p">();</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">remote_bgp_peer</span><span class="tok-p">.</span><span class="tok-n">next_step</span><span class="tok-p">();</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-fm">assert_eq!</span><span class="tok-p">(</span><span class="tok-n">remote_bgp_peer</span><span class="tok-p">.</span><span class="tok-n">now_state</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">State</span>::<span class="tok-n">OpenSent</span><span class="tok-p">);</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">});</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-c1">// 先にPassiveモード側の処理が進むことを保証する。</span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">thread</span>::<span class="tok-n">sleep</span><span class="tok-p">(</span><span class="tok-n">time</span>::<span class="tok-n">Duration</span>::<span class="tok-n">from_secs_f32</span><span class="tok-p">(</span><span class="tok-mf">0.5</span><span class="tok-p">));</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">local_config</span>: <span class="tok-nc">Config</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;64512 127.0.0.1 64513 127.0.0.2 active&quot;</span><span class="tok-p">.</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">();</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">local_bgp_peer</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">Peer</span>::<span class="tok-n">new</span><span class="tok-p">(</span><span class="tok-n">local_config</span><span class="tok-p">);</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">local_bgp_peer</span><span class="tok-p">.</span><span class="tok-n">start</span><span class="tok-p">();</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">local_bgp_peer</span><span class="tok-p">.</span><span class="tok-n">next_step</span><span class="tok-p">();</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">local_bgp_peer</span><span class="tok-p">.</span><span class="tok-n">next_step</span><span class="tok-p">();</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-fm">assert_eq!</span><span class="tok-p">(</span><span class="tok-n">local_bgp_peer</span><span class="tok-p">.</span><span class="tok-n">now_state</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">State</span>::<span class="tok-n">OpenSent</span><span class="tok-p">);</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-w">         </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">_remote_bgp</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">thread</span>::<span class="tok-n">spawn</span><span class="tok-p">(</span><span class="tok-o">||</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">             </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">remote_config</span>: <span class="tok-nc">Config</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;64513 127.0.0.2 64512 127.0.0.1 passive&quot;</span><span class="tok-p">.</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-w">             </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">remote_bgp_peer</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">Peer</span>::<span class="tok-n">new</span><span class="tok-p">(</span><span class="tok-n">remote_config</span><span class="tok-p">);</span><span class="tok-w"></span>
+
+<span class="tok-w">         </span><span class="tok-fm">assert_eq!</span><span class="tok-p">(</span><span class="tok-n">local_bgp_peer</span><span class="tok-p">.</span><span class="tok-n">now_state</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">State</span>::<span class="tok-n">OpenSent</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-p">}</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-cp">#[test]</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">peer_can_transition_to_open_confirm</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
@@ -4805,7 +4713,7 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-12 22:40:54 UTC
+Last updated 2021-05-12 22:48:09 UTC
 </div>
 </div>
 </body>
