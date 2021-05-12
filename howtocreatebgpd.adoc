@@ -661,37 +661,46 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/87771a19f2f90e
 このテストが通れば、上記のタスクは完了したと言えます。
 以下のようなコードの更新でテストを通すことが可能です。
 
-[source,rust,linenums,title="sabun"]
+[source,rust,linenums,title=Cargo.toml]
 ----
-diff --git a/mrbgpdv2first/Cargo.toml b/mrbgpdv2first/Cargo.toml
-index 4e302b5..3f08cee 100644
---- a/mrbgpdv2first/Cargo.toml
-+++ b/mrbgpdv2first/Cargo.toml
-@@ -6,3 +6,5 @@ edition = "2018"
  # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
  
  [dependencies]
 +log = "0.4.0"
 + env_logger = "0.8.3"
-diff --git a/mrbgpdv2first/src/bgp/config.rs b/mrbgpdv2first/src/bgp/config.rs
-index 979c19c..33e4121 100644
---- a/mrbgpdv2first/src/bgp/config.rs
-+++ b/mrbgpdv2first/src/bgp/config.rs
-@@ -1,7 +1,7 @@
+----
+
+[source,rust,linenums,title=src/bgp/config.rs]
+----
  use crate::bgp;
  use std::{net::Ipv4Addr, str::FromStr};
  pub struct Config {
 -    local_as_number: bgp::AutonomousSystemNumber,
+-    local_ip_address: Ipv4Addr,
 +    pub local_as_number: bgp::AutonomousSystemNumber,
-     pub local_ip_address: Ipv4Addr,
++    pub local_ip_address: Ipv4Addr,
      remote_as_number: bgp::AutonomousSystemNumber,
-     pub remote_ip_address: Ipv4Addr,
-diff --git a/mrbgpdv2first/src/bgp/event_queue.rs b/mrbgpdv2first/src/bgp/event_queue.rs
+-    remote_ip_address: Ipv4Addr,
+-    mode: Mode,
++    pub remote_ip_address: Ipv4Addr,
++    pub mode: Mode,
+ }
+ 
+-enum Mode {
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub enum Mode {
+     Passive,
+     Active,
+ }
+ 
+ #[derive(Debug)]
+-struct ModeParseError;
++pub struct ModeParseError;
+ 
+ impl FromStr for Mode {
+     type Err = ModeParseError;
 deleted file mode 100644
-index ceecac2..0000000
---- a/mrbgpdv2first/src/bgp/event_queue.rs
 +++ /dev/null
-@@ -1,18 +0,0 @@
 -use crate::bgp::peer::Event;
 -use std::collections::VecDeque;
 -
@@ -710,12 +719,10 @@ index ceecac2..0000000
 -        self.0.pop_back()
 -    }
 -}
-diff --git a/mrbgpdv2first/src/bgp/message.rs b/mrbgpdv2first/src/bgp/message.rs
-new file mode 100644
-index 0000000..2afc987
---- /dev/null
-+++ b/mrbgpdv2first/src/bgp/message.rs
-@@ -0,0 +1,149 @@
+----
+
+[source,rust,linenums,title=src/bgp/message.rs]
+----
 +use super::timer::HoldTime;
 +use super::AutonomousSystemNumber;
 +use std::{convert::TryInto, net::Ipv4Addr};
@@ -865,11 +872,10 @@ index 0000000..2afc987
 +        }
 +    }
 +}
-diff --git a/mrbgpdv2first/src/bgp/mod.rs b/mrbgpdv2first/src/bgp/mod.rs
-index 4a5fb38..b03828b 100644
---- a/mrbgpdv2first/src/bgp/mod.rs
-+++ b/mrbgpdv2first/src/bgp/mod.rs
-@@ -1,5 +1,8 @@
+----
+
+[source,rust,linenums,title=src/bgp/mod.rs]
+----
 -mod config;
 -mod event_queue;
 +pub mod config;
@@ -881,19 +887,17 @@ index 4a5fb38..b03828b 100644
 -struct AutonomousSystemNumber(u16);
 +#[derive(Debug, Copy, Clone)]
 +pub struct AutonomousSystemNumber(u16);
-diff --git a/mrbgpdv2first/src/bgp/peer.rs b/mrbgpdv2first/src/bgp/peer.rs
-index 523979c..6f08198 100644
---- a/mrbgpdv2first/src/bgp/peer.rs
-+++ b/mrbgpdv2first/src/bgp/peer.rs
-@@ -1,25 +1,38 @@
+----
+
+[source,rust,linenums,title=src/bgp/peer.rs]
+----
 -use super::event_queue::EventQueue;
 +use super::{
 +    message::BgpOpenMessage,
 +    queue::{EventQueue, MessageQueue},
 +};
  use crate::bgp::config::Config;
- use crate::bgp::config::Mode;
--use std::net::{TcpListener, TcpStream};
++use crate::bgp::config::Mode;
 +use crate::bgp::message::{BgpMessage, BgpMessageHeader, BgpMessageType};
 +use std::{
 +    io::{self, Read, Write},
@@ -906,7 +910,7 @@ index 523979c..6f08198 100644
      event_queue: EventQueue,
 +    message_queue: MessageQueue,
      now_state: State,
-     tcp_connection: Option<TcpStream>,
++    tcp_connection: Option<TcpStream>,
 +    buffer: Vec<u8>,
  }
  
@@ -915,19 +919,18 @@ index 523979c..6f08198 100644
          let event_queue = EventQueue::new();
 +        let message_queue = MessageQueue::new();
          let now_state = State::Idle;
-         let tcp_connection = None;
++        let tcp_connection = None;
 +        let buffer = vec![];
          Self {
              config,
              event_queue,
 +            message_queue,
              now_state,
-             tcp_connection,
++            tcp_connection,
 +            buffer,
          }
      }
  
-@@ -28,11 +41,68 @@ impl Peer {
      }
  
      pub fn next_step(&mut self) {
@@ -993,35 +996,36 @@ index 523979c..6f08198 100644
 +        }
 +    }
 +
-     fn create_tcp_connection_to_remote_ip(&mut self) -> Option<TcpStream> {
-         let remote_addr = self.config.remote_ip_address;
-         let bgp_port = 179;
-@@ -40,6 +110,11 @@ impl Peer {
-             let tcp_connection = TcpStream::connect((remote_addr, bgp_port)).ok();
-             if tcp_connection.is_some() {
-                 self.event_queue.enqueue(Event::TcpCrAcked);
++    fn create_tcp_connection_to_remote_ip(&mut self) -> Option<TcpStream> {
++        let remote_addr = self.config.remote_ip_address;
++        let bgp_port = 179;
++        if self.config.mode == Mode::Active {
++            let tcp_connection = TcpStream::connect((remote_addr, bgp_port)).ok();
++            if tcp_connection.is_some() {
++                self.event_queue.enqueue(Event::TcpCrAcked);
 +                tcp_connection
 +                    .as_ref()
 +                    .unwrap()
 +                    .set_nonblocking(true)
 +                    .unwrap();
-             };
-             tcp_connection
-         } else {
-@@ -48,11 +123,25 @@ impl Peer {
-             let tcp_connection = tcp_listener.accept().map(|v| v.0).ok();
-             if tcp_connection.is_some() {
-                 self.event_queue.enqueue(Event::TcpConnectionConfirmed);
++            };
++            tcp_connection
++        } else {
++            let tcp_listener = TcpListener::bind((self.config.local_ip_address, bgp_port))
++                .expect("port 179にbind出来ません。");
++            let tcp_connection = tcp_listener.accept().map(|v| v.0).ok();
++            if tcp_connection.is_some() {
++                self.event_queue.enqueue(Event::TcpConnectionConfirmed);
 +                tcp_connection
 +                    .as_ref()
 +                    .unwrap()
 +                    .set_nonblocking(true)
 +                    .unwrap();
-             };
-             tcp_connection
-         }
-     }
- 
++            };
++            tcp_connection
++        }
++    }
++
 +    fn send_bgp_message_to_remote_peer(&self, bgp_message: BgpMessage) {
 +        self.tcp_connection
 +            .as_ref()
@@ -1034,29 +1038,34 @@ index 523979c..6f08198 100644
      fn handle_event(&mut self, event: Event) {
          match self.now_state {
              State::Idle => match event {
-@@ -64,10 +153,21 @@ impl Peer {
+                 Event::ManualStart => {
++                    self.tcp_connection = self.create_tcp_connection_to_remote_ip();
+                     self.now_state = State::Connect;
+                 }
+                 _ => {}
              },
-             State::Connect => match event {
-                 Event::TcpConnectionConfirmed | Event::TcpCrAcked => {
+-            _ => (),
++            State::Connect => match event {
++                Event::TcpConnectionConfirmed | Event::TcpCrAcked => {
 +                    let open_message = BgpOpenMessage::new(
 +                        self.config.local_as_number,
 +                        self.config.local_ip_address,
 +                    );
 +                    self.send_bgp_message_to_remote_peer(BgpMessage::Open(open_message));
-                     self.now_state = State::OpenSent;
-                 }
-                 _ => {}
-             },
++                    self.now_state = State::OpenSent;
++                }
++                _ => {}
++            },
 +            State::OpenSent => match event {
 +                Event::BgpOpen => {
 +                    self.now_state = State::OpenConfirm;
 +                }
 +                _ => {}
 +            },
-             _ => {}
++            _ => {}
          }
      }
-@@ -78,13 +178,15 @@ enum State {
+ }
      Idle,
      Connect,
      OpenSent,
@@ -1073,10 +1082,11 @@ index 523979c..6f08198 100644
  }
  
  #[cfg(test)]
-@@ -93,8 +195,13 @@ mod tests {
-     use std::thread;
-     use std::time;
- 
+ mod tests {
+     use super::*;
++    use std::thread;
++    use std::time;
++
 +    fn init() {
 +        let _ = env_logger::builder().is_test(true).try_init();
 +    }
@@ -1088,20 +1098,34 @@ index 523979c..6f08198 100644
          let config: Config = "64512 127.0.0.1 64513 127.0.0.2 active".parse().unwrap();
          let mut bgp_peer = Peer::new(config);
          bgp_peer.start();
-@@ -103,7 +210,8 @@ mod tests {
+         bgp_peer.next_step();
+         assert_eq!(bgp_peer.now_state, State::Connect);
      }
- 
-     #[test]
--    fn peer_can_transition_to_open_sent_start() {
++
++    #[test]
 +    fn peer_can_transition_to_open_sent() {
 +        init();
-         let _remote_bgp = thread::spawn(|| {
-             let remote_config: Config = "64513 127.0.0.2 64512 127.0.0.1 passive".parse().unwrap();
-             let mut remote_bgp_peer = Peer::new(remote_config);
-@@ -125,4 +233,43 @@ mod tests {
- 
-         assert_eq!(local_bgp_peer.now_state, State::OpenSent);
-     }
++        let _remote_bgp = thread::spawn(|| {
++            let remote_config: Config = "64513 127.0.0.2 64512 127.0.0.1 passive".parse().unwrap();
++            let mut remote_bgp_peer = Peer::new(remote_config);
++            remote_bgp_peer.start();
++            remote_bgp_peer.next_step();
++            remote_bgp_peer.next_step();
++            assert_eq!(remote_bgp_peer.now_state, State::OpenSent);
++        });
++
++        // 先にPassiveモード側の処理が進むことを保証する。
++        thread::sleep(time::Duration::from_secs_f32(0.5));
++
++        let local_config: Config = "64512 127.0.0.1 64513 127.0.0.2 active".parse().unwrap();
++        let mut local_bgp_peer = Peer::new(local_config);
++
++        local_bgp_peer.start();
++        local_bgp_peer.next_step();
++        local_bgp_peer.next_step();
++
++        assert_eq!(local_bgp_peer.now_state, State::OpenSent);
++    }
 +
 +    #[test]
 +    fn peer_can_transition_to_open_confirm() {
@@ -1142,12 +1166,10 @@ index 523979c..6f08198 100644
 +        assert_eq!(local_bgp_peer.now_state, State::OpenConfirm);
 +    }
  }
-diff --git a/mrbgpdv2first/src/bgp/queue.rs b/mrbgpdv2first/src/bgp/queue.rs
-new file mode 100644
-index 0000000..f93502b
---- /dev/null
-+++ b/mrbgpdv2first/src/bgp/queue.rs
-@@ -0,0 +1,22 @@
+----
+
+[source,rust,linenums,title=src/bgp/queue.rs]
+----
 +use crate::bgp::message::BgpMessage;
 +use crate::bgp::peer::Event;
 +use std::collections::VecDeque;
@@ -1170,19 +1192,16 @@ index 0000000..f93502b
 +
 +pub type EventQueue = Queue<Event>;
 +pub type MessageQueue = Queue<BgpMessage>;
-diff --git a/mrbgpdv2first/src/bgp/timer.rs b/mrbgpdv2first/src/bgp/timer.rs
-new file mode 100644
-index 0000000..2eef9d9
---- /dev/null
-+++ b/mrbgpdv2first/src/bgp/timer.rs
-@@ -0,0 +1,2 @@
+----
+
+[source,rust,linenums,title=src/bgp/timer.rs]
+----
 +#[derive(Debug)]
 +pub struct HoldTime(pub u16);
-diff --git a/mrbgpdv2first/src/lib.rs b/mrbgpdv2first/src/lib.rs
-index 5b4dc21..e2db1bd 100644
---- a/mrbgpdv2first/src/lib.rs
-+++ b/mrbgpdv2first/src/lib.rs
-@@ -1 +1,4 @@
+----
+
+[source,rust,linenums,title=src/lib.rs]
+----
 +#[macro_use]
 +extern crate log;
 +
