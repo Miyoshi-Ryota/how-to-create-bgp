@@ -551,6 +551,11 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f133fc092a4310
 このテストが通れば、上記のタスクは完了したと言えます。
 以下のようなコードの更新でテストを通すことが可能です。
 
+* handle_eventにcreate_tcp_connection_to_remote_ipが増えている。
+* create_tcp_connection_to_remote_ipでリモートとコネクションを張っている。
+* コネクションがはれたらその旨を知らせるイベントをenqueueしている
+* そのイベントをhandle_eventして状態を遷移している
+
 ++++
  <script type="module" src="https://unpkg.com/x-frame-bypass"></script>
 <iframe is="x-frame-bypass" src="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92...f133fc092a43103322ceadb4b40d9d9f28952548" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:200px;width:100%;border:none;overflow:hidden;" frameborder="0" title="GitHub"></iframe>
@@ -652,6 +657,14 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f133fc092a4310
     - [ ] BGP Open Messageを受信する
 
 まず、テストを書きます。
+ここからは通信が発生するため、正確に何度.next_step()を呼んだときにお目当ての状態に遷移するのかわかりません。
+そのため、50回以内に想定のステータスに遷移することでテストOKとしています。
+また複数のテストケースで同じソケットアドレスにbindします。複数のテストが同時に動き、同時に複数回同じソケットアドレスにbindすることを防ぐために、テストは1つづつ実行することとします。また、ここからは少しずつ複雑になるためロガーも仕込んでいます。
+そのためテストを走らせるときは次のようなコマンドを使用します。
+
+----
+RUST_LOG=info cargo test -- --nocapture --test-threads=1
+----
 
 [source,rust,linenums,title="src/bgp/peer.rs"]
 ----
@@ -659,7 +672,24 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/87771a19f2f90e
 ----
 
 このテストが通れば、上記のタスクは完了したと言えます。
+
 以下のようなコードの更新でテストを通すことが可能です。
+差分をGitHubで閲覧したい方は、 https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/f133fc092a43103322ceadb4b40d9d9f28952548...87771a19f2f90e16546a4603a235cb9f02b4313d[GitHub上の差分]を閲覧してください。
+
+* OpenMessageを送信するところを説明する。
+    * Peerのnext_step()にsend_bgp_messageが生えていること
+    * OpenMessageはhogeのように書くことが出来ること
+    * BGPメッセージはどんな構造になっているのか
+    * OpenMessageはどんな構造をしているのか
+    * src/bgp/message.rsの内容
+* OpenMessageを受信するところを説明する。
+    * non_blocking modeに変更していること
+    * next_stepにrecive_one_message()を入れていること
+    * handle_bgp_messageでハンドルしてイベントを注入していること
+    * recieve_one_messageの説明
+        * transfer_data_tcp-connection_to_self_bufferは、該当のコネクションで受信したデータをすべてself.bufferに移している
+        * retrive_one_message_from_bufferはself.bufferから1つのBGPメッセージのバイト列を取得している。
+        * そのバイト列をモデルに変換している
 
 [source,rust,linenums,title=Cargo.toml]
 ----
@@ -1162,10 +1192,6 @@ deleted file mode 100644
  pub mod bgp;
 ----
 
-++++
- <script type="module" src="https://unpkg.com/x-frame-bypass"></script>
-<iframe is="x-frame-bypass" src="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/f133fc092a43103322ceadb4b40d9d9f28952548...87771a19f2f90e16546a4603a235cb9f02b4313d" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:200px;width:100%;border:none;overflow:hidden;" frameborder="0" title="GitHub"></iframe>
-++++
 
 
 テストを走らせてみましょう。
