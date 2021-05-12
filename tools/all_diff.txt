@@ -1,0 +1,1 @@
+git diff 4028dd5957849b2ed4b3d7432f56667125163f92 87771a19f2f90e16546a4603a235cb9f02b4313d | sed -e "/^diff/d" -e "/^@@/d" -e "/^new file mode/d" -e "/^index /d" -e "/^---/d" -e "s/^+++ b\/mrbgpdv2first\/\(.*\)$/----\n\n[source,rust,linenums,title=\1]\n----/g" | sed -e "1,2d" && echo "----"
