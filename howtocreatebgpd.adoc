@@ -1289,6 +1289,10 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/87771a19f2f90e
 include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/87771a19f2f90e16546a4603a235cb9f02b4313d/mrbgpdv2first/src/main.rs[]
 ----
 
+==== Establishedに遷移する
+
+
+
 === 1つのピアでUpdate Messageの交換やUpdate Messageの内容に従ってRouting Tableへの書き込みを可能にするところまでの実装
 
 === main関数の実装
