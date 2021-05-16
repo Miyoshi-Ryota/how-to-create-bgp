@@ -1226,6 +1226,23 @@ running 0 tests
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 ----
 
+これで、またタスクが一つ完了しました。
+
+* [x] プロジェクトを作成する
+* [x] Connect Stateに遷移する
+    - [x] ManualStart Eventを発生させる
+* [x] OpenSent Stateに遷移する
+    - [x] TCPコネクションを作成する
+* [x] OpenConfirm Stateに遷移する
+    - [x] BGP Open Messageを送信する
+    - [x] BGP Open Messageを受信する
+* [ ] Established Stateに遷移する
+    - [ ] BGP Keepalive Messageを送信する
+    - [ ] BGP Keepalive Messageを受信する
+* [ ] main関数を作成する
+* [ ] テストする
+
+
 現段階の全体のコードを記載します。GitHub上で閲覧したい方は、 https://github.com/Miyoshi-Ryota/mrbgpdv2/tree/87771a19f2f90e16546a4603a235cb9f02b4313d/mrbgpdv2first[GitHub-現段階の全体のコード]を参照してください。
 
 ----
@@ -1290,8 +1307,20 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/87771a19f2f90e
 ----
 
 ==== Establishedに遷移する
+さて、次は下記に取り組みましょう。
+
+* [ ] Established Stateに遷移する
+    - [ ] BGP Keepalive Messageを送信する
+    - [ ] BGP Keepalive Messageを受信する
 
 
+まずはテストを書きます。
+ほとんど前回のテストと同じです。
+
+[source,rust,linenums,title=src/bgp/peer.rs]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/bf05651e553aee8172b62fa71b6d1efc1b335b87/mrbgpdv2first/src/bgp/peer.rs[277..314]
+----
 
 === 1つのピアでUpdate Messageの交換やUpdate Messageの内容に従ってRouting Tableへの書き込みを可能にするところまでの実装
 
