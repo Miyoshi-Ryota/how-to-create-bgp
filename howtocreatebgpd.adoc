@@ -1322,6 +1322,322 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/87771a19f2f90e
 include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/bf05651e553aee8172b62fa71b6d1efc1b335b87/mrbgpdv2first/src/bgp/peer.rs[277..314]
 ----
 
+これは下記のような差分でテストを通すことが出来ます。
+
+* Keepaliveの説明
+* コードとしてはほとんど同じという説明
+
+[source,rust,linenums,title=src/bgp/message.rs]
+----
+ #[derive(Debug)]
+ pub enum BgpMessage {
+     Open(BgpOpenMessage),
+-    Keepalive(BgpKeepaliveMessage),
+ }
+-
+ impl BgpMessage {
+     pub fn serialize(&self) -> Vec<u8> {
+         match self {
+             BgpMessage::Open(open) => open.serialize(),
+-            BgpMessage::Keepalive(keepalive) => keepalive.serialize(),
++            _ => panic!(),
+         }
+     }
+ 
+         let bgp_type = BgpMessageType::from_type_number(bytes[18]);
+         match bgp_type {
+             BgpMessageType::Open => BgpMessage::Open(BgpOpenMessage::deserialize(bytes)),
+-            BgpMessageType::Keepalive => BgpMessage::Keepalive(BgpKeepaliveMessage::deserialize(bytes)),
+         }
+     }
+ 
+     pub fn get_type(&self) -> BgpMessageType {
+         match self {
+             BgpMessage::Open(_) => BgpMessageType::Open,
+-            BgpMessage::Keepalive(_) => BgpMessageType::Keepalive,
+         }
+     }
+ }
+ #[derive(Debug, Clone, Copy)]
+ pub enum BgpMessageType {
+     Open,
+-    Keepalive,
+ }
+ 
+ impl BgpMessageType {
+     fn to_type_number(&self) -> u8 {
+         match self {
+             BgpMessageType::Open => 1,
+-            BgpMessageType::Keepalive => 4,
+         }
+     }
+ 
+     fn from_type_number(type_number: u8) -> Self {
+         match type_number {
+             1 => BgpMessageType::Open,
+-            4 => BgpMessageType::Keepalive,
+             _ => panic!(),
+         }
+     }
+         }
+     }
+ }
+-
+-#[derive(Debug)]
+-pub struct BgpKeepaliveMessage {
+-    header: BgpMessageHeader,
+-}
+-
+-impl BgpKeepaliveMessage {
+-    pub fn new() -> Self {
+-        let header = BgpMessageHeader {
+-            length: 19,
+-            type_: BgpMessageType::Keepalive,
+-        };
+-        Self { header }
+-    }
+-
+-    fn serialize(&self) -> Vec<u8> {
+-        self.header.serialize()
+-    }
+-
+-    fn deserialize(bytes: &Vec<u8>) -> Self {
+-        let header = BgpMessageHeader::deserialize(&bytes[0..19].to_vec());
+-        Self { header }
+-    }
+-}
+\ No newline at end of file
+----
+
+[source,rust,linenums,title=src/bgp/peer.rs]
+----
+-use super::{message::{BgpKeepaliveMessage, BgpOpenMessage}, queue::{EventQueue, MessageQueue}};
++use super::{
++    message::BgpOpenMessage,
++    queue::{EventQueue, MessageQueue},
++};
+ use crate::bgp::config::Config;
+ use crate::bgp::config::Mode;
+ use crate::bgp::message::{BgpMessage, BgpMessageHeader, BgpMessageType};
+         match bgp_message.get_type() {
+             BgpMessageType::Open => {
+                 self.event_queue.enqueue(Event::BgpOpen);
+-            },
+-            BgpMessageType::Keepalive => {
+-                self.event_queue.enqueue(Event::Keepalive);
+-            },
++            }
+             _ => {}
+         }
+         self.message_queue.enqueue(bgp_message);
+             },
+             State::OpenSent => match event {
+                 Event::BgpOpen => {
+-                    let keepalive_message = BgpKeepaliveMessage::new();
+-                    self.send_bgp_message_to_remote_peer(BgpMessage::Keepalive(keepalive_message));
+                     self.now_state = State::OpenConfirm;
+                 }
+                 _ => {}
+             },
+-            State::OpenConfirm => match event {
+-                Event::Keepalive => {
+-                    self.now_state = State::Established;
+-                }
+-                _ => {},
+-            },
+-            _ => {},
++            _ => {}
+         }
+     }
+ }
+     Connect,
+     OpenSent,
+     OpenConfirm,
+-    Established,
+ }
+ 
+ #[derive(Debug, PartialEq, Eq, Clone, Copy)]
+     TcpCrAcked,
+     TcpConnectionConfirmed,
+     BgpOpen,
+-    Keepalive,
+ }
+ 
+ #[cfg(test)]
+ 
+         assert_eq!(local_bgp_peer.now_state, State::OpenConfirm);
+     }
+-
+-    #[test]
+-    fn peer_can_transition_to_established() {
+-        init();
+-        let _remote_bgp = thread::spawn(|| {
+-            let remote_config: Config = "64513 127.0.0.2 64512 127.0.0.1 passive".parse().unwrap();
+-            let mut remote_bgp_peer = Peer::new(remote_config);
+-            remote_bgp_peer.start();
+-
+-            let max_steps = 50;
+-            for _ in 0..max_steps {
+-                remote_bgp_peer.next_step();
+-                thread::sleep(time::Duration::from_secs_f32(0.1));
+-                if remote_bgp_peer.now_state == State::Established {
+-                    break;
+-                };
+-            }
+-
+-            assert_eq!(remote_bgp_peer.now_state, State::Established);
+-        });
+-
+-        // 先にPassiveモード側の処理が進むことを保証する。
+-        thread::sleep(time::Duration::from_secs_f32(0.5));
+-
+-        let local_config: Config = "64512 127.0.0.1 64513 127.0.0.2 active".parse().unwrap();
+-        let mut local_bgp_peer = Peer::new(local_config);
+-
+-        local_bgp_peer.start();
+-        let max_steps = 50;
+-        for _ in 0..max_steps {
+-            local_bgp_peer.next_step();
+-            thread::sleep(time::Duration::from_secs_f32(0.1));
+-            if local_bgp_peer.now_state == State::Established {
+-                break;
+-            };
+-        }
+-
+-        assert_eq!(local_bgp_peer.now_state, State::Established);
+-    }
+ }
+----
+
+テストの結果です。
+[source]
+----
+mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ RUST_LOG=info cargo test -- --nocapture --test-threads=1
+    Finished test [unoptimized + debuginfo] target(s) in 0.79s
+     Running unittests (target/debug/deps/mrbgpdv2first-8bf406b4cb3db834)
+
+running 4 tests
+test bgp::peer::tests::peer_can_transition_to_connect ... ok
+test bgp::peer::tests::peer_can_transition_to_established ... [2021-05-16T14:36:40Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64513), hold_time: HoldTime(240), bgp_identifier: 127.0.0.2, optional_parameter_length: 0, optional_parameters: [] })
+[2021-05-16T14:36:40Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64512), hold_time: HoldTime(240), bgp_identifier: 127.0.0.1, optional_parameter_length: 0, optional_parameters: [] })
+[2021-05-16T14:36:40Z INFO  mrbgpdv2first::bgp::peer] Recive bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64512), hold_time: HoldTime(240), bgp_identifier: 127.0.0.1, optional_parameter_length: 0, optional_parameters: [] })
+[2021-05-16T14:36:40Z INFO  mrbgpdv2first::bgp::peer] Recive bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64513), hold_time: HoldTime(240), bgp_identifier: 127.0.0.2, optional_parameter_length: 0, optional_parameters: [] })
+[2021-05-16T14:36:40Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Keepalive(BgpKeepaliveMessage { header: BgpMessageHeader { length: 19, type_: Keepalive } })
+[2021-05-16T14:36:40Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Keepalive(BgpKeepaliveMessage { header: BgpMessageHeader { length: 19, type_: Keepalive } })
+[2021-05-16T14:36:40Z INFO  mrbgpdv2first::bgp::peer] Recive bgp message Keepalive(BgpKeepaliveMessage { header: BgpMessageHeader { length: 19, type_: Keepalive } })
+[2021-05-16T14:36:40Z INFO  mrbgpdv2first::bgp::peer] Recive bgp message Keepalive(BgpKeepaliveMessage { header: BgpMessageHeader { length: 19, type_: Keepalive } })
+ok
+test bgp::peer::tests::peer_can_transition_to_open_confirm ... [2021-05-16T14:36:41Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64512), hold_time: HoldTime(240), bgp_identifier: 127.0.0.1, optional_parameter_length: 0, optional_parameters: [] })
+[2021-05-16T14:36:41Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64513), hold_time: HoldTime(240), bgp_identifier: 127.0.0.2, optional_parameter_length: 0, optional_parameters: [] })
+[2021-05-16T14:36:41Z INFO  mrbgpdv2first::bgp::peer] Recive bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64512), hold_time: HoldTime(240), bgp_identifier: 127.0.0.1, optional_parameter_length: 0, optional_parameters: [] })
+[2021-05-16T14:36:41Z INFO  mrbgpdv2first::bgp::peer] Recive bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64513), hold_time: HoldTime(240), bgp_identifier: 127.0.0.2, optional_parameter_length: 0, optional_parameters: [] })
+[2021-05-16T14:36:41Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Keepalive(BgpKeepaliveMessage { header: BgpMessageHeader { length: 19, type_: Keepalive } })
+[2021-05-16T14:36:41Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Keepalive(BgpKeepaliveMessage { header: BgpMessageHeader { length: 19, type_: Keepalive } })
+ok
+test bgp::peer::tests::peer_can_transition_to_open_sent ... [2021-05-16T14:36:41Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64512), hold_time: HoldTime(240), bgp_identifier: 127.0.0.1, optional_parameter_length: 0, optional_parameters: [] })
+ok
+[2021-05-16T14:36:41Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64513), hold_time: HoldTime(240), bgp_identifier: 127.0.0.2, optional_parameter_length: 0, optional_parameters: [] })
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.20s
+
+     Running unittests (target/debug/deps/mrbgpdv2first-229e56fd8674fb31)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests mrbgpdv2first
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ 
+
+----
+
+テストが通ってることを確認できました。
+これで、またタスクが一つ完了しました。
+
+* [x] プロジェクトを作成する
+* [x] Connect Stateに遷移する
+    - [x] ManualStart Eventを発生させる
+* [x] OpenSent Stateに遷移する
+    - [x] TCPコネクションを作成する
+* [x] OpenConfirm Stateに遷移する
+    - [x] BGP Open Messageを送信する
+    - [x] BGP Open Messageを受信する
+* [x] Established Stateに遷移する
+    - [x] BGP Keepalive Messageを送信する
+    - [x] BGP Keepalive Messageを受信する
+* [ ] main関数を作成する
+* [ ] テストする
+
+
+現段階の全体のコードを記載します。GitHub上で閲覧したい方は、 https://github.com/Miyoshi-Ryota/mrbgpdv2/tree/803b9cd401f2ac85cdabc16516ee76099bfdcb14/mrbgpdv2first[GitHub-現段階の全体のコード]を参照してください。
+
+----
+mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ tree
+.
+├── Cargo.lock
+├── Cargo.toml
+├── src
+│   ├── bgp
+│   │   ├── config.rs
+│   │   ├── message.rs
+│   │   ├── mod.rs
+│   │   ├── peer.rs
+│   │   ├── queue.rs
+│   │   └── timer.rs
+│   ├── lib.rs
+│   └── main.rs
+----
+
+[source,rust,linenums,title=Cargo.toml]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/803b9cd401f2ac85cdabc16516ee76099bfdcb14/mrbgpdv2first/Cargo.toml[]
+----
+
+[source,rust,linenums,title=src/bgp/config.rs]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/803b9cd401f2ac85cdabc16516ee76099bfdcb14/mrbgpdv2first/src/bgp/config.rs[]
+----
+
+[source,rust,linenums,title=src/bgp/message.rs]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/803b9cd401f2ac85cdabc16516ee76099bfdcb14/mrbgpdv2first/src/bgp/message.rs[]
+----
+
+[source,rust,linenums,title=src/bgp/mod.rs]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/803b9cd401f2ac85cdabc16516ee76099bfdcb14/mrbgpdv2first/src/bgp/mod.rs[]
+----
+
+[source,rust,linenums,title=src/bgp/peer.rs]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/803b9cd401f2ac85cdabc16516ee76099bfdcb14/mrbgpdv2first/src/bgp/peer.rs[]
+----
+
+[source,rust,linenums,title=src/bgp/queue.rs]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/803b9cd401f2ac85cdabc16516ee76099bfdcb14/mrbgpdv2first/src/bgp/queue.rs[]
+----
+
+[source,rust,linenums,title=src/bgp/timer.rs]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/803b9cd401f2ac85cdabc16516ee76099bfdcb14/mrbgpdv2first/src/bgp/timer.rs[]
+----
+
+[source,rust,linenums,title=src/lib.rs]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/803b9cd401f2ac85cdabc16516ee76099bfdcb14/mrbgpdv2first/src/lib.rs[]
+----
+
+
+==== メイン関数の追加
+
+==== 細かいリファクタリング
+
 === 1つのピアでUpdate Messageの交換やUpdate Messageの内容に従ってRouting Tableへの書き込みを可能にするところまでの実装
 
 === main関数の実装
