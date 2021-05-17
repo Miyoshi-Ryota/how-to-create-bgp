@@ -7235,7 +7235,112 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 </div>
 <div class="sect3">
 <h4 id="_メイン関数の追加">メイン関数の追加</h4>
-
+<div class="paragraph">
+<p>次は下記に取り組みましょう。</p>
+</div>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10063; main関数を作成する</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>今までのテストからほとんど自明ですが、下記の感じでどうでしょうか。</p>
+</div>
+<div class="listingblock">
+<div class="title">src/bgp/config.rs</div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><pre><span></span><span class="tok-w"> </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-p">{</span><span class="tok-n">net</span>::<span class="tok-n">Ipv4Addr</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-kt">str</span>::<span class="tok-n">FromStr</span><span class="tok-p">};</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-cp">#[derive(Debug)]</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">struct</span> <span class="tok-nc">Config</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-n">local_as_number</span>: <span class="tok-nc">bgp</span>::<span class="tok-n">AutonomousSystemNumber</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-n">local_ip_address</span>: <span class="tok-nc">Ipv4Addr</span><span class="tok-p">,</span><span class="tok-w"></span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">src/main.rs</div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span></pre></div></td><td class="code"><pre><span></span><span class="tok-o">+</span><span class="tok-cp">#[macro_use]</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">extern</span><span class="tok-w"> </span><span class="tok-k">crate</span><span class="tok-w"> </span><span class="tok-n">log</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-p">{</span><span class="tok-n">env</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">thread</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">time</span><span class="tok-p">};</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">mrbgpdv2first</span>::<span class="tok-n">bgp</span>::<span class="tok-n">config</span>::<span class="tok-n">Config</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">mrbgpdv2first</span>::<span class="tok-n">bgp</span>::<span class="tok-n">peer</span>::<span class="tok-n">Peer</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-k">fn</span> <span class="tok-nf">main</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">-</span><span class="tok-w">    </span><span class="tok-fm">println!</span><span class="tok-p">(</span><span class="tok-s">&quot;Hello, world!&quot;</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">env_logger</span>::<span class="tok-n">init</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">args</span>: <span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-nb">String</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">env</span>::<span class="tok-n">args</span><span class="tok-p">().</span><span class="tok-n">collect</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">config</span>: <span class="tok-nc">Config</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">args</span><span class="tok-p">[</span><span class="tok-mi">1</span><span class="tok-o">..</span><span class="tok-p">].</span><span class="tok-n">join</span><span class="tok-p">(</span><span class="tok-s">&quot; &quot;</span><span class="tok-p">).</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">debug</span><span class="tok-o">!</span><span class="tok-p">(</span><span class="tok-s">&quot;{:?}&quot;</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">config</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">p</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">Peer</span>::<span class="tok-n">new</span><span class="tok-p">(</span><span class="tok-n">config</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">loop</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">p</span><span class="tok-p">.</span><span class="tok-n">next_step</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">thread</span>::<span class="tok-n">sleep</span><span class="tok-p">(</span><span class="tok-n">time</span>::<span class="tok-n">Duration</span>::<span class="tok-n">from_secs_f32</span><span class="tok-p">(</span><span class="tok-mf">0.1</span><span class="tok-p">));</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-p">}</span><span class="tok-w"></span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_テストする">テストする</h4>
+<div class="paragraph">
+<p>最後のタスクに取り掛かりましょう。</p>
+</div>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10063; テストする</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>複数台のコンピュータを使用して、本BGPデーモンがEstablished Stateに遷移することができるかテストしてみましょう。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>VirtualboxやVMwareなどの仮想化ツールを使用して以下のようなネットワークを組みましょう。</p>
+</li>
+</ul>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="diag-0c7dadf0ab61bc70e11a52bdb25bf907.png" alt="Diagram" width="760" height="444">
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="diag-8fac67dc8bc58b7ccfe67c58a1cb36c1.png" alt="Diagram" width="760" height="444">
+</div>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_細かいリファクタリング">細かいリファクタリング</h4>
@@ -7278,7 +7383,7 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-16 22:41:18 UTC
+Last updated 2021-05-17 00:03:48 UTC
 </div>
 </div>
 </body>

@@ -1635,6 +1635,95 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/803b9cd401f2ac
 
 
 ==== メイン関数の追加
+次は下記に取り組みましょう。
+
+* [ ] main関数を作成する
+
+今までのテストからほとんど自明ですが、下記の感じでどうでしょうか。
+
+[source,rust,linenums,title=src/bgp/config.rs]
+----
+ use crate::bgp;
+ use std::{net::Ipv4Addr, str::FromStr};
++
++#[derive(Debug)]
+ pub struct Config {
+     pub local_as_number: bgp::AutonomousSystemNumber,
+     pub local_ip_address: Ipv4Addr,
+----
+
+[source,rust,linenums,title=src/main.rs]
+----
++#[macro_use]
++extern crate log;
++use std::{env, thread, time};
++use mrbgpdv2first::bgp::config::Config;
++use mrbgpdv2first::bgp::peer::Peer;
++
+ fn main() {
+-    println!("Hello, world!");
++    env_logger::init();
++    let args: Vec<String> = env::args().collect();
++    let config: Config = args[1..].join(" ").parse().unwrap();
++    debug!("{:?}", config);
++    let mut p = Peer::new(config);
++    loop {
++        p.next_step();
++        thread::sleep(time::Duration::from_secs_f32(0.1));
++    }
+ }
+----
+
+
+==== テストする
+最後のタスクに取り掛かりましょう。
+
+* [ ] テストする
+
+複数台のコンピュータを使用して、本BGPデーモンがEstablished Stateに遷移することができるかテストしてみましょう。
+
+* VirtualboxやVMwareなどの仮想化ツールを使用して以下のようなネットワークを組みましょう。
+
+[nwdiag]
+----
+nwdiag {
+  network dmz {
+      address = "210.x.x.x/24"
+
+      web01 [address = "210.x.x.1"];
+      web02 [address = "210.x.x.2"];
+  }
+  network internal {
+      address = "172.x.x.x/24";
+
+      web01 [address = "172.x.x.1"];
+      web02 [address = "172.x.x.2"];
+      db01;
+      db02;
+  }
+}
+----
+
+
+[nwdiag]
+....
+nwdiag {
+  network dmz {
+      address = "210.x.x.x/24"
+
+      web01 [address = "210.x.x.1"];
+      web02 [address = "210.x.x.2"];
+  }
+  network internal {
+      address = "172.x.x.x/24";
+
+      web01 [address = "172.x.x.1"];
+      web02 [address = "172.x.x.2"];
+      db01;
+      db02;
+  }
+}
+....
 
 ==== 細かいリファクタリング
 
