@@ -1682,7 +1682,10 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/803b9cd401f2ac
 
 複数台のコンピュータを使用して、本BGPデーモンがEstablished Stateに遷移することができるかテストしてみましょう。
 
-* VirtualboxやVMwareなどの仮想化ツールを使用して以下のようなネットワークを組みましょう。
+テスト用にVirtualboxやVMwareなどの仮想化ツールを使用して以下のようなネットワークを組みましょう。
+
+host-onlyネットワークのhost-computerとubuntu1でピアリングします。
+NATネットワークはubuntu1がインターネットの疎通を取るために用意しています。
 
 [nwdiag]
 ----
@@ -1690,7 +1693,7 @@ nwdiag {
   network host-only {
     address = "172.16.1.0/24"
     ubuntu1 [address = "172.16.1.128"]
-    host-computer = [address = "172.16.1.1"]
+    host-computer [address = "172.16.1.1"]
   }
 
   network NAT {
@@ -1704,7 +1707,7 @@ nwdiag {
       address = "192.168.1.0/24"
 
       host-computer [address = "192.168.1.110"]
-      router = [address = "192.168.1.1"]
+      router [address = "192.168.1.1"]
   }
 }
 ----

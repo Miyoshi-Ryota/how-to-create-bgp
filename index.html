@@ -7324,38 +7324,16 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 <div class="paragraph">
 <p>複数台のコンピュータを使用して、本BGPデーモンがEstablished Stateに遷移することができるかテストしてみましょう。</p>
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p>VirtualboxやVMwareなどの仮想化ツールを使用して以下のようなネットワークを組みましょう。</p>
-</li>
-</ul>
+<div class="paragraph">
+<p>テスト用にVirtualboxやVMwareなどの仮想化ツールを使用して以下のようなネットワークを組みましょう。</p>
 </div>
-<div class="listingblock">
+<div class="paragraph">
+<p>host-onlyネットワークのhost-computerとubuntu1でピアリングします。
+NATネットワークはubuntu1がインターネットの疎通を取るために用意しています。</p>
+</div>
+<div class="imageblock">
 <div class="content">
-<pre class="nowrap">Failed to generate image: nwdiag failed: ERROR: got unexpected token: 5,21-5,21: Op '['
-
-nwdiag {
-  network host-only {
-    address = "172.16.1.0/24"
-    ubuntu1 [address = "172.16.1.128"]
-    host-computer = [address = "172.16.1.1"]
-  }
-
-  network NAT {
-    address = "192.168.90.0/24";
-
-    host-computer [address = "192.168.90.1"]
-    ubuntu [address = "192.168.90.128"]
-    }
-
-  network for-internet {
-      address = "192.168.1.0/24"
-
-      host-computer [address = "192.168.1.110"]
-      router = [address = "192.168.1.1"]
-  }
-}</pre>
+<img src="diag-41e5466cdb306a4b29433f95724a70f5.png" alt="Diagram" width="456" height="588">
 </div>
 </div>
 </div>
@@ -7400,7 +7378,7 @@ nwdiag {
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-17 00:14:26 UTC
+Last updated 2021-05-17 00:16:09 UTC
 </div>
 </div>
 </body>
