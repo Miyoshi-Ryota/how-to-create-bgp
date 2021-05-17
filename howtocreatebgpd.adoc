@@ -1700,7 +1700,7 @@ nwdiag {
     address = "192.168.90.0/24";
 
     host-computer [address = "192.168.90.1"]
-    ubuntu [address = "192.168.90.128"]
+    ubuntu1 [address = "192.168.90.128"]
     }
 
   network for-internet {
@@ -1708,6 +1708,11 @@ nwdiag {
 
       host-computer [address = "192.168.1.110"]
       router [address = "192.168.1.1"]
+  }
+
+  network internet {
+      address = "x.x.x.x"
+      router
   }
 }
 ----
