@@ -1687,43 +1687,28 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/803b9cd401f2ac
 [nwdiag]
 ----
 nwdiag {
-  network dmz {
-      address = "210.x.x.x/24"
-
-      web01 [address = "210.x.x.1"];
-      web02 [address = "210.x.x.2"];
+  network host-only {
+    address = "172.16.1.0/24"
+    ubuntu1 [address = "172.16.1.128"]
+    host-computer = [address = "172.16.1.1"]
   }
-  network internal {
-      address = "172.x.x.x/24";
 
-      web01 [address = "172.x.x.1"];
-      web02 [address = "172.x.x.2"];
-      db01;
-      db02;
+  network NAT {
+    address = "192.168.90.0/24";
+
+    host-computer [address = "192.168.90.1"]
+    ubuntu [address = "192.168.90.128"]
+    }
+
+  network for-internet {
+      address = "192.168.1.0/24"
+
+      host-computer [address = "192.168.1.110"]
+      router = [address = "192.168.1.1"]
   }
 }
 ----
 
-
-[nwdiag]
-....
-nwdiag {
-  network dmz {
-      address = "210.x.x.x/24"
-
-      web01 [address = "210.x.x.1"];
-      web02 [address = "210.x.x.2"];
-  }
-  network internal {
-      address = "172.x.x.x/24";
-
-      web01 [address = "172.x.x.1"];
-      web02 [address = "172.x.x.2"];
-      db01;
-      db02;
-  }
-}
-....
 
 ==== 細かいリファクタリング
 

@@ -7331,14 +7331,31 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 </li>
 </ul>
 </div>
-<div class="imageblock">
+<div class="listingblock">
 <div class="content">
-<img src="diag-0c7dadf0ab61bc70e11a52bdb25bf907.png" alt="Diagram" width="760" height="444">
-</div>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="diag-8fac67dc8bc58b7ccfe67c58a1cb36c1.png" alt="Diagram" width="760" height="444">
+<pre class="nowrap">Failed to generate image: nwdiag failed: ERROR: got unexpected token: 5,21-5,21: Op '['
+
+nwdiag {
+  network host-only {
+    address = "172.16.1.0/24"
+    ubuntu1 [address = "172.16.1.128"]
+    host-computer = [address = "172.16.1.1"]
+  }
+
+  network NAT {
+    address = "192.168.90.0/24";
+
+    host-computer [address = "192.168.90.1"]
+    ubuntu [address = "192.168.90.128"]
+    }
+
+  network for-internet {
+      address = "192.168.1.0/24"
+
+      host-computer [address = "192.168.1.110"]
+      router = [address = "192.168.1.1"]
+  }
+}</pre>
 </div>
 </div>
 </div>
@@ -7383,7 +7400,7 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-17 00:03:48 UTC
+Last updated 2021-05-17 00:14:26 UTC
 </div>
 </div>
 </body>
