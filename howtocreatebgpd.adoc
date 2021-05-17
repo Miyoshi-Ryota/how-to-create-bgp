@@ -300,7 +300,6 @@ mrcsce@pop-os:~/programming/rustProjects/samplecode$
 例示したイベント駆動ステートマシンを実装できていることが確かめられました。
 BGPのステートマシンも前述の<<example_of_state_machine_impl>>に似た方針で実装していきます。
 
-== 1つのピアを実装するまで
 === BGPはどんなイベント駆動ステートマシンなのか
 BGPはどのようなイベント駆動ステートマシンとして表すのが良いでしょうか。
 
