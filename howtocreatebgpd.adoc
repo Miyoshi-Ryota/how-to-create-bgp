@@ -1747,26 +1747,62 @@ mrcsce@ubuntu-1:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$
 
 ==== 細かいリファクタリング
 さて、肉付けしていく前にいくつかリファクタリングをしましょう。
+Rustのフォーマットツール / Linterである、cargo fmt / cargo clippyを適用しました。
 
-* cargo fmt
-* cargo clippy
+なお、ステートマシンにたいして出力される下記警告については無視することにしました。
+本来たくさんあるArmを、今現在は1つしか書いていないために出力されているからです。
 
-=== 1つのピアでUpdate Messageの交換やUpdate Messageの内容に従ってRouting Tableへの書き込みを可能にするところまでの実装
-
-=== main関数の実装
-=== 本章で作るものの全体像
-[plantuml]
 ----
-@startuml
-class Animal {
-  run()
-}
-
-class Cat extends Animal {
-}
-@enduml
+you seem to be trying to use `match` for an equality check. Consider using `if`
 ----
 
+これで、この段階までの内容は完成です。
+現時点のコードを載せます。
+
+[source,rust,linenums,title=Cargo.toml]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501aed8aecb1492e32668ff7143e9/mrbgpdv2first/Cargo.toml[]
+----
+
+[source,rust,linenums,title=src/bgp/config.rs]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501aed8aecb1492e32668ff7143e9/mrbgpdv2first/src/bgp/config.rs[]
+----
+
+[source,rust,linenums,title=src/bgp/message.rs]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501aed8aecb1492e32668ff7143e9/mrbgpdv2first/src/bgp/message.rs[]
+----
+
+[source,rust,linenums,title=src/bgp/mod.rs]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501aed8aecb1492e32668ff7143e9/mrbgpdv2first/src/bgp/mod.rs[]
+----
+
+[source,rust,linenums,title=src/bgp/peer.rs]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501aed8aecb1492e32668ff7143e9/mrbgpdv2first/src/bgp/peer.rs[]
+----
+
+[source,rust,linenums,title=src/bgp/queue.rs]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501aed8aecb1492e32668ff7143e9/mrbgpdv2first/src/bgp/queue.rs[]
+----
+
+[source,rust,linenums,title=src/bgp/timer.rs]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501aed8aecb1492e32668ff7143e9/mrbgpdv2first/src/bgp/timer.rs[]
+----
+
+[source,rust,linenums,title=src/lib.rs]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501aed8aecb1492e32668ff7143e9/mrbgpdv2first/src/lib.rs[]
+----
+
+[source,rust,linenums,title=src/main.rs]
+----
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501aed8aecb1492e32668ff7143e9/mrbgpdv2first/src/main.rs[]
+----
 
 == 複数ピアをハンドリング可能な実装
 === 本章で作るものの全体像
