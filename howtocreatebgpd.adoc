@@ -318,7 +318,7 @@ BGPはどのようなイベント駆動ステートマシンとして表すの�
 また本章の第一段階「<<first_rev>>」のコードは同リポジトリの https://github.com/Miyoshi-Ryota/mrbgpdv2/tree/main/mrbgpdv2first[同リポジトリのmrbgpdv2first/] に存在します。
 
 
-=== 1つのピアがEstablishedに遷移するところまでの実装 [[first_rev]]
+== 1つのピアがEstablishedに遷移するところまでの実装 [[first_rev]]
 まずは1つのピアがEstablishedに至るまでの正常系のみのイベント駆動ステートマシンを実装します。
 
 RFCの方針の通り、1つのBGPピアを1つのイベント駆動ステートマシンとして表します。
@@ -369,7 +369,7 @@ OpenConfirm --> Established : KeepAliveMsg event
 @enduml
 ----
 
-==== 作業の明確化
+=== 作業の明確化
 ここまででなんとなく作るものが見えてきたでしょうか。本章では、<<first_rev>>をToDoレベルに明確化します。
 
 [title=タスクリスト]
@@ -388,7 +388,7 @@ OpenConfirm --> Established : KeepAliveMsg event
 * [ ] テストする
 
 
-==== プロジェクトの作成
+=== プロジェクトの作成
 
 Rustは以下のコマンドで新しいプロジェクトを作成することが出来ます。
 [source]
@@ -412,7 +412,7 @@ cargo new <プロジェクトの名前>
 * [ ] テストする
 
 
-==== Connect Stateに遷移する
+=== Connect Stateに遷移する
 それでは中身に入っていきましょう。
 下記に取り組みます。
 
@@ -533,7 +533,7 @@ test bgp::peer::tests::peer_can_transition_to_connect_start ... ok
 * [ ] テストする
 
 
-==== OpenSent Stateに遷移する
+=== OpenSent Stateに遷移する
 次に下記に取り組みます。
 
 * [ ] OpenSent Stateに遷移する
@@ -648,7 +648,7 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f133fc092a4310
 ----
 
 
-==== OpenConfirm Stateに遷移する
+=== OpenConfirm Stateに遷移する
 次は下記に取り組みましょう。
 
 * [ ] OpenConfirm Stateに遷移する
@@ -1305,7 +1305,7 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/87771a19f2f90e
 include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/87771a19f2f90e16546a4603a235cb9f02b4313d/mrbgpdv2first/src/main.rs[]
 ----
 
-==== Establishedに遷移する
+=== Establishedに遷移する
 さて、次は下記に取り組みましょう。
 
 * [ ] Established Stateに遷移する
@@ -1633,7 +1633,7 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/803b9cd401f2ac
 ----
 
 
-==== メイン関数の追加
+=== メイン関数の追加
 次は下記に取り組みましょう。
 
 * [ ] main関数を作成する
@@ -1675,7 +1675,7 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/803b9cd401f2ac
 ----
 
 
-==== テストする
+=== テストする
 最後のタスクに取り掛かりましょう。
 
 * [ ] テストする
@@ -1744,7 +1744,7 @@ mrcsce@ubuntu-1:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$
 これで一旦Establishedに至るまでの内容は完成です。
 あとはこれに肉付けしていくことで、BGPデーモンを完成させることが出来ます。
 
-==== 細かいリファクタリング
+=== 細かいリファクタリング
 さて、肉付けしていく前にいくつかリファクタリングをしましょう。
 Rustのフォーマットツール / Linterである、cargo fmt / cargo clippyを適用しました。
 
@@ -1760,47 +1760,47 @@ you seem to be trying to use `match` for an equality check. Consider using `if`
 
 [source,rust,linenums,title=Cargo.toml]
 ----
-include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501aed8aecb1492e32668ff7143e9/mrbgpdv2first/Cargo.toml[]
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/7091d23b463a217becb06d9e44f5e36bc46ed58f/mrbgpdv2first/Cargo.toml[]
 ----
 
 [source,rust,linenums,title=src/bgp/config.rs]
 ----
-include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501aed8aecb1492e32668ff7143e9/mrbgpdv2first/src/bgp/config.rs[]
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/7091d23b463a217becb06d9e44f5e36bc46ed58f/mrbgpdv2first/src/bgp/config.rs[]
 ----
 
 [source,rust,linenums,title=src/bgp/message.rs]
 ----
-include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501aed8aecb1492e32668ff7143e9/mrbgpdv2first/src/bgp/message.rs[]
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/7091d23b463a217becb06d9e44f5e36bc46ed58f/mrbgpdv2first/src/bgp/message.rs[]
 ----
 
 [source,rust,linenums,title=src/bgp/mod.rs]
 ----
-include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501aed8aecb1492e32668ff7143e9/mrbgpdv2first/src/bgp/mod.rs[]
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/7091d23b463a217becb06d9e44f5e36bc46ed58f/mrbgpdv2first/src/bgp/mod.rs[]
 ----
 
 [source,rust,linenums,title=src/bgp/peer.rs]
 ----
-include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501aed8aecb1492e32668ff7143e9/mrbgpdv2first/src/bgp/peer.rs[]
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/7091d23b463a217becb06d9e44f5e36bc46ed58f/mrbgpdv2first/src/bgp/peer.rs[]
 ----
 
 [source,rust,linenums,title=src/bgp/queue.rs]
 ----
-include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501aed8aecb1492e32668ff7143e9/mrbgpdv2first/src/bgp/queue.rs[]
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/7091d23b463a217becb06d9e44f5e36bc46ed58f/mrbgpdv2first/src/bgp/queue.rs[]
 ----
 
 [source,rust,linenums,title=src/bgp/timer.rs]
 ----
-include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501aed8aecb1492e32668ff7143e9/mrbgpdv2first/src/bgp/timer.rs[]
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/7091d23b463a217becb06d9e44f5e36bc46ed58f/mrbgpdv2first/src/bgp/timer.rs[]
 ----
 
 [source,rust,linenums,title=src/lib.rs]
 ----
-include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501aed8aecb1492e32668ff7143e9/mrbgpdv2first/src/lib.rs[]
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/7091d23b463a217becb06d9e44f5e36bc46ed58f/mrbgpdv2first/src/lib.rs[]
 ----
 
 [source,rust,linenums,title=src/main.rs]
 ----
-include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501aed8aecb1492e32668ff7143e9/mrbgpdv2first/src/main.rs[]
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/7091d23b463a217becb06d9e44f5e36bc46ed58f/mrbgpdv2first/src/main.rs[]
 ----
 
 == 複数ピアをハンドリング可能な実装
