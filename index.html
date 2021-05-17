@@ -7287,7 +7287,8 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 <span class="normal">15</span>
 <span class="normal">16</span>
 <span class="normal">17</span>
-<span class="normal">18</span></pre></div></td><td class="code"><pre><span></span><span class="tok-o">+</span><span class="tok-cp">#[macro_use]</span><span class="tok-w"></span>
+<span class="normal">18</span>
+<span class="normal">19</span></pre></div></td><td class="code"><pre><span></span><span class="tok-o">+</span><span class="tok-cp">#[macro_use]</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-k">extern</span><span class="tok-w"> </span><span class="tok-k">crate</span><span class="tok-w"> </span><span class="tok-n">log</span><span class="tok-p">;</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-p">{</span><span class="tok-n">env</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">thread</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">time</span><span class="tok-p">};</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">mrbgpdv2first</span>::<span class="tok-n">bgp</span>::<span class="tok-n">config</span>::<span class="tok-n">Config</span><span class="tok-p">;</span><span class="tok-w"></span>
@@ -7300,6 +7301,7 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">config</span>: <span class="tok-nc">Config</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">args</span><span class="tok-p">[</span><span class="tok-mi">1</span><span class="tok-o">..</span><span class="tok-p">].</span><span class="tok-n">join</span><span class="tok-p">(</span><span class="tok-s">&quot; &quot;</span><span class="tok-p">).</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">();</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">debug</span><span class="tok-o">!</span><span class="tok-p">(</span><span class="tok-s">&quot;{:?}&quot;</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">config</span><span class="tok-p">);</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">p</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">Peer</span>::<span class="tok-n">new</span><span class="tok-p">(</span><span class="tok-n">config</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">p</span><span class="tok-p">.</span><span class="tok-n">start</span><span class="tok-p">();</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">loop</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">p</span><span class="tok-p">.</span><span class="tok-n">next_step</span><span class="tok-p">();</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">thread</span>::<span class="tok-n">sleep</span><span class="tok-p">(</span><span class="tok-n">time</span>::<span class="tok-n">Duration</span>::<span class="tok-n">from_secs_f32</span><span class="tok-p">(</span><span class="tok-mf">0.1</span><span class="tok-p">));</span><span class="tok-w"></span>
@@ -7336,10 +7338,53 @@ NATネットワークはubuntu1がインターネットの疎通を取るため�
 <img src="diag-633e3459d6003c40ac2e8bcce444155b.png" alt="Diagram" width="456" height="588">
 </div>
 </div>
+<div class="paragraph">
+<p>テスト用の環境が構築できたら、実際に動かしてみましょう。
+動かしたログが下記です。
+想定通り2台でBGP Keepaliveのやり取りが行われ正常に動いている様子が確認できます。</p>
+</div>
+<div class="listingblock">
+<div class="title">host-computerのログ</div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code><span></span>mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ sudo RUST_LOG=info ./target/debug/mrbgpdv2first 64512 172.16.1.1 64513 172.16.1.128 active
+[2021-05-17T00:33:47Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64512), hold_time: HoldTime(240), bgp_identifier: 172.16.1.1, optional_parameter_length: 0, optional_parameters: [] })
+[2021-05-17T00:33:47Z INFO  mrbgpdv2first::bgp::peer] Recive bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64513), hold_time: HoldTime(240), bgp_identifier: 172.16.1.128, optional_parameter_length: 0, optional_parameters: [] })
+[2021-05-17T00:33:47Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Keepalive(BgpKeepaliveMessage { header: BgpMessageHeader { length: 19, type_: Keepalive } })
+[2021-05-17T00:33:47Z INFO  mrbgpdv2first::bgp::peer] Recive bgp message Keepalive(BgpKeepaliveMessage { header: BgpMessageHeader { length: 19, type_: Keepalive } })</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">ubuntu1のログ</div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code><span></span>mrcsce@ubuntu-1:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ sudo RUST_LOG=info ./target/debug/mrbgpdv2first 64513 172.16.1.128 64512 172.16.1.1 passive
+[2021-05-17T00:33:47Z INFO  mrbgpdv2first::bgp::peer] Recive bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64512), hold_time: HoldTime(240), bgp_identifier: 172.16.1.1, optional_parameter_length: 0, optional_parameters: [] })
+[2021-05-17T00:33:47Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64513), hold_time: HoldTime(240), bgp_identifier: 172.16.1.128, optional_parameter_length: 0, optional_parameters: [] })
+[2021-05-17T00:33:47Z INFO  mrbgpdv2first::bgp::peer] Recive bgp message Keepalive(BgpKeepaliveMessage { header: BgpMessageHeader { length: 19, type_: Keepalive } })
+[2021-05-17T00:33:47Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Keepalive(BgpKeepaliveMessage { header: BgpMessageHeader { length: 19, type_: Keepalive } })
+^C
+mrcsce@ubuntu-1:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>これで一旦Establishedに至るまでの内容は完成です。
+あとはこれに肉付けしていくことで、BGPデーモンを完成させることが出来ます。</p>
+</div>
 </div>
 <div class="sect3">
 <h4 id="_細かいリファクタリング">細かいリファクタリング</h4>
-
+<div class="paragraph">
+<p>さて、肉付けしていく前にいくつかリファクタリングをしましょう。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>cargo fmt</p>
+</li>
+<li>
+<p>cargo clippy</p>
+</li>
+</ul>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -7378,7 +7423,7 @@ NATネットワークはubuntu1がインターネットの疎通を取るため�
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-17 00:19:18 UTC
+Last updated 2021-05-17 00:39:11 UTC
 </div>
 </div>
 </body>
