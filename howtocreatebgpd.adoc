@@ -1667,6 +1667,7 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/803b9cd401f2ac
 +    let config: Config = args[1..].join(" ").parse().unwrap();
 +    debug!("{:?}", config);
 +    let mut p = Peer::new(config);
++    p.start();
 +    loop {
 +        p.next_step();
 +        thread::sleep(time::Duration::from_secs_f32(0.1));
@@ -1717,8 +1718,38 @@ nwdiag {
 }
 ----
 
+テスト用の環境が構築できたら、実際に動かしてみましょう。
+動かしたログが下記です。
+想定通り2台でBGP Keepaliveのやり取りが行われ正常に動いている様子が確認できます。
+
+[source,title="host-computerのログ"]
+----
+mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ sudo RUST_LOG=info ./target/debug/mrbgpdv2first 64512 172.16.1.1 64513 172.16.1.128 active
+[2021-05-17T00:33:47Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64512), hold_time: HoldTime(240), bgp_identifier: 172.16.1.1, optional_parameter_length: 0, optional_parameters: [] })
+[2021-05-17T00:33:47Z INFO  mrbgpdv2first::bgp::peer] Recive bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64513), hold_time: HoldTime(240), bgp_identifier: 172.16.1.128, optional_parameter_length: 0, optional_parameters: [] })
+[2021-05-17T00:33:47Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Keepalive(BgpKeepaliveMessage { header: BgpMessageHeader { length: 19, type_: Keepalive } })
+[2021-05-17T00:33:47Z INFO  mrbgpdv2first::bgp::peer] Recive bgp message Keepalive(BgpKeepaliveMessage { header: BgpMessageHeader { length: 19, type_: Keepalive } })
+----
+
+[source,title="ubuntu1のログ"]
+----
+mrcsce@ubuntu-1:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ sudo RUST_LOG=info ./target/debug/mrbgpdv2first 64513 172.16.1.128 64512 172.16.1.1 passive
+[2021-05-17T00:33:47Z INFO  mrbgpdv2first::bgp::peer] Recive bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64512), hold_time: HoldTime(240), bgp_identifier: 172.16.1.1, optional_parameter_length: 0, optional_parameters: [] })
+[2021-05-17T00:33:47Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64513), hold_time: HoldTime(240), bgp_identifier: 172.16.1.128, optional_parameter_length: 0, optional_parameters: [] })
+[2021-05-17T00:33:47Z INFO  mrbgpdv2first::bgp::peer] Recive bgp message Keepalive(BgpKeepaliveMessage { header: BgpMessageHeader { length: 19, type_: Keepalive } })
+[2021-05-17T00:33:47Z INFO  mrbgpdv2first::bgp::peer] Send bgp message Keepalive(BgpKeepaliveMessage { header: BgpMessageHeader { length: 19, type_: Keepalive } })
+^C
+mrcsce@ubuntu-1:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$ 
+----
+
+これで一旦Establishedに至るまでの内容は完成です。
+あとはこれに肉付けしていくことで、BGPデーモンを完成させることが出来ます。
 
 ==== 細かいリファクタリング
+さて、肉付けしていく前にいくつかリファクタリングをしましょう。
+
+* cargo fmt
+* cargo clippy
 
 === 1つのピアでUpdate Messageの交換やUpdate Messageの内容に従ってRouting Tableへの書き込みを可能にするところまでの実装
 
