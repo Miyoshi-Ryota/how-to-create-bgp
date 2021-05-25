@@ -2877,52 +2877,22 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 <div class="paragraph">
 <p>差分を解説します。この差分ではOpenMessageの送信と受信の2つを行っています。</p>
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p>OpenMessageを送信する。</p>
-<div class="ulist">
-<ul>
-<li>
-<p>PeerにBGP Messageを送信するメソッド、send_bgp_message_to_remote_peer、を追加しました。</p>
-</li>
-<li>
-<p>Peerのhandle_eventメソッド内で、send_bgp_message_to_remote_peerメソッドを使用して、OpenMessageの送信を行うようにしました。</p>
-</li>
-<li>
-<p>BGPMessageやOpenMessageを表す構造体をsrc/bgp/message.rs配下に追加しました。これらの構造体はserializeメソッドでデータとして送信可能なバイト列に変換し、deserialize関連関数でバイト列から構造体に変換することにしました。Enumとして実装しているBgpMessageはTraitとして実装しても良かったのですが、受信時に動的ディスパッチが必要になったため、ここではシンプルにEnumとしています。</p>
-</li>
-<li>
-<p>BgpOpenMessageの構造については、RFCで定義されている内容をシンプルに構造体にしました。 <a href="https://datatracker.ietf.org/doc/html/rfc4271#section-4.1">RFC4271 Section4.1 Message Header Format</a>、 <a href="https://datatracker.ietf.org/doc/html/rfc4271#section-4.1">RFC4271 Section4.2 OPEN Message Format</a> に定義されています。BGPにはタイマーイベントがあります。タイマーイベントとは、状態XになってY秒後に発生するといったイベントです。HoldTimeは、タイマーイベントの管理に使用します。タイマーイベントのほとんどはエラー処理なので、現段階では実装しません。しかし他社実装から受信したパケットにはHoldTimeの情報が含まれています。HoldTimeを含むパケットを送受信するために、現段階で構造体には含んでいます。</p>
-</li>
-</ul>
+<div class="paragraph">
+<p>OpenMessageを送信する部分について説明します。
+* PeerにBGP Messageを送信するメソッド、send_bgp_message_to_remote_peer、を追加しました。
+* Peerのhandle_eventメソッド内で、send_bgp_message_to_remote_peerメソッドを使用して、OpenMessageの送信を行うようにしました。
+* BGPMessageやOpenMessageを表す構造体をsrc/bgp/message.rs配下に追加しました。これらの構造体はserializeメソッドでデータとして送信可能なバイト列に変換し、deserialize関連関数でバイト列から構造体に変換することにしました。Enumとして実装しているBgpMessageはTraitとして実装しても良かったのですが、受信時に動的ディスパッチが必要になったため、ここではシンプルにEnumとしています。
+* BgpOpenMessageの構造については、RFCで定義されている内容をシンプルに構造体にしました。 <a href="https://datatracker.ietf.org/doc/html/rfc4271#section-4.1">RFC4271 Section4.1 Message Header Format</a>、 <a href="https://datatracker.ietf.org/doc/html/rfc4271#section-4.1">RFC4271 Section4.2 OPEN Message Format</a> に定義されています。BGPにはタイマーイベントがあります。タイマーイベントとは、状態XになってY秒後に発生するといったイベントです。HoldTimeは、タイマーイベントの管理に使用します。タイマーイベントのほとんどはエラー処理なので、現段階では実装しません。しかし他社実装から受信したパケットにはHoldTimeの情報が含まれています。HoldTimeを含むパケットを送受信するために、現段階で構造体には含んでいます。</p>
 </div>
-</li>
-<li>
-<p>OpenMessageを受信する。</p>
-</li>
-<li>
-<p>non_blocking modeに変更していること</p>
-</li>
-<li>
-<p>next_stepにrecive_one_message()を入れていること</p>
-</li>
-<li>
-<p>handle_bgp_messageでハンドルしてイベントを注入していること</p>
-</li>
-<li>
-<p>recieve_one_messageの説明</p>
-</li>
-<li>
-<p>transfer_data_tcp-connection_to_self_bufferは、該当のコネクションで受信したデータをすべてself.bufferに移している</p>
-</li>
-<li>
-<p>retrive_one_message_from_bufferはself.bufferから1つのBGPメッセージのバイト列を取得している。</p>
-</li>
-<li>
-<p>そのバイト列をモデルに変換している</p>
-</li>
-</ul>
+<div class="paragraph">
+<p>OpenMessageを受信する部分について説明します。
+* non_blocking modeに変更していること
+* next_stepにrecive_one_message()を入れていること
+* handle_bgp_messageでハンドルしてイベントを注入していること
+* recieve_one_messageの説明
+    * transfer_data_tcp-connection_to_self_bufferは、該当のコネクションで受信したデータをすべてself.bufferに移している
+    * retrive_one_message_from_bufferはself.bufferから1つのBGPメッセージのバイト列を取得している。
+    * そのバイト列をモデルに変換している</p>
 </div>
 <div id="bgp_header_structure" class="imageblock">
 <div class="content">
@@ -9029,7 +8999,7 @@ Rustのフォーマットツール / Linterである、cargo fmt / cargo clippy�
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-25 23:46:59 UTC
+Last updated 2021-05-25 23:49:25 UTC
 </div>
 </div>
 </body>
