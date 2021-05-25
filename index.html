@@ -2875,21 +2875,55 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 差分をGitHubで閲覧したい方は、 <a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/f133fc092a43103322ceadb4b40d9d9f28952548&#8230;&#8203;87771a19f2f90e16546a4603a235cb9f02b4313d">GitHub上の差分</a>を閲覧してください。</p>
 </div>
 <div class="paragraph">
-<p>ToDo: 執筆中 解説場所
-* OpenMessageを送信するところを説明する。
-    * Peerのnext_step()にsend_bgp_messageが生えていること
-    * OpenMessageはhogeのように書くことが出来ること
-    * BGPメッセージはどんな構造になっているのか
-    * OpenMessageはどんな構造をしているのか
-    * src/bgp/message.rsの内容
-* OpenMessageを受信するところを説明する。
-    * non_blocking modeに変更していること
-    * next_stepにrecive_one_message()を入れていること
-    * handle_bgp_messageでハンドルしてイベントを注入していること
-    * recieve_one_messageの説明
-        * transfer_data_tcp-connection_to_self_bufferは、該当のコネクションで受信したデータをすべてself.bufferに移している
-        * retrive_one_message_from_bufferはself.bufferから1つのBGPメッセージのバイト列を取得している。
-        * そのバイト列をモデルに変換している</p>
+<p>差分を解説します。この差分ではOpenMessageの送信と受信の2つを行っています。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>OpenMessageを送信する。</p>
+</li>
+<li>
+<p>PeerにBGP Messageを送信するメソッド、send_bgp_message_to_remote_peer、を追加しました。</p>
+</li>
+<li>
+<p>Peerのhandle_eventメソッド内で、send_bgp_message_to_remote_peerメソッドを使用して、OpenMessageの送信を行うようにしました。</p>
+</li>
+<li>
+<p>BGPMessageやOpenMessageを表す構造体をsrc/bgp/message.rs配下に追加しました。これらの構造体はserializeメソッドでデータとして送信可能なバイト列に変換し、deserialize関連関数でバイト列から構造体に変換することにしました。Enumとして実装しているBgpMessageはTraitとして実装しても良かったのですが、受信時に動的ディスパッチが必要になったため、ここではシンプルにEnumとしています。</p>
+</li>
+<li>
+<p>BgpOpenMessageの構造については、RFCで定義されている内容をシンプルに構造体にしました。 <a href="https://datatracker.ietf.org/doc/html/rfc4271#section-4.1">RFC4271 Section4.1 Message Header Format</a>、 <a href="https://datatracker.ietf.org/doc/html/rfc4271#section-4.1">RFC4271 Section4.2 OPEN Message Format</a> に定義されています。BgpOpenMessageのHoldTimeについてはこの段階では対応しませんが、構造体には含んでいます。BGPにはタイマーイベントがあります。タイマーイベントとは、状態XになってY秒後に発生するといったイベントです。HoldTimeは、タイマーイベントの管理に使用します。タイマーイベントのほとんどはエラー処理なので、現段階では実装しません。</p>
+</li>
+<li>
+<p>OpenMessageを受信する。</p>
+</li>
+<li>
+<p>non_blocking modeに変更していること</p>
+</li>
+<li>
+<p>next_stepにrecive_one_message()を入れていること</p>
+</li>
+<li>
+<p>handle_bgp_messageでハンドルしてイベントを注入していること</p>
+</li>
+<li>
+<p>recieve_one_messageの説明</p>
+</li>
+<li>
+<p>transfer_data_tcp-connection_to_self_bufferは、該当のコネクションで受信したデータをすべてself.bufferに移している</p>
+</li>
+<li>
+<p>retrive_one_message_from_bufferはself.bufferから1つのBGPメッセージのバイト列を取得している。</p>
+</li>
+<li>
+<p>そのバイト列をモデルに変換している</p>
+</li>
+</ul>
+</div>
+<div id="open_message_structure" class="imageblock">
+<div class="content">
+<img src="diag-0c24ba92f7ba1a3ca5eb04a588ef37c7.png" alt="Diagram" width="896" height="768">
+</div>
 </div>
 <div class="listingblock">
 <div class="title">Cargo.toml</div>
@@ -8986,7 +9020,7 @@ Rustのフォーマットツール / Linterである、cargo fmt / cargo clippy�
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-25 22:45:20 UTC
+Last updated 2021-05-25 23:39:18 UTC
 </div>
 </div>
 </body>
