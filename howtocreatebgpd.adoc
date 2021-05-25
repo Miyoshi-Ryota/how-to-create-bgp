@@ -551,7 +551,14 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f133fc092a4310
 
 このテストが通れば、上記のタスクは完了したと言えます。
 以下のようなコードの更新でテストを通すことが可能です。
+
 GitHub上で差分を確認したい場合は、 https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92...f133fc092a43103322ceadb4b40d9d9f28952548[GitHub上での差分]を閲覧ください。
+
+ToDo: 執筆中です。注目ポイントはこの辺。
+* handle_eventにcreate_tcp_connection_to_remote_ipが増えている。
+* create_tcp_connection_to_remote_ipでリモートとコネクションを張っている。
+* コネクションがはれたらその旨を知らせるイベントをenqueueしている
+* そのイベントをhandle_eventして状態を遷移している
 
 [source,rust,linenums,title=src/bgp/config.rs]
 ----
@@ -696,12 +703,6 @@ GitHub上で差分を確認したい場合は、 https://github.com/Miyoshi-Ryot
 sudo ifconfig lo0 alias 127.0.0.2
 ----
 
-* handle_eventにcreate_tcp_connection_to_remote_ipが増えている。
-* create_tcp_connection_to_remote_ipでリモートとコネクションを張っている。
-* コネクションがはれたらその旨を知らせるイベントをenqueueしている
-* そのイベントをhandle_eventして状態を遷移している
-
-
 本コードでは`create_tcp_connection_to_remote_ip`メソッドでバインドしています。
 これはroot権限が必要な操作です。
 root権限でテストを実行可能にする必要があります。
@@ -816,6 +817,7 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/87771a19f2f90e
 以下のようなコードの更新でテストを通すことが可能です。
 差分をGitHubで閲覧したい方は、 https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/f133fc092a43103322ceadb4b40d9d9f28952548...87771a19f2f90e16546a4603a235cb9f02b4313d[GitHub上の差分]を閲覧してください。
 
+ToDo: 執筆中 解説場所
 * OpenMessageを送信するところを説明する。
     * Peerのnext_step()にsend_bgp_messageが生えていること
     * OpenMessageはhogeのように書くことが出来ること
@@ -1464,6 +1466,7 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/bf05651e553aee
 
 これは下記のような差分でテストを通すことが出来ます。
 
+ToDo 説明する
 * Keepaliveの説明
 * コードとしてはほとんど同じという説明
 
@@ -1943,6 +1946,9 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501
 ----
 include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501aed8aecb1492e32668ff7143e9/mrbgpdv2first/src/main.rs[]
 ----
+
+== 1つのピアでUpdate Messageの交換やUpdate Messageの内容にしたがってRouting Tableへの書き込みが可能
+
 
 == 複数ピアをハンドリング可能な実装
 === 本章で作るものの全体像

@@ -548,6 +548,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <li><a href="#_細かいリファクタリング">細かいリファクタリング</a></li>
 </ul>
 </li>
+<li><a href="#_1つのピアでupdate_messageの交換やupdate_messageの内容にしたがってrouting_tableへの書き込みが可能">1つのピアでUpdate Messageの交換やUpdate Messageの内容にしたがってRouting Tableへの書き込みが可能</a></li>
 <li><a href="#_複数ピアをハンドリング可能な実装">複数ピアをハンドリング可能な実装</a>
 <ul class="sectlevel2">
 <li><a href="#_本章で作るものの全体像">本章で作るものの全体像</a></li>
@@ -1884,8 +1885,17 @@ threadを使用して擬似的にリモート側のコンピュータを表し�
 </div>
 <div class="paragraph">
 <p>このテストが通れば、上記のタスクは完了したと言えます。
-以下のようなコードの更新でテストを通すことが可能です。
-GitHub上で差分を確認したい場合は、 <a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92&#8230;&#8203;f133fc092a43103322ceadb4b40d9d9f28952548">GitHub上での差分</a>を閲覧ください。</p>
+以下のようなコードの更新でテストを通すことが可能です。</p>
+</div>
+<div class="paragraph">
+<p>GitHub上で差分を確認したい場合は、 <a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92&#8230;&#8203;f133fc092a43103322ceadb4b40d9d9f28952548">GitHub上での差分</a>を閲覧ください。</p>
+</div>
+<div class="paragraph">
+<p>ToDo: 執筆中です。注目ポイントはこの辺。
+* handle_eventにcreate_tcp_connection_to_remote_ipが増えている。
+* create_tcp_connection_to_remote_ipでリモートとコネクションを張っている。
+* コネクションがはれたらその旨を知らせるイベントをenqueueしている
+* そのイベントをhandle_eventして状態を遷移している</p>
 </div>
 <div class="listingblock">
 <div class="title">src/bgp/config.rs</div>
@@ -2164,22 +2174,6 @@ GitHub上で差分を確認したい場合は、 <a href="https://github.com/Miy
 <div class="content">
 <pre class="nowrap">sudo ifconfig lo0 alias 127.0.0.2</pre>
 </div>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>handle_eventにcreate_tcp_connection_to_remote_ipが増えている。</p>
-</li>
-<li>
-<p>create_tcp_connection_to_remote_ipでリモートとコネクションを張っている。</p>
-</li>
-<li>
-<p>コネクションがはれたらその旨を知らせるイベントをenqueueしている</p>
-</li>
-<li>
-<p>そのイベントをhandle_eventして状態を遷移している</p>
-</li>
-</ul>
 </div>
 <div class="paragraph">
 <p>本コードでは`create_tcp_connection_to_remote_ip`メソッドでバインドしています。
@@ -2867,51 +2861,22 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 <p>以下のようなコードの更新でテストを通すことが可能です。
 差分をGitHubで閲覧したい方は、 <a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/f133fc092a43103322ceadb4b40d9d9f28952548&#8230;&#8203;87771a19f2f90e16546a4603a235cb9f02b4313d">GitHub上の差分</a>を閲覧してください。</p>
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p>OpenMessageを送信するところを説明する。</p>
-</li>
-<li>
-<p>Peerのnext_step()にsend_bgp_messageが生えていること</p>
-</li>
-<li>
-<p>OpenMessageはhogeのように書くことが出来ること</p>
-</li>
-<li>
-<p>BGPメッセージはどんな構造になっているのか</p>
-</li>
-<li>
-<p>OpenMessageはどんな構造をしているのか</p>
-</li>
-<li>
-<p>src/bgp/message.rsの内容</p>
-</li>
-<li>
-<p>OpenMessageを受信するところを説明する。</p>
-</li>
-<li>
-<p>non_blocking modeに変更していること</p>
-</li>
-<li>
-<p>next_stepにrecive_one_message()を入れていること</p>
-</li>
-<li>
-<p>handle_bgp_messageでハンドルしてイベントを注入していること</p>
-</li>
-<li>
-<p>recieve_one_messageの説明</p>
-</li>
-<li>
-<p>transfer_data_tcp-connection_to_self_bufferは、該当のコネクションで受信したデータをすべてself.bufferに移している</p>
-</li>
-<li>
-<p>retrive_one_message_from_bufferはself.bufferから1つのBGPメッセージのバイト列を取得している。</p>
-</li>
-<li>
-<p>そのバイト列をモデルに変換している</p>
-</li>
-</ul>
+<div class="paragraph">
+<p>ToDo: 執筆中 解説場所
+* OpenMessageを送信するところを説明する。
+    * Peerのnext_step()にsend_bgp_messageが生えていること
+    * OpenMessageはhogeのように書くことが出来ること
+    * BGPメッセージはどんな構造になっているのか
+    * OpenMessageはどんな構造をしているのか
+    * src/bgp/message.rsの内容
+* OpenMessageを受信するところを説明する。
+    * non_blocking modeに変更していること
+    * next_stepにrecive_one_message()を入れていること
+    * handle_bgp_messageでハンドルしてイベントを注入していること
+    * recieve_one_messageの説明
+        * transfer_data_tcp-connection_to_self_bufferは、該当のコネクションで受信したデータをすべてself.bufferに移している
+        * retrive_one_message_from_bufferはself.bufferから1つのBGPメッセージのバイト列を取得している。
+        * そのバイト列をモデルに変換している</p>
 </div>
 <div class="listingblock">
 <div class="title">Cargo.toml</div>
@@ -5757,15 +5722,10 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 <div class="paragraph">
 <p>これは下記のような差分でテストを通すことが出来ます。</p>
 </div>
-<div class="ulist">
-<ul>
-<li>
-<p>Keepaliveの説明</p>
-</li>
-<li>
-<p>コードとしてはほとんど同じという説明</p>
-</li>
-</ul>
+<div class="paragraph">
+<p>ToDo 説明する
+* Keepaliveの説明
+* コードとしてはほとんど同じという説明</p>
 </div>
 <div class="listingblock">
 <div class="title">src/bgp/message.rs</div>
@@ -8981,6 +8941,12 @@ Rustのフォーマットツール / Linterである、cargo fmt / cargo clippy�
 </div>
 </div>
 <div class="sect1">
+<h2 id="_1つのピアでupdate_messageの交換やupdate_messageの内容にしたがってrouting_tableへの書き込みが可能">1つのピアでUpdate Messageの交換やUpdate Messageの内容にしたがってRouting Tableへの書き込みが可能</h2>
+<div class="sectionbody">
+
+</div>
+</div>
+<div class="sect1">
 <h2 id="_複数ピアをハンドリング可能な実装">複数ピアをハンドリング可能な実装</h2>
 <div class="sectionbody">
 <div class="sect2">
@@ -8998,7 +8964,7 @@ Rustのフォーマットツール / Linterである、cargo fmt / cargo clippy�
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-25 14:28:27 UTC
+Last updated 2021-05-25 14:43:51 UTC
 </div>
 </div>
 </body>
