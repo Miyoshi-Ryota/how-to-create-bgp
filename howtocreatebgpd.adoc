@@ -126,7 +126,7 @@ end note
 @enduml
 ----
 
-=== イベント駆動ステートマシンの例
+=== イベント駆動ステートマシンの例[[example_of_event_driven_state_machine]]
 イベント駆動ステートマシンをどのよう実装すればいいのかという勘所を掴んでもらうために<<what_is_event_driven_state_machine>>の章で例示したテレビをコードにします。
 次のようになります。
 
@@ -469,6 +469,8 @@ bgp_peer.start()でピアのコネクションを開始（ManualStartイベン�
 
 このテストが通るまでコンパイラのエラーにしたがってコードを追加していくと下記のようになります。
 
+このコードは、<<example_of_event_driven_state_machine>>で示した例とほとんど一致しています。Peer構造体がステートマシンです。
+
 [source,title="ディレクトリ構造"]
 ----
 ├── src
@@ -549,16 +551,155 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f133fc092a4310
 
 このテストが通れば、上記のタスクは完了したと言えます。
 以下のようなコードの更新でテストを通すことが可能です。
+GitHub上で差分を確認したい場合は、 https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92...f133fc092a43103322ceadb4b40d9d9f28952548[GitHub上での差分]を閲覧ください。
+
+[source,rust,linenums,title=src/bgp/config.rs]
+----
+ use std::{net::Ipv4Addr, str::FromStr};
+ pub struct Config {
+     local_as_number: bgp::AutonomousSystemNumber,
+-    local_ip_address: Ipv4Addr,
++    pub local_ip_address: Ipv4Addr,
+     remote_as_number: bgp::AutonomousSystemNumber,
+-    remote_ip_address: Ipv4Addr,
+-    mode: Mode,
++    pub remote_ip_address: Ipv4Addr,
++    pub mode: Mode,
+ }
+
+-enum Mode {
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub enum Mode {
+     Passive,
+     Active,
+ }
+
+ #[derive(Debug)]
+-struct ModeParseError;
++pub struct ModeParseError;
+
+ impl FromStr for Mode {
+     type Err = ModeParseError;
+----
+
+[source,rust,linenums,title=src/bgp/peer.rs]
+----
+ use super::event_queue::EventQueue;
+ use crate::bgp::config::Config;
++use crate::bgp::config::Mode;
++use std::net::{TcpListener, TcpStream};
+
+ struct Peer {
+     config: Config,
+     event_queue: EventQueue,
+     now_state: State,
++    tcp_connection: Option<TcpStream>,
+ }
+
+ impl Peer {
+     pub fn new(config: Config) -> Self {
+         let event_queue = EventQueue::new();
+         let now_state = State::Idle;
++        let tcp_connection = None;
+         Self {
+             config,
+             event_queue,
+             now_state,
++            tcp_connection,
+         }
+     }
+
+         }
+     }
+
++    fn create_tcp_connection_to_remote_ip(&mut self) -> Option<TcpStream> {
++        let remote_addr = self.config.remote_ip_address;
++        let bgp_port = 179;
++        if self.config.mode == Mode::Active {
++            let tcp_connection = TcpStream::connect((remote_addr, bgp_port)).ok();
++            if tcp_connection.is_some() {
++                self.event_queue.enqueue(Event::TcpCrAcked);
++            };
++            tcp_connection
++        } else {
++            let tcp_listener = TcpListener::bind((self.config.local_ip_address, bgp_port))
++                .expect("port 179にbind出来ません。");
++            let tcp_connection = tcp_listener.accept().map(|v| v.0).ok();
++            if tcp_connection.is_some() {
++                self.event_queue.enqueue(Event::TcpConnectionConfirmed);
++            };
++            tcp_connection
++        }
++    }
++
+     fn handle_event(&mut self, event: Event) {
+         match self.now_state {
+             State::Idle => match event {
+                 Event::ManualStart => {
++                    self.tcp_connection = self.create_tcp_connection_to_remote_ip();
+                     self.now_state = State::Connect;
+                 }
+                 _ => {}
+             },
+-            _ => (),
++            State::Connect => match event {
++                Event::TcpConnectionConfirmed | Event::TcpCrAcked => {
++                    self.now_state = State::OpenSent;
++                }
++                _ => {}
++            },
++            _ => {}
+         }
+     }
+ }
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++    use std::thread;
++    use std::time;
++
+     #[test]
+     fn peer_can_transition_to_connect_start() {
+         let config: Config = "64512 127.0.0.1 64513 127.0.0.2 active".parse().unwrap();
+         bgp_peer.next_step();
+         assert_eq!(bgp_peer.now_state, State::Connect);
+     }
++
++    #[test]
++    fn peer_can_transition_to_open_sent_start() {
++        let _remote_bgp = thread::spawn(|| {
++            let remote_config: Config = "64513 127.0.0.2 64512 127.0.0.1 passive".parse().unwrap();
++            let mut remote_bgp_peer = Peer::new(remote_config);
++            remote_bgp_peer.start();
++            remote_bgp_peer.next_step();
++            remote_bgp_peer.next_step();
++            assert_eq!(remote_bgp_peer.now_state, State::OpenSent);
++        });
++
++        // 先にPassiveモード側の処理が進むことを保証する。
++        thread::sleep(time::Duration::from_secs_f32(0.5));
++
++        let local_config: Config = "64512 127.0.0.1 64513 127.0.0.2 active".parse().unwrap();
++        let mut local_bgp_peer = Peer::new(local_config);
++
++        local_bgp_peer.start();
++        local_bgp_peer.next_step();
++        local_bgp_peer.next_step();
++
++        assert_eq!(local_bgp_peer.now_state, State::OpenSent);
++    }
+ }
+----
+
+なおMacを使用している場合は、127.0.0.2がループバックIPとして設定されていません。Macを使用している場合はテストを実行可能にするために下記コマンドを実行してください。
+----
+sudo ifconfig lo0 alias 127.0.0.2
+----
 
 * handle_eventにcreate_tcp_connection_to_remote_ipが増えている。
 * create_tcp_connection_to_remote_ipでリモートとコネクションを張っている。
 * コネクションがはれたらその旨を知らせるイベントをenqueueしている
 * そのイベントをhandle_eventして状態を遷移している
-
-++++
- <script type="module" src="https://unpkg.com/x-frame-bypass"></script>
-<iframe is="x-frame-bypass" src="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92...f133fc092a43103322ceadb4b40d9d9f28952548" onload='javascript:(function(o){o.style.height=o.contentWindow.document.body.scrollHeight+"px";}(this));' style="height:200px;width:100%;border:none;overflow:hidden;" frameborder="0" title="GitHub"></iframe>
-++++
 
 
 本コードでは`create_tcp_connection_to_remote_ip`メソッドでバインドしています。
