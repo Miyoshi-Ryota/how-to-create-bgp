@@ -1895,10 +1895,20 @@ threadを使用して擬似的にリモート側のコンピュータを表し�
 <p>GitHub上で差分を確認したい場合は、 <a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/4028dd5957849b2ed4b3d7432f56667125163f92&#8230;&#8203;f133fc092a43103322ceadb4b40d9d9f28952548">GitHub上での差分</a>を閲覧ください。</p>
 </div>
 <div class="paragraph">
-<p>差分の内容を解説します。差分は大きく分けて3つあります。
-* Peerにcreate_tc_connection_to_remote_ipメソッドを追加しました。このメソッドは現在のモードに合わせてTCPコネクションを作成します。TCPコネクションの作成に成功した場合、その旨を表すイベントEvent::TcpCrAcked / Event::TcpConnectionConfirmedをピアのイベントキュー、Peer.event_queue、にエンキューします。
-* Idle状態でManualStart Eventが発生した時にTCPコネクションの作成を試みるようにしました。これは、<a href="#first_impl_bgp">第一段階で実装するステートマシン</a>で示した通りです。具体的にはhandle_eventメソッドにて、create_tcp_connection_to_remote_ipメソッドを呼び出しています。
-* Peerのhandle_eventメソッドでState::Connectの時にEvent::TcpCrAcked / Event::TcpConnectionConfirmedを扱えるようにしました。<a href="#first_impl_bgp">第一段階で実装するステートマシン</a>で示した通り、State::Connectの時にEvent::TcpCrAcked / Event::TcpConnectionConfirmedが発生した場合、OpenSentステートに遷移します。BGPOpenMessageの送信は次の章で行いますので、この段階ではOpenSentステートに遷移するところまでを行っています。</p>
+<p>差分の内容を解説します。差分は大きく分けて3つあります。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Peerにcreate_tc_connection_to_remote_ipメソッドを追加しました。このメソッドは現在のモードに合わせてTCPコネクションを作成します。TCPコネクションの作成に成功した場合、その旨を表すイベントEvent::TcpCrAcked / Event::TcpConnectionConfirmedをピアのイベントキュー、Peer.event_queue、にエンキューします。</p>
+</li>
+<li>
+<p>Idle状態でManualStart Eventが発生した時にTCPコネクションの作成を試みるようにしました。これは、<a href="#first_impl_bgp">第一段階で実装するステートマシン</a>で示した通りです。具体的にはhandle_eventメソッドにて、create_tcp_connection_to_remote_ipメソッドを呼び出しています。</p>
+</li>
+<li>
+<p>Peerのhandle_eventメソッドでState::Connectの時にEvent::TcpCrAcked / Event::TcpConnectionConfirmedを扱えるようにしました。<a href="#first_impl_bgp">第一段階で実装するステートマシン</a>で示した通り、State::Connectの時にEvent::TcpCrAcked / Event::TcpConnectionConfirmedが発生した場合、OpenSentステートに遷移します。BGPOpenMessageの送信は次の章で行いますので、この段階ではOpenSentステートに遷移するところまでを行っています。</p>
+</li>
+</ul>
 </div>
 <div class="listingblock">
 <div class="title">src/bgp/config.rs</div>
@@ -8976,7 +8986,7 @@ Rustのフォーマットツール / Linterである、cargo fmt / cargo clippy�
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-25 22:43:26 UTC
+Last updated 2021-05-25 22:45:20 UTC
 </div>
 </div>
 </body>
