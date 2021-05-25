@@ -548,7 +548,11 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <li><a href="#_細かいリファクタリング">細かいリファクタリング</a></li>
 </ul>
 </li>
-<li><a href="#_1つのピアでupdate_messageの交換やupdate_messageの内容にしたがってrouting_tableへの書き込みが可能">1つのピアでUpdate Messageの交換やUpdate Messageの内容にしたがってRouting Tableへの書き込みが可能</a></li>
+<li><a href="#_1つのピアでupdate_messageの交換やupdate_messageの内容にしたがってrouting_tableへの書き込みが可能な実装">1つのピアでUpdate Messageの交換やUpdate Messageの内容にしたがってRouting Tableへの書き込みが可能な実装</a>
+<ul class="sectlevel2">
+<li><a href="#_作業の明確化_2">作業の明確化</a></li>
+</ul>
+</li>
 <li><a href="#_複数ピアをハンドリング可能な実装">複数ピアをハンドリング可能な実装</a>
 <ul class="sectlevel2">
 <li><a href="#_本章で作るものの全体像">本章で作るものの全体像</a></li>
@@ -8941,9 +8945,18 @@ Rustのフォーマットツール / Linterである、cargo fmt / cargo clippy�
 </div>
 </div>
 <div class="sect1">
-<h2 id="_1つのピアでupdate_messageの交換やupdate_messageの内容にしたがってrouting_tableへの書き込みが可能">1つのピアでUpdate Messageの交換やUpdate Messageの内容にしたがってRouting Tableへの書き込みが可能</h2>
+<h2 id="_1つのピアでupdate_messageの交換やupdate_messageの内容にしたがってrouting_tableへの書き込みが可能な実装">1つのピアでUpdate Messageの交換やUpdate Messageの内容にしたがってRouting Tableへの書き込みが可能な実装</h2>
 <div class="sectionbody">
-
+<div class="sect2">
+<h3 id="_作業の明確化_2">作業の明確化</h3>
+<div class="paragraph">
+<p>[ ] ルーティングテーブルの読みを可能にする
+[ ] BGP Update Messageを送信可能にする
+[ ] ルーティングテーブルへの書き込みを可能にする
+[ ] BGP Update Messageの受信を可能にする
+[ ] タイマーイベントの導入</p>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -8964,7 +8977,7 @@ Rustのフォーマットツール / Linterである、cargo fmt / cargo clippy�
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-25 14:43:51 UTC
+Last updated 2021-05-25 22:42:28 UTC
 </div>
 </div>
 </body>

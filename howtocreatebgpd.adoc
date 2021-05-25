@@ -1947,8 +1947,13 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501
 include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501aed8aecb1492e32668ff7143e9/mrbgpdv2first/src/main.rs[]
 ----
 
-== 1つのピアでUpdate Messageの交換やUpdate Messageの内容にしたがってRouting Tableへの書き込みが可能
-
+== 1つのピアでUpdate Messageの交換やUpdate Messageの内容にしたがってRouting Tableへの書き込みが可能な実装
+=== 作業の明確化
+[ ] ルーティングテーブルの読みを可能にする
+[ ] BGP Update Messageを送信可能にする
+[ ] ルーティングテーブルへの書き込みを可能にする
+[ ] BGP Update Messageの受信を可能にする
+[ ] タイマーイベントの導入
 
 == 複数ピアをハンドリング可能な実装
 === 本章で作るものの全体像
