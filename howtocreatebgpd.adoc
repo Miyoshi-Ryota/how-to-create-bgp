@@ -843,7 +843,7 @@ OpenMessageを受信する部分について説明します。
 
   0-15: Marker
   16-17: Length
-  19: Type
+  18: Type
 }
 ----
 
