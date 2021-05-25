@@ -833,30 +833,32 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/87771a19f2f90e
         * retrive_one_message_from_bufferはself.bufferから1つのBGPメッセージのバイト列を取得している。
         * そのバイト列をモデルに変換している
 
-[[open_message_structure]]
+[[bgp_header_structure]]
 [packetdiag]
 ----
 {
-  colwidth = 32
+  colwidth = 16
   node_height = 72
 
-  0-15: Source Port
-  16-31: Destination Port
-  32-63: Sequence Number
-  64-95: Acknowledgment Number
-  96-99: Data Offset
-  100-105: Reserved
-  106: URG [rotate = 270]
-  107: ACK [rotate = 270]
-  108: PSH [rotate = 270]
-  109: RST [rotate = 270]
-  110: SYN [rotate = 270]
-  111: FIN [rotate = 270]
-  112-127: Window
-  128-143: Checksum
-  144-159: Urgent Pointer
-  160-191: (Options and Padding)
-  192-223: data [colheight = 3]
+  0-15: Marker
+  16-17: Length
+  19: Type
+}
+----
+
+[[bgp_open_message_structure]]
+[packetdiag]
+----
+{
+  colwidth = 16
+  node_height = 72
+  
+  0: Version
+  1-2: My Autonomous System
+  3-4: HoldTime
+  5-8: BGP Identifier
+  9: Opt Parm Len
+  10-31: Optional Parameters (variable)
 }
 ----
 
