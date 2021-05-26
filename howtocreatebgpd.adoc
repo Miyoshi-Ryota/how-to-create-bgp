@@ -1494,7 +1494,7 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/87771a19f2f90e
 
 [source,rust,linenums,title=src/bgp/peer.rs]
 ----
-include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/bf05651e553aee8172b62fa71b6d1efc1b335b87/mrbgpdv2first/src/bgp/peer.rs[277..314]
+include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/bf05651e553aee8172b62fa71b6d1efc1b335b87/mrbgpdv2first/src/bgp/peer.rs[lines=277..314]
 ----
 
 これは下記のような差分でテストを通すことが出来ます。
