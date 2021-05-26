@@ -1508,182 +1508,183 @@ ToDo 説明する
  #[derive(Debug)]
  pub enum BgpMessage {
      Open(BgpOpenMessage),
--    Keepalive(BgpKeepaliveMessage),
++    Keepalive(BgpKeepaliveMessage),
  }
--
++
  impl BgpMessage {
      pub fn serialize(&self) -> Vec<u8> {
          match self {
              BgpMessage::Open(open) => open.serialize(),
--            BgpMessage::Keepalive(keepalive) => keepalive.serialize(),
-+            _ => panic!(),
+-            _ => panic!(),
++            BgpMessage::Keepalive(keepalive) => keepalive.serialize(),
          }
      }
- 
+
          let bgp_type = BgpMessageType::from_type_number(bytes[18]);
          match bgp_type {
              BgpMessageType::Open => BgpMessage::Open(BgpOpenMessage::deserialize(bytes)),
--            BgpMessageType::Keepalive => BgpMessage::Keepalive(BgpKeepaliveMessage::deserialize(bytes)),
++            BgpMessageType::Keepalive => BgpMessage::Keepalive(BgpKeepaliveMessage::deserialize(bytes)),
          }
      }
- 
+
      pub fn get_type(&self) -> BgpMessageType {
          match self {
              BgpMessage::Open(_) => BgpMessageType::Open,
--            BgpMessage::Keepalive(_) => BgpMessageType::Keepalive,
++            BgpMessage::Keepalive(_) => BgpMessageType::Keepalive,
          }
      }
  }
  #[derive(Debug, Clone, Copy)]
  pub enum BgpMessageType {
      Open,
--    Keepalive,
++    Keepalive,
  }
- 
+
  impl BgpMessageType {
      fn to_type_number(&self) -> u8 {
          match self {
              BgpMessageType::Open => 1,
--            BgpMessageType::Keepalive => 4,
++            BgpMessageType::Keepalive => 4,
          }
      }
- 
+
      fn from_type_number(type_number: u8) -> Self {
          match type_number {
              1 => BgpMessageType::Open,
--            4 => BgpMessageType::Keepalive,
++            4 => BgpMessageType::Keepalive,
              _ => panic!(),
          }
      }
          }
      }
  }
--
--#[derive(Debug)]
--pub struct BgpKeepaliveMessage {
--    header: BgpMessageHeader,
--}
--
--impl BgpKeepaliveMessage {
--    pub fn new() -> Self {
--        let header = BgpMessageHeader {
--            length: 19,
--            type_: BgpMessageType::Keepalive,
--        };
--        Self { header }
--    }
--
--    fn serialize(&self) -> Vec<u8> {
--        self.header.serialize()
--    }
--
--    fn deserialize(bytes: &Vec<u8>) -> Self {
--        let header = BgpMessageHeader::deserialize(&bytes[0..19].to_vec());
--        Self { header }
--    }
--}
++
++#[derive(Debug)]
++pub struct BgpKeepaliveMessage {
++    header: BgpMessageHeader,
++}
++
++impl BgpKeepaliveMessage {
++    pub fn new() -> Self {
++        let header = BgpMessageHeader {
++            length: 19,
++            type_: BgpMessageType::Keepalive,
++        };
++        Self { header }
++    }
++
++    fn serialize(&self) -> Vec<u8> {
++        self.header.serialize()
++    }
++
++    fn deserialize(bytes: &Vec<u8>) -> Self {
++        let header = BgpMessageHeader::deserialize(&bytes[0..19].to_vec());
++        Self { header }
++    }
++}
 \ No newline at end of file
 ----
 
 [source,rust,linenums,title=src/bgp/peer.rs]
 ----
--use super::{message::{BgpKeepaliveMessage, BgpOpenMessage}, queue::{EventQueue, MessageQueue}};
-+use super::{
-+    message::BgpOpenMessage,
-+    queue::{EventQueue, MessageQueue},
-+};
+-use super::{
+-    message::BgpOpenMessage,
+-    queue::{EventQueue, MessageQueue},
+-};
++use super::{message::{BgpKeepaliveMessage, BgpOpenMessage}, queue::{EventQueue, MessageQueue}};
  use crate::bgp::config::Config;
  use crate::bgp::config::Mode;
  use crate::bgp::message::{BgpMessage, BgpMessageHeader, BgpMessageType};
          match bgp_message.get_type() {
              BgpMessageType::Open => {
                  self.event_queue.enqueue(Event::BgpOpen);
--            },
--            BgpMessageType::Keepalive => {
--                self.event_queue.enqueue(Event::Keepalive);
--            },
-+            }
+-            }
++            },
++            BgpMessageType::Keepalive => {
++                self.event_queue.enqueue(Event::Keepalive);
++            },
              _ => {}
          }
          self.message_queue.enqueue(bgp_message);
              },
              State::OpenSent => match event {
                  Event::BgpOpen => {
--                    let keepalive_message = BgpKeepaliveMessage::new();
--                    self.send_bgp_message_to_remote_peer(BgpMessage::Keepalive(keepalive_message));
++                    let keepalive_message = BgpKeepaliveMessage::new();
++                    self.send_bgp_message_to_remote_peer(BgpMessage::Keepalive(keepalive_message));
                      self.now_state = State::OpenConfirm;
                  }
                  _ => {}
              },
--            State::OpenConfirm => match event {
--                Event::Keepalive => {
--                    self.now_state = State::Established;
--                }
--                _ => {},
--            },
--            _ => {},
-+            _ => {}
+-            _ => {}
++            State::OpenConfirm => match event {
++                Event::Keepalive => {
++                    self.now_state = State::Established;
++                }
++                _ => {},
++            },
++            _ => {},
          }
      }
  }
      Connect,
      OpenSent,
      OpenConfirm,
--    Established,
++    Established,
  }
- 
+
  #[derive(Debug, PartialEq, Eq, Clone, Copy)]
      TcpCrAcked,
      TcpConnectionConfirmed,
      BgpOpen,
--    Keepalive,
++    Keepalive,
  }
- 
+
  #[cfg(test)]
- 
+
          assert_eq!(local_bgp_peer.now_state, State::OpenConfirm);
      }
--
--    #[test]
--    fn peer_can_transition_to_established() {
--        init();
--        let _remote_bgp = thread::spawn(|| {
--            let remote_config: Config = "64513 127.0.0.2 64512 127.0.0.1 passive".parse().unwrap();
--            let mut remote_bgp_peer = Peer::new(remote_config);
--            remote_bgp_peer.start();
--
--            let max_steps = 50;
--            for _ in 0..max_steps {
--                remote_bgp_peer.next_step();
--                thread::sleep(time::Duration::from_secs_f32(0.1));
--                if remote_bgp_peer.now_state == State::Established {
--                    break;
--                };
--            }
--
--            assert_eq!(remote_bgp_peer.now_state, State::Established);
--        });
--
--        // 先にPassiveモード側の処理が進むことを保証する。
--        thread::sleep(time::Duration::from_secs_f32(0.5));
--
--        let local_config: Config = "64512 127.0.0.1 64513 127.0.0.2 active".parse().unwrap();
--        let mut local_bgp_peer = Peer::new(local_config);
--
--        local_bgp_peer.start();
--        let max_steps = 50;
--        for _ in 0..max_steps {
--            local_bgp_peer.next_step();
--            thread::sleep(time::Duration::from_secs_f32(0.1));
--            if local_bgp_peer.now_state == State::Established {
--                break;
--            };
--        }
--
--        assert_eq!(local_bgp_peer.now_state, State::Established);
--    }
++
++    #[test]
++    fn peer_can_transition_to_established() {
++        init();
++        let _remote_bgp = thread::spawn(|| {
++            let remote_config: Config = "64513 127.0.0.2 64512 127.0.0.1 passive".parse().unwrap();
++            let mut remote_bgp_peer = Peer::new(remote_config);
++            remote_bgp_peer.start();
++
++            let max_steps = 50;
++            for _ in 0..max_steps {
++                remote_bgp_peer.next_step();
++                thread::sleep(time::Duration::from_secs_f32(0.1));
++                if remote_bgp_peer.now_state == State::Established {
++                    break;
++                };
++            }
++
++            assert_eq!(remote_bgp_peer.now_state, State::Established);
++        });
++
++        // 先にPassiveモード側の処理が進むことを保証する。
++        thread::sleep(time::Duration::from_secs_f32(0.5));
++
++        let local_config: Config = "64512 127.0.0.1 64513 127.0.0.2 active".parse().unwrap();
++        let mut local_bgp_peer = Peer::new(local_config);
++
++        local_bgp_peer.start();
++        let max_steps = 50;
++        for _ in 0..max_steps {
++            local_bgp_peer.next_step();
++            thread::sleep(time::Duration::from_secs_f32(0.1));
++            if local_bgp_peer.now_state == State::Established {
++                break;
++            };
++        }
++
++        assert_eq!(local_bgp_peer.now_state, State::Established);
++    }
  }
 ----
+
 
 テストの結果です。
 [source]
