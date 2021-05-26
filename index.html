@@ -5227,9 +5227,10 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 差分をGitHubで閲覧したい場合は、 <a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/87771a19f2f90e16546a4603a235cb9f02b4313d&#8230;&#8203;803b9cd401f2ac85cdabc16516ee76099bfdcb14">GitHub上での差分</a>を閲覧してください。</p>
 </div>
 <div class="paragraph">
-<p>ToDo 説明する
-* Keepaliveの説明
-* コードとしてはほとんど同じという説明</p>
+<p>BGP Keepalive Messageは <a href="https://datatracker.ietf.org/doc/html/rfc4271#section-4.4">RFC4271 section 4.4</a>に記載されているように、Peerが疎通可能かどうかを確認するためのもので、ただのBGP Headerからのみ成るパケットです。</p>
+</div>
+<div class="paragraph">
+<p>コードに関しては、これまでとほとんど同じです。OpenMessageを送る要領でKeepaliveを送ります。</p>
 </div>
 <div class="listingblock">
 <div class="title">src/bgp/message.rs</div>
@@ -8477,7 +8478,7 @@ Rustのフォーマットツール / Linterである、cargo fmt / cargo clippy�
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-26 13:52:09 UTC
+Last updated 2021-05-26 14:01:44 UTC
 </div>
 </div>
 </body>

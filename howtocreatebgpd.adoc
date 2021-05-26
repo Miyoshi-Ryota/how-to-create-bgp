@@ -1501,9 +1501,9 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/bf05651e553aee
 差分をGitHubで閲覧したい場合は、 https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/87771a19f2f90e16546a4603a235cb9f02b4313d...803b9cd401f2ac85cdabc16516ee76099bfdcb14[GitHub上での差分]を閲覧してください。
 
 
-ToDo 説明する
-* Keepaliveの説明
-* コードとしてはほとんど同じという説明
+BGP Keepalive Messageは https://datatracker.ietf.org/doc/html/rfc4271#section-4.4[RFC4271 section 4.4]に記載されているように、Peerが疎通可能かどうかを確認するためのもので、ただのBGP Headerからのみ成るパケットです。
+
+コードに関しては、これまでとほとんど同じです。OpenMessageを送る要領でKeepaliveを送ります。
 
 [source,rust,linenums,title=src/bgp/message.rs]
 ----
