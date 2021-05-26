@@ -1498,6 +1498,8 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/bf05651e553aee
 ----
 
 これは下記のような差分でテストを通すことが出来ます。
+差分をGitHubで閲覧したい場合は、 https://github.com/Miyoshi-Ryota/mrbgpdv2/compare/87771a19f2f90e16546a4603a235cb9f02b4313d...803b9cd401f2ac85cdabc16516ee76099bfdcb14[GitHub上での差分]を閲覧してください。
+
 
 ToDo 説明する
 * Keepaliveの説明
