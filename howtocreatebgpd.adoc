@@ -824,9 +824,10 @@ OpenMessageを送信する部分について説明します。
 * PeerにBGP Messageを送信するメソッド、send_bgp_message_to_remote_peer、を追加しました。
 * Peerのhandle_eventメソッド内で、send_bgp_message_to_remote_peerメソッドを使用して、OpenMessageの送信を行うようにしました。
 * BGPMessageやOpenMessageを表す構造体をsrc/bgp/message.rs配下に追加しました。これらの構造体はserializeメソッドでデータとして送信可能なバイト列に変換し、deserialize関連関数でバイト列から構造体に変換することにしました。Enumとして実装しているBgpMessageはTraitとして実装しても良かったのですが、受信時に動的ディスパッチが必要になったため、ここではシンプルにEnumとしています。
-* BgpOpenMessageの構造については、RFCで定義されている内容をシンプルに構造体にしました。 https://datatracker.ietf.org/doc/html/rfc4271#section-4.1[RFC4271 Section4.1 Message Header Format]、 https://datatracker.ietf.org/doc/html/rfc4271#section-4.1[RFC4271 Section4.2 OPEN Message Format] に定義されています。BGPにはタイマーイベントがあります。タイマーイベントとは、状態XになってY秒後に発生するといったイベントです。HoldTimeは、タイマーイベントの管理に使用します。タイマーイベントのほとんどはエラー処理なので、現段階では実装しません。しかし他社実装から受信したパケットにはHoldTimeの情報が含まれています。HoldTimeを含むパケットを送受信するために、現段階で構造体には含んでいます。
+* BgpOpenMessageの構造については、RFCで定義されている内容をシンプルに構造体にしました。 https://datatracker.ietf.org/doc/html/rfc4271#section-4.1[RFC4271 Section4.1 Message Header Format]、 https://datatracker.ietf.org/doc/html/rfc4271#section-4.1[RFC4271 Section4.2 OPEN Message Format] に定義されています。BGPにはタイマーイベントがあります。タイマーイベントとは、状態XになってY秒後に発生するといったイベントです。HoldTimeは、タイマーイベントの管理に使用します。タイマーイベントのほとんどはエラー処理なので、現段階では実装しません。しかし他社実装から受信したパケットにはHoldTimeの情報が含まれています。HoldTimeを含むパケットを送受信するために、現段階で構造体にはHoldTimeを含んでいます。
 
 OpenMessageを受信する部分について説明します。
+ToDo：説明する
 
 * non_blocking modeに変更していること
 * next_stepにrecive_one_message()を入れていること

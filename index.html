@@ -2892,12 +2892,13 @@ mrcsce@pop-os:~/programming/rustProjects/mrbgpdv2/mrbgpdv2first$</code></pre>
 <p>BGPMessageやOpenMessageを表す構造体をsrc/bgp/message.rs配下に追加しました。これらの構造体はserializeメソッドでデータとして送信可能なバイト列に変換し、deserialize関連関数でバイト列から構造体に変換することにしました。Enumとして実装しているBgpMessageはTraitとして実装しても良かったのですが、受信時に動的ディスパッチが必要になったため、ここではシンプルにEnumとしています。</p>
 </li>
 <li>
-<p>BgpOpenMessageの構造については、RFCで定義されている内容をシンプルに構造体にしました。 <a href="https://datatracker.ietf.org/doc/html/rfc4271#section-4.1">RFC4271 Section4.1 Message Header Format</a>、 <a href="https://datatracker.ietf.org/doc/html/rfc4271#section-4.1">RFC4271 Section4.2 OPEN Message Format</a> に定義されています。BGPにはタイマーイベントがあります。タイマーイベントとは、状態XになってY秒後に発生するといったイベントです。HoldTimeは、タイマーイベントの管理に使用します。タイマーイベントのほとんどはエラー処理なので、現段階では実装しません。しかし他社実装から受信したパケットにはHoldTimeの情報が含まれています。HoldTimeを含むパケットを送受信するために、現段階で構造体には含んでいます。</p>
+<p>BgpOpenMessageの構造については、RFCで定義されている内容をシンプルに構造体にしました。 <a href="https://datatracker.ietf.org/doc/html/rfc4271#section-4.1">RFC4271 Section4.1 Message Header Format</a>、 <a href="https://datatracker.ietf.org/doc/html/rfc4271#section-4.1">RFC4271 Section4.2 OPEN Message Format</a> に定義されています。BGPにはタイマーイベントがあります。タイマーイベントとは、状態XになってY秒後に発生するといったイベントです。HoldTimeは、タイマーイベントの管理に使用します。タイマーイベントのほとんどはエラー処理なので、現段階では実装しません。しかし他社実装から受信したパケットにはHoldTimeの情報が含まれています。HoldTimeを含むパケットを送受信するために、現段階で構造体にはHoldTimeを含んでいます。</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>OpenMessageを受信する部分について説明します。</p>
+<p>OpenMessageを受信する部分について説明します。
+ToDo：説明する</p>
 </div>
 <div class="ulist">
 <ul>
@@ -9029,7 +9030,7 @@ Rustのフォーマットツール / Linterである、cargo fmt / cargo clippy�
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-26 00:16:27 UTC
+Last updated 2021-05-26 00:19:13 UTC
 </div>
 </div>
 </body>
