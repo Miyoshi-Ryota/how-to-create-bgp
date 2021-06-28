@@ -8463,11 +8463,21 @@ BGPでは、Peer間で、ルーティングの情報をUpdate Messageと呼ば�
 <div class="paragraph">
 <p>本項で行う作業を明確化します。</p>
 </div>
-<div class="paragraph">
-<p>[ ] ルーティングテーブルの読みを可能にする
-[ ] BGP Update Messageを送信可能にする
-[ ] ルーティングテーブルへの書き込みを可能にする
-[ ] BGP Update Messageの受信を可能にする</p>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10063; ルーティングテーブルの読みを可能にする</p>
+</li>
+<li>
+<p>&#10063; BGP Update Messageを送信可能にする</p>
+</li>
+<li>
+<p>&#10063; ルーティングテーブルへの書き込みを可能にする</p>
+</li>
+<li>
+<p>&#10063; BGP Update Messageの受信を可能にする</p>
+</li>
+</ul>
 </div>
 </div>
 <div class="sect2">
@@ -8479,6 +8489,125 @@ netlinkを生で扱うのは難しいため、本書ではライブラリを使�
 </div>
 <div class="paragraph">
 <p><a href="https://github.com/little-dude/netlink" class="bare">https://github.com/little-dude/netlink</a></p>
+</div>
+<div class="paragraph">
+<p>Cargo.tomlにライブラリ類を追記しましょう。</p>
+</div>
+<div class="listingblock">
+<div class="title">src/Cargo.toml</div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><pre><span></span><span class="tok-p">[</span><span class="tok-n">dependencies</span><span class="tok-p">]</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-n">log</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;0.4.0&quot;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-n">rtnetlink</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;0.7.0&quot;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-n">tokio</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"> </span><span class="tok-n">version</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;1.0.1&quot;</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">features</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-p">[</span><span class="tok-s">&quot;full&quot;</span><span class="tok-p">]</span><span class="tok-w"> </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-n">futures</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;0.3.11&quot;</span><span class="tok-w"></span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>RoutingTableの捜査を行うためのモジュール、routing.rsを作成します。</p>
+</div>
+<div class="listingblock">
+<div class="title">src/lib.rs</div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span></pre></div></td><td class="code"><pre><span></span><span class="tok-n">b</span><span class="tok-o">/</span><span class="tok-n">mrbgpdv2second</span><span class="tok-o">/</span><span class="tok-n">src</span><span class="tok-o">/</span><span class="tok-n">lib</span><span class="tok-p">.</span><span class="tok-n">rs</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-k">extern</span><span class="tok-w"> </span><span class="tok-k">crate</span><span class="tok-w"> </span><span class="tok-n">log</span><span class="tok-p">;</span><span class="tok-w"></span>
+
+<span class="tok-w"> </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">mod</span> <span class="tok-nn">bgp</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">mod</span> <span class="tok-nn">routing</span><span class="tok-p">;</span><span class="tok-w"></span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>RoutingTableをLookupするテストをrouting.rsに追加しましょう。
+今回は次のように設計しました。lookup_routing_table(&amp;IpPrefix)という関数がもっとも作成したい関数です。
+IpPrefixという型を引数に取り、そのIpPrefixに宛先アドレスが含まれるルーティングテーブルのエントリをVec&lt;RoutingTableEntry&gt;として返します。
+RoutingTableEntryは一つのRoutingTableのエントリーを表しています。
+なおテスト対象の関数の戻り値や期待される出力を集合に変換しているのは、Vecの順番に非依存にさせるためです。</p>
+</div>
+<div class="paragraph">
+<p>なおこのテストは自分の環境のルーティングテーブルに依存しています。適時expected_routing_entriesの値を書き換えてください。
+本来は環境に依存するテストはよくないですが、ルーティングテーブルのLookupを環境非依存でテストするのが難しいため妥協しています。</p>
+</div>
+<div class="listingblock">
+<div class="title">src/routing.rs</div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span></pre></div></td><td class="code"><pre><span></span><span class="tok-n">src</span><span class="tok-o">/</span><span class="tok-n">routing</span><span class="tok-p">.</span><span class="tok-n">rs</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-cp">#[cfg(test)]</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">mod</span> <span class="tok-nn">tests</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">super</span>::<span class="tok-o">*</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-n">collections</span>::<span class="tok-n">HashSet</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">init</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">env_logger</span>::<span class="tok-n">builder</span><span class="tok-p">().</span><span class="tok-n">is_test</span><span class="tok-p">(</span><span class="tok-kc">true</span><span class="tok-p">).</span><span class="tok-n">try_init</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-cp">#[test]</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">test_lookup_routing_table</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">init</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">lookup_addr</span>: <span class="tok-nc">IpPrefix</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-s">&quot;10.0.2.0/24&quot;</span><span class="tok-p">.</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">routing_entries</span>: <span class="tok-nc">HashSet</span><span class="tok-o">&lt;</span><span class="tok-n">RoutingTableEntry</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">lookup_routing_table</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-n">lookup_addr</span><span class="tok-p">).</span><span class="tok-n">into_iter</span><span class="tok-p">().</span><span class="tok-n">collect</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">expected_routing_entries</span>: <span class="tok-nc">HashSet</span><span class="tok-o">&lt;</span><span class="tok-n">RoutingTableEntry</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-fm">vec!</span><span class="tok-p">[</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">RoutingTableEntry</span>::<span class="tok-n">new</span><span class="tok-p">(</span><span class="tok-s">&quot;10.0.2.0/24&quot;</span><span class="tok-p">.</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">(),</span><span class="tok-w"> </span><span class="tok-n">Nexthop</span>::<span class="tok-n">DirectConected</span><span class="tok-p">),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">RoutingTableEntry</span>::<span class="tok-n">new</span><span class="tok-p">(</span><span class="tok-s">&quot;10.0.2.2/32&quot;</span><span class="tok-p">.</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">(),</span><span class="tok-w"> </span><span class="tok-n">Nexthop</span>::<span class="tok-n">DirectConected</span><span class="tok-p">),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">RoutingTableEntry</span>::<span class="tok-n">new</span><span class="tok-p">(</span><span class="tok-s">&quot;10.0.2.0/32&quot;</span><span class="tok-p">.</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">(),</span><span class="tok-w"> </span><span class="tok-n">Nexthop</span>::<span class="tok-n">DirectConected</span><span class="tok-p">),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">RoutingTableEntry</span>::<span class="tok-n">new</span><span class="tok-p">(</span><span class="tok-s">&quot;10.0.2.255/32&quot;</span><span class="tok-p">.</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">(),</span><span class="tok-w"> </span><span class="tok-n">Nexthop</span>::<span class="tok-n">DirectConected</span><span class="tok-p">),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">RoutingTableEntry</span>::<span class="tok-n">new</span><span class="tok-p">(</span><span class="tok-s">&quot;10.0.2.15/32&quot;</span><span class="tok-p">.</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">(),</span><span class="tok-w"> </span><span class="tok-n">Nexthop</span>::<span class="tok-n">DirectConected</span><span class="tok-p">),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">]</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">.</span><span class="tok-n">into_iter</span><span class="tok-p">()</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">.</span><span class="tok-n">collect</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">difference</span>: <span class="tok-nc">HashSet</span><span class="tok-o">&lt;</span><span class="tok-n">RoutingTableEntry</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">routing_entries</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">.</span><span class="tok-n">symmetric_difference</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-n">expected_routing_entries</span><span class="tok-p">)</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">.</span><span class="tok-n">cloned</span><span class="tok-p">()</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">.</span><span class="tok-n">collect</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-fm">assert!</span><span class="tok-p">(</span><span class="tok-n">difference</span><span class="tok-p">.</span><span class="tok-n">is_empty</span><span class="tok-p">());</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>さて、このテストを通るようにコードを書きましょう。</p>
 </div>
 </div>
 </div>
@@ -8512,7 +8641,7 @@ netlinkを生で扱うのは難しいため、本書ではライブラリを使�
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-28 13:36:12 UTC
+Last updated 2021-06-28 14:03:13 UTC
 </div>
 </div>
 </body>

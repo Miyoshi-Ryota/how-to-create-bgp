@@ -1991,10 +1991,10 @@ BGPでは、Peer間で、ルーティングの情報をUpdate Messageと呼ば�
 === 作業の明確化
 本項で行う作業を明確化します。
 
-[ ] ルーティングテーブルの読みを可能にする
-[ ] BGP Update Messageを送信可能にする
-[ ] ルーティングテーブルへの書き込みを可能にする
-[ ] BGP Update Messageの受信を可能にする
+* [ ] ルーティングテーブルの読みを可能にする
+* [ ] BGP Update Messageを送信可能にする
+* [ ] ルーティングテーブルへの書き込みを可能にする
+* [ ] BGP Update Messageの受信を可能にする
 
 === ルーティングテーブルの読みを可能にする。
 Linuxでルーティングテーブルを読んだり、書いたりするためには、netlinkというものを使用します。
@@ -2003,7 +2003,74 @@ netlinkを生で扱うのは難しいため、本書ではライブラリを使�
 
 https://github.com/little-dude/netlink 
 
+Cargo.tomlにライブラリ類を追記しましょう。
 
+[source,rust,linenums,title=src/Cargo.toml]
+----
+[dependencies]
+ log = "0.4.0"
++rtnetlink = "0.7.0"
++tokio = { version = "1.0.1", features = ["full"] }
++futures = "0.3.11"
+----
+
+RoutingTableの捜査を行うためのモジュール、routing.rsを作成します。
+[source,rust,linenums,title=src/lib.rs]
+----
+b/mrbgpdv2second/src/lib.rs
+ extern crate log;
+ 
+ pub mod bgp;
++pub mod routing;
+----
+
+
+RoutingTableをLookupするテストをrouting.rsに追加しましょう。
+今回は次のように設計しました。lookup_routing_table(&IpPrefix)という関数がもっとも作成したい関数です。
+IpPrefixという型を引数に取り、そのIpPrefixに宛先アドレスが含まれるルーティングテーブルのエントリをVec<RoutingTableEntry>として返します。
+RoutingTableEntryは一つのRoutingTableのエントリーを表しています。
+なおテスト対象の関数の戻り値や期待される出力を集合に変換しているのは、Vecの順番に非依存にさせるためです。
+
+なおこのテストは自分の環境のルーティングテーブルに依存しています。適時expected_routing_entriesの値を書き換えてください。
+本来は環境に依存するテストはよくないですが、ルーティングテーブルのLookupを環境非依存でテストするのが難しいため妥協しています。
+
+[source,rust,linenums,title=src/routing.rs]
+----
+src/routing.rs
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use std::collections::HashSet;
++
++    fn init() {
++        let _ = env_logger::builder().is_test(true).try_init();
++    }
++
++    #[test]
++    fn test_lookup_routing_table() {
++        init();
++        let lookup_addr: IpPrefix = "10.0.2.0/24".parse().unwrap();
++        let routing_entries: HashSet<RoutingTableEntry> =
++            lookup_routing_table(&lookup_addr).into_iter().collect();
++        let expected_routing_entries: HashSet<RoutingTableEntry> = vec![
++            RoutingTableEntry::new("10.0.2.0/24".parse().unwrap(), Nexthop::DirectConected),
++            RoutingTableEntry::new("10.0.2.2/32".parse().unwrap(), Nexthop::DirectConected),
++            RoutingTableEntry::new("10.0.2.0/32".parse().unwrap(), Nexthop::DirectConected),
++            RoutingTableEntry::new("10.0.2.255/32".parse().unwrap(), Nexthop::DirectConected),
++            RoutingTableEntry::new("10.0.2.15/32".parse().unwrap(), Nexthop::DirectConected),
++        ]
++        .into_iter()
++        .collect();
++        let difference: HashSet<RoutingTableEntry> = routing_entries
++            .symmetric_difference(&expected_routing_entries)
++            .cloned()
++            .collect();
++        assert!(difference.is_empty());
++    }
++}
+----
+
+さて、このテストを通るようにコードを書きましょう。
 
 == 複数ピアをハンドリング可能な実装
 === 本章で作るものの全体像
