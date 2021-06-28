@@ -551,11 +551,17 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <li><a href="#_1つのピアでupdate_messageの交換やupdate_messageの内容にしたがってrouting_tableへの書き込みが可能な実装">1つのピアでUpdate Messageの交換やUpdate Messageの内容にしたがってRouting Tableへの書き込みが可能な実装</a>
 <ul class="sectlevel2">
 <li><a href="#_作業の明確化_2">作業の明確化</a></li>
+<li><a href="#_ルーティングテーブルの読みを可能にする">ルーティングテーブルの読みを可能にする。</a></li>
 </ul>
 </li>
 <li><a href="#_複数ピアをハンドリング可能な実装">複数ピアをハンドリング可能な実装</a>
 <ul class="sectlevel2">
 <li><a href="#_本章で作るものの全体像">本章で作るものの全体像</a></li>
+</ul>
+</li>
+<li><a href="#_色々完成度を高める">色々完成度を高める</a>
+<ul class="sectlevel2">
+<li><a href="#_作業の明確化_3">作業の明確化</a></li>
 </ul>
 </li>
 <li><a href="#_他社実装との疎通確認">他社実装との疎通確認</a></li>
@@ -8448,14 +8454,31 @@ Rustのフォーマットツール / Linterである、cargo fmt / cargo clippy�
 <div class="sect1">
 <h2 id="_1つのピアでupdate_messageの交換やupdate_messageの内容にしたがってrouting_tableへの書き込みが可能な実装">1つのピアでUpdate Messageの交換やUpdate Messageの内容にしたがってRouting Tableへの書き込みが可能な実装</h2>
 <div class="sectionbody">
+<div class="paragraph">
+<p>ここからは、本当にルーティングテーブルを更新するのに必要な作業に入っていきましょう。
+BGPでは、Peer間で、ルーティングの情報をUpdate Messageと呼ばれるメッセージによって交換し合います。</p>
+</div>
 <div class="sect2">
 <h3 id="_作業の明確化_2">作業の明確化</h3>
+<div class="paragraph">
+<p>本項で行う作業を明確化します。</p>
+</div>
 <div class="paragraph">
 <p>[ ] ルーティングテーブルの読みを可能にする
 [ ] BGP Update Messageを送信可能にする
 [ ] ルーティングテーブルへの書き込みを可能にする
-[ ] BGP Update Messageの受信を可能にする
-[ ] タイマーイベントの導入</p>
+[ ] BGP Update Messageの受信を可能にする</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_ルーティングテーブルの読みを可能にする">ルーティングテーブルの読みを可能にする。</h3>
+<div class="paragraph">
+<p>Linuxでルーティングテーブルを読んだり、書いたりするためには、netlinkというものを使用します。
+netlinkはKernelとユーザ空間で情報をやり取りするためのものです。
+netlinkを生で扱うのは難しいため、本書ではライブラリを使用します。</p>
+</div>
+<div class="paragraph">
+<p><a href="https://github.com/little-dude/netlink" class="bare">https://github.com/little-dude/netlink</a></p>
 </div>
 </div>
 </div>
@@ -8470,6 +8493,17 @@ Rustのフォーマットツール / Linterである、cargo fmt / cargo clippy�
 </div>
 </div>
 <div class="sect1">
+<h2 id="_色々完成度を高める">色々完成度を高める</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_作業の明確化_3">作業の明確化</h3>
+<div class="paragraph">
+<p>[ ] タイマーイベントの導入</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_他社実装との疎通確認">他社実装との疎通確認</h2>
 <div class="sectionbody">
 
@@ -8478,7 +8512,7 @@ Rustのフォーマットツール / Linterである、cargo fmt / cargo clippy�
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-05-26 14:01:44 UTC
+Last updated 2021-06-28 13:36:12 UTC
 </div>
 </div>
 </body>

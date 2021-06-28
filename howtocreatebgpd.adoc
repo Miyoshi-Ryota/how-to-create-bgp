@@ -1984,14 +1984,32 @@ include::https://raw.githubusercontent.com/Miyoshi-Ryota/mrbgpdv2/f56a055001b501
 ----
 
 == 1つのピアでUpdate Messageの交換やUpdate Messageの内容にしたがってRouting Tableへの書き込みが可能な実装
+
+ここからは、本当にルーティングテーブルを更新するのに必要な作業に入っていきましょう。
+BGPでは、Peer間で、ルーティングの情報をUpdate Messageと呼ばれるメッセージによって交換し合います。
+
 === 作業の明確化
+本項で行う作業を明確化します。
+
 [ ] ルーティングテーブルの読みを可能にする
 [ ] BGP Update Messageを送信可能にする
 [ ] ルーティングテーブルへの書き込みを可能にする
 [ ] BGP Update Messageの受信を可能にする
-[ ] タイマーイベントの導入
+
+=== ルーティングテーブルの読みを可能にする。
+Linuxでルーティングテーブルを読んだり、書いたりするためには、netlinkというものを使用します。
+netlinkはKernelとユーザ空間で情報をやり取りするためのものです。
+netlinkを生で扱うのは難しいため、本書ではライブラリを使用します。
+
+https://github.com/little-dude/netlink 
+
+
 
 == 複数ピアをハンドリング可能な実装
 === 本章で作るものの全体像
+
+== 色々完成度を高める
+=== 作業の明確化
+[ ] タイマーイベントの導入
 
 == 他社実装との疎通確認
