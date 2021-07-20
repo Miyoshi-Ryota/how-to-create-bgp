@@ -552,6 +552,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <ul class="sectlevel2">
 <li><a href="#_作業の明確化_2">作業の明確化</a></li>
 <li><a href="#_ルーティングテーブルの読みを可能にする">ルーティングテーブルの読みを可能にする。</a></li>
+<li><a href="#_bgp_update_messageを送信可能にする">BGP Update Messageを送信可能にする</a></li>
 </ul>
 </li>
 <li><a href="#_複数ピアをハンドリング可能な実装">複数ピアをハンドリング可能な実装</a>
@@ -8607,7 +8608,330 @@ RoutingTableEntryは一つのRoutingTableのエントリーを表しています
 </div>
 </div>
 <div class="paragraph">
-<p>さて、このテストを通るようにコードを書きましょう。</p>
+<p>さて、このテストを通るようにコードを書きましょう。
+以下の変更でテストが通ります。</p>
+</div>
+<div class="paragraph">
+<p>一番大事な関数はlookup_routing_tableです。
+lookup_routing_table関数内でnetlinkを用いてルーティング情報を取得し、
+それを本ソフトウェア中でのルーティング情報, RoutingTableEntryに変換しています。</p>
+</div>
+<div class="paragraph">
+<p>非同期プログラミングの複雑さを今の段階では隠すため、
+netlinkでの問い合わせをrt.block_on()にて同期的に実行しています。
+第4章にて、完成度を高める際に他の通信部分と一緒に非同期にします。</p>
+</div>
+<div class="listingblock">
+<div class="title">src/routing.rs</div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">  1</span>
+<span class="normal">  2</span>
+<span class="normal">  3</span>
+<span class="normal">  4</span>
+<span class="normal">  5</span>
+<span class="normal">  6</span>
+<span class="normal">  7</span>
+<span class="normal">  8</span>
+<span class="normal">  9</span>
+<span class="normal"> 10</span>
+<span class="normal"> 11</span>
+<span class="normal"> 12</span>
+<span class="normal"> 13</span>
+<span class="normal"> 14</span>
+<span class="normal"> 15</span>
+<span class="normal"> 16</span>
+<span class="normal"> 17</span>
+<span class="normal"> 18</span>
+<span class="normal"> 19</span>
+<span class="normal"> 20</span>
+<span class="normal"> 21</span>
+<span class="normal"> 22</span>
+<span class="normal"> 23</span>
+<span class="normal"> 24</span>
+<span class="normal"> 25</span>
+<span class="normal"> 26</span>
+<span class="normal"> 27</span>
+<span class="normal"> 28</span>
+<span class="normal"> 29</span>
+<span class="normal"> 30</span>
+<span class="normal"> 31</span>
+<span class="normal"> 32</span>
+<span class="normal"> 33</span>
+<span class="normal"> 34</span>
+<span class="normal"> 35</span>
+<span class="normal"> 36</span>
+<span class="normal"> 37</span>
+<span class="normal"> 38</span>
+<span class="normal"> 39</span>
+<span class="normal"> 40</span>
+<span class="normal"> 41</span>
+<span class="normal"> 42</span>
+<span class="normal"> 43</span>
+<span class="normal"> 44</span>
+<span class="normal"> 45</span>
+<span class="normal"> 46</span>
+<span class="normal"> 47</span>
+<span class="normal"> 48</span>
+<span class="normal"> 49</span>
+<span class="normal"> 50</span>
+<span class="normal"> 51</span>
+<span class="normal"> 52</span>
+<span class="normal"> 53</span>
+<span class="normal"> 54</span>
+<span class="normal"> 55</span>
+<span class="normal"> 56</span>
+<span class="normal"> 57</span>
+<span class="normal"> 58</span>
+<span class="normal"> 59</span>
+<span class="normal"> 60</span>
+<span class="normal"> 61</span>
+<span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span></pre></div></td><td class="code"><pre><span></span><span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">futures</span>::<span class="tok-n">TryStreamExt</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">rtnetlink</span>::<span class="tok-n">packet</span>::<span class="tok-n">RouteMessage</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">rtnetlink</span>::<span class="tok-p">{</span><span class="tok-n">new_connection</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">IpVersion</span><span class="tok-p">};</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-n">net</span>::<span class="tok-n">IpAddr</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-n">net</span>::<span class="tok-n">Ipv4Addr</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-kt">str</span>::<span class="tok-n">FromStr</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">tokio</span>::<span class="tok-n">runtime</span>::<span class="tok-n">Runtime</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-cp">#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">struct</span> <span class="tok-nc">RoutingTableEntry</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">network_address</span>: <span class="tok-nc">IpPrefix</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">nexthop</span>: <span class="tok-nc">Nexthop</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-cp">#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">enum</span> <span class="tok-nc">Nexthop</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">Ipv4Addr</span><span class="tok-p">(</span><span class="tok-n">Ipv4Addr</span><span class="tok-p">),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">DirectConected</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">RoutingTableEntry</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">new</span><span class="tok-p">(</span><span class="tok-n">network_address</span>: <span class="tok-nc">IpPrefix</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">nexthop</span>: <span class="tok-nc">Nexthop</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-nc">Self</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-o">!</span><span class="tok-n">network_address</span><span class="tok-p">.</span><span class="tok-n">is_network_address</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-fm">panic!</span><span class="tok-p">(</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-s">&quot;This address of routing table entry is</span>
+<span class="tok-s">+                    not network address: {:?}&quot;</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-n">network_address</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-bp">Self</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">network_address</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">nexthop</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">from_route_message</span><span class="tok-p">(</span><span class="tok-n">route_message</span>: <span class="tok-kp">&amp;</span><span class="tok-nc">RouteMessage</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-nc">Self</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">dest_addr</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">prefix</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-k">match</span><span class="tok-w"> </span><span class="tok-n">route_message</span><span class="tok-p">.</span><span class="tok-n">destination_prefix</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-nb">Some</span><span class="tok-p">((</span><span class="tok-n">dest_addr</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">prefix</span><span class="tok-p">))</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">dest_addr</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">prefix</span><span class="tok-p">),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-nb">None</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">IpAddr</span>::<span class="tok-n">V4</span><span class="tok-p">(</span><span class="tok-s">&quot;0.0.0.0&quot;</span><span class="tok-p">.</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">()),</span><span class="tok-w"> </span><span class="tok-mi">0</span><span class="tok-p">),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">};</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">network_address</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-k">match</span><span class="tok-w"> </span><span class="tok-n">dest_addr</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">IpAddr</span>::<span class="tok-n">V4</span><span class="tok-p">(</span><span class="tok-n">ip_addr</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-n">IpPrefix</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"> </span><span class="tok-n">ip_addr</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">prefix</span><span class="tok-w"> </span><span class="tok-p">},</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-fm">unimplemented!</span><span class="tok-p">(),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">};</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">nexthop</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-n">route_message</span><span class="tok-p">.</span><span class="tok-n">gateway</span><span class="tok-p">().</span><span class="tok-n">is_some</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-k">match</span><span class="tok-w"> </span><span class="tok-n">route_message</span><span class="tok-p">.</span><span class="tok-n">gateway</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-n">IpAddr</span>::<span class="tok-n">V4</span><span class="tok-p">(</span><span class="tok-n">ip_addr</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-n">Nexthop</span>::<span class="tok-n">Ipv4Addr</span><span class="tok-p">(</span><span class="tok-n">ip_addr</span><span class="tok-p">),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-fm">unimplemented!</span><span class="tok-p">(),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"> </span><span class="tok-k">else</span><span class="tok-w"> </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-n">route_message</span><span class="tok-p">.</span><span class="tok-n">output_interface</span><span class="tok-p">().</span><span class="tok-n">is_some</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">Nexthop</span>::<span class="tok-n">DirectConected</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"> </span><span class="tok-k">else</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-fm">panic!</span><span class="tok-p">()</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">};</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-bp">Self</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">network_address</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">nexthop</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-cp">#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">struct</span> <span class="tok-nc">IpPrefix</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">ip_addr</span>: <span class="tok-nc">Ipv4Addr</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">prefix</span>: <span class="tok-kt">u8</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">IpPrefix</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">is_network_address</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-bp">self</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-kt">bool</span> <span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">netmask</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">get_subnet_netmask</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">ip_addr_bit</span>: <span class="tok-kt">u32</span> <span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">ip_addr</span><span class="tok-p">.</span><span class="tok-n">into</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">netmask</span><span class="tok-w"> </span><span class="tok-o">|</span><span class="tok-w"> </span><span class="tok-n">ip_addr_bit</span><span class="tok-w"> </span><span class="tok-o">==</span><span class="tok-w"> </span><span class="tok-n">netmask</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">does_include</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-bp">self</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">other</span>: <span class="tok-kp">&amp;</span><span class="tok-nc">IpPrefix</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-kt">bool</span> <span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">prefix</span><span class="tok-w"> </span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-n">other</span><span class="tok-p">.</span><span class="tok-n">prefix</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-k">return</span><span class="tok-w"> </span><span class="tok-kc">false</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">self_netmask</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">get_subnet_netmask</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">self_ip_addr_bit</span>: <span class="tok-kt">u32</span> <span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">ip_addr</span><span class="tok-p">.</span><span class="tok-n">into</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">other_ip_addr_bit</span>: <span class="tok-kt">u32</span> <span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">other</span><span class="tok-p">.</span><span class="tok-n">ip_addr</span><span class="tok-p">.</span><span class="tok-n">into</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">self_netmask</span><span class="tok-w"> </span><span class="tok-o">&amp;</span><span class="tok-w"> </span><span class="tok-n">other_ip_addr_bit</span><span class="tok-w"> </span><span class="tok-o">==</span><span class="tok-w"> </span><span class="tok-n">self_ip_addr_bit</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">get_subnet_netmask</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-bp">self</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-kt">u32</span> <span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">netmask</span>: <span class="tok-kt">u32</span> <span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-mi">0</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-k">for</span><span class="tok-w"> </span><span class="tok-n">i</span><span class="tok-w"> </span><span class="tok-k">in</span><span class="tok-w"> </span><span class="tok-mi">0</span><span class="tok-o">..</span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">prefix</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">netmask</span><span class="tok-w"> </span><span class="tok-o">+=</span><span class="tok-w"> </span><span class="tok-mi">1</span><span class="tok-w"> </span><span class="tok-o">&lt;&lt;</span><span class="tok-w"> </span><span class="tok-n">i</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">netmask</span><span class="tok-w"> </span><span class="tok-o">&lt;&lt;</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-mi">32</span><span class="tok-w"> </span><span class="tok-o">-</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">prefix</span><span class="tok-p">)</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-cp">#[derive(Debug)]</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">struct</span> <span class="tok-nc">ParseIpPrefixError</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">FromStr</span><span class="tok-w"> </span><span class="tok-k">for</span><span class="tok-w"> </span><span class="tok-n">IpPrefix</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">type</span> <span class="tok-nb">Err</span> <span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">ParseIpPrefixError</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">from_str</span><span class="tok-p">(</span><span class="tok-n">s</span>: <span class="tok-kp">&amp;</span><span class="tok-kt">str</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-nb">Result</span><span class="tok-o">&lt;</span><span class="tok-bp">Self</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-bp">Self</span>::<span class="tok-nb">Err</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">s</span>: <span class="tok-nb">Vec</span><span class="tok-o">&lt;&amp;</span><span class="tok-kt">str</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">s</span><span class="tok-p">.</span><span class="tok-n">split</span><span class="tok-p">(</span><span class="tok-sc">&#39;/&#39;</span><span class="tok-p">).</span><span class="tok-n">collect</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">ip_addr</span>: <span class="tok-nc">Ipv4Addr</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">s</span><span class="tok-p">[</span><span class="tok-mi">0</span><span class="tok-p">].</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">or</span><span class="tok-p">(</span><span class="tok-nb">Err</span><span class="tok-p">(</span><span class="tok-n">ParseIpPrefixError</span><span class="tok-p">))</span><span class="tok-o">?</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">prefix</span>: <span class="tok-kt">u8</span> <span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">s</span><span class="tok-p">[</span><span class="tok-mi">1</span><span class="tok-p">].</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">or</span><span class="tok-p">(</span><span class="tok-nb">Err</span><span class="tok-p">(</span><span class="tok-n">ParseIpPrefixError</span><span class="tok-p">))</span><span class="tok-o">?</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-nb">Ok</span><span class="tok-p">(</span><span class="tok-n">IpPrefix</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"> </span><span class="tok-n">ip_addr</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">prefix</span><span class="tok-w"> </span><span class="tok-p">})</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">fn</span> <span class="tok-nf">lookup_routing_table</span><span class="tok-p">(</span><span class="tok-n">lookup_addr</span>: <span class="tok-kp">&amp;</span><span class="tok-nc">IpPrefix</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-n">RoutingTableEntry</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">route_messages</span>: <span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-n">RouteMessage</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-fm">vec!</span><span class="tok-p">[];</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">rt</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">Runtime</span>::<span class="tok-n">new</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">rt</span><span class="tok-p">.</span><span class="tok-n">block_on</span><span class="tok-p">(</span><span class="tok-k">async</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">connection</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">handle</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">_</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">new_connection</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">tokio</span>::<span class="tok-n">spawn</span><span class="tok-p">(</span><span class="tok-n">connection</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">routes</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">handle</span><span class="tok-p">.</span><span class="tok-n">route</span><span class="tok-p">().</span><span class="tok-n">get</span><span class="tok-p">(</span><span class="tok-n">IpVersion</span>::<span class="tok-n">V4</span><span class="tok-p">).</span><span class="tok-n">execute</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-k">while</span><span class="tok-w"> </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-nb">Some</span><span class="tok-p">(</span><span class="tok-n">route</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">routes</span><span class="tok-p">.</span><span class="tok-n">try_next</span><span class="tok-p">().</span><span class="tok-k">await</span><span class="tok-p">.</span><span class="tok-n">unwrap</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">route_messages</span><span class="tok-p">.</span><span class="tok-n">push</span><span class="tok-p">(</span><span class="tok-n">route</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">});</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">route_messages</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">.</span><span class="tok-n">iter</span><span class="tok-p">()</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">.</span><span class="tok-n">map</span><span class="tok-p">(</span><span class="tok-o">|</span><span class="tok-n">m</span><span class="tok-o">|</span><span class="tok-w"> </span><span class="tok-n">RoutingTableEntry</span>::<span class="tok-n">from_route_message</span><span class="tok-p">(</span><span class="tok-n">m</span><span class="tok-p">))</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">.</span><span class="tok-n">filter</span><span class="tok-p">(</span><span class="tok-o">|</span><span class="tok-n">r</span><span class="tok-o">|</span><span class="tok-w"> </span><span class="tok-n">lookup_addr</span><span class="tok-p">.</span><span class="tok-n">does_include</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-n">r</span><span class="tok-p">.</span><span class="tok-n">network_address</span><span class="tok-p">))</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">.</span><span class="tok-n">collect</span><span class="tok-p">()</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>さて、テストを実行してみましょう。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="nowrap">mrcsce@ubuntu1:~/mrbgpdv2/mrbgpdv2second$ cargo test -- --nocapture --test-threads=1
+    Finished test [unoptimized + debuginfo] target(s) in 0.40s
+     Running unittests (target/debug/deps/mrbgpdv2second-cb9af644a8ef7b55)
+[sudo] password for mrcsce:
+
+running 5 tests
+test bgp::peer::tests::peer_can_transition_to_connect ... ok
+test bgp::peer::tests::peer_can_transition_to_established ... ok
+test bgp::peer::tests::peer_can_transition_to_open_confirm ... ok
+test bgp::peer::tests::peer_can_transition_to_open_sent ... ok
+test routing::tests::test_lookup_routing_table ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.52s</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>通りましたね！
+これで、またタスクが一つ完了になりました。</p>
+</div>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10003; ルーティングテーブルの読みを可能にする</p>
+</li>
+<li>
+<p>&#10063; BGP Update Messageを送信可能にする</p>
+</li>
+<li>
+<p>&#10063; ルーティングテーブルへの書き込みを可能にする</p>
+</li>
+<li>
+<p>&#10063; BGP Update Messageの受信を可能にする</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_bgp_update_messageを送信可能にする">BGP Update Messageを送信可能にする</h3>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10063; BGP Update Messageを送信可能にする</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>次は上記タスクに取り組み、BGP Update Messageを送信可能にしましょう。</p>
 </div>
 </div>
 </div>
@@ -8641,7 +8965,7 @@ RoutingTableEntryは一つのRoutingTableのエントリーを表しています
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-06-28 14:03:13 UTC
+Last updated 2021-07-20 23:42:57 UTC
 </div>
 </div>
 </body>
