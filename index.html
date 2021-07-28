@@ -8951,13 +8951,13 @@ test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 <span class="normal">12</span>
 <span class="normal">13</span></pre></div></td><td class="code"><pre><span></span><span class="tok-o">+</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-cp">#[test]</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">test_write_routing_table</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">add_route_to_routing_table</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">init</span><span class="tok-p">();</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">entry</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">RoutingTableEntry</span>::<span class="tok-n">new</span><span class="tok-p">(</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-s">&quot;192.168.50.0/24&quot;</span><span class="tok-p">.</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">(),</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">Nexthop</span>::<span class="tok-n">Ipv4Addr</span><span class="tok-p">(</span><span class="tok-s">&quot;10.0.2.2&quot;</span><span class="tok-p">.</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">()),</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">);</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">write_routing_table</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-n">entry</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">add_route_to_routing_table</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-n">entry</span><span class="tok-p">);</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">lookup_result</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">lookup_routing_table</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-n">entry</span><span class="tok-p">.</span><span class="tok-n">network_address</span><span class="tok-p">);</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-fm">assert!</span><span class="tok-p">(</span><span class="tok-n">lookup_result</span><span class="tok-p">.</span><span class="tok-n">contains</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-n">entry</span><span class="tok-p">));</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
@@ -8970,6 +8970,97 @@ test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 </div>
 <div class="paragraph">
 <p>それでは本テストが通るように改変していきましょう。</p>
+</div>
+<div class="listingblock">
+<div class="title">src/routing.rs</div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span></pre></div></td><td class="code"><pre><span></span><span class="tok-o">+</span><span class="tok-k">fn</span> <span class="tok-nf">add_route_to_routing_table</span><span class="tok-p">(</span><span class="tok-n">entry</span>: <span class="tok-kp">&amp;</span><span class="tok-nc">RoutingTableEntry</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">rt</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">Runtime</span>::<span class="tok-n">new</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">rt</span><span class="tok-p">.</span><span class="tok-n">block_on</span><span class="tok-p">(</span><span class="tok-k">async</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">connection</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">handle</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">_</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">new_connection</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">tokio</span>::<span class="tok-n">spawn</span><span class="tok-p">(</span><span class="tok-n">connection</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">route</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">handle</span><span class="tok-p">.</span><span class="tok-n">route</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">gateway_addr</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-k">match</span><span class="tok-w"> </span><span class="tok-o">&amp;</span><span class="tok-n">entry</span><span class="tok-p">.</span><span class="tok-n">nexthop</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-o">&amp;</span><span class="tok-n">Nexthop</span>::<span class="tok-n">Ipv4Addr</span><span class="tok-p">(</span><span class="tok-n">ip_addr</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-n">ip_addr</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-fm">unimplemented!</span><span class="tok-p">(),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">};</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">route</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">.</span><span class="tok-n">add</span><span class="tok-p">()</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">.</span><span class="tok-n">v4</span><span class="tok-p">()</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">.</span><span class="tok-n">destination_prefix</span><span class="tok-p">(</span><span class="tok-n">entry</span><span class="tok-p">.</span><span class="tok-n">network_address</span><span class="tok-p">.</span><span class="tok-n">ip_addr</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">entry</span><span class="tok-p">.</span><span class="tok-n">network_address</span><span class="tok-p">.</span><span class="tok-n">prefix</span><span class="tok-p">)</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">.</span><span class="tok-n">gateway</span><span class="tok-p">(</span><span class="tok-n">gateway_addr</span><span class="tok-p">)</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">.</span><span class="tok-n">execute</span><span class="tok-p">()</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">.</span><span class="tok-k">await</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">.</span><span class="tok-n">unwrap</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">})</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>テストを実行してみます。</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="nowrap">mrcsce@ubuntu1:~/mrbgpdv2/mrbgpdv2second$ cargo test -- --nocapture --test-threads=1
+   Compiling mrbgpdv2second v0.1.0 (/home/mrcsce/mrbgpdv2/mrbgpdv2second)
+    Finished test [unoptimized + debuginfo] target(s) in 10.79s
+     Running unittests (target/debug/deps/mrbgpdv2second-cb9af644a8ef7b55)
+[sudo] password for mrcsce:
+
+running 6 tests
+test bgp::peer::tests::peer_can_transition_to_connect ... ok
+test bgp::peer::tests::peer_can_transition_to_established ... ok
+test bgp::peer::tests::peer_can_transition_to_open_confirm ... ok
+test bgp::peer::tests::peer_can_transition_to_open_sent ... ok
+test routing::tests::test_add_route_to_routing_table ... ok
+test routing::tests::test_lookup_routing_table ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.24s</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>無事通りました。</p>
+</div>
+<div class="paragraph">
+<p>ただし、現状では2回連続でテストを実行した場合、テストが失敗します。
+既にルーティングテーブルに存在するルートを再度書き込もうとした際にResult::Errが帰ってくるためです。</p>
+</div>
+<div class="paragraph">
+<p>現段階ではとりあえず該当のテストに#[ignore]指定をして、通常時は走らないようにすることで暫定的な対処とします。
+第4章の細かい完成度を上げるタイミングで、ルーティングテーブルからルートを削除する関数を追加する予定なので、その段階で恒久的な対処は行うこととします。</p>
+</div>
+<div class="listingblock">
+<div class="title">src/routing.rs</div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><pre><span></span><span class="tok-w">     </span><span class="tok-cp">#[test]</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-cp">#[ignore]</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-k">fn</span> <span class="tok-nf">test_add_route_to_routing_table</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">         </span><span class="tok-n">init</span><span class="tok-p">();</span><span class="tok-w"></span>
+</pre></td></tr></table></code></pre>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -9024,7 +9115,7 @@ BGP Update Messageは色々な条件で創出されます。
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-07-28 09:22:24 UTC
+Last updated 2021-07-28 22:37:44 UTC
 </div>
 </div>
 </body>

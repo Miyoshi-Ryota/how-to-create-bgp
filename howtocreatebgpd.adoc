@@ -2249,13 +2249,13 @@ test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 ----
 +
 +    #[test]
-+    fn test_write_routing_table() {
++    fn add_route_to_routing_table() {
 +        init();
 +        let entry = RoutingTableEntry::new(
 +            "192.168.50.0/24".parse().unwrap(),
 +            Nexthop::Ipv4Addr("10.0.2.2".parse().unwrap()),
 +        );
-+        write_routing_table(&entry);
++        add_route_to_routing_table(&entry);
 +        let lookup_result = lookup_routing_table(&entry.network_address);
 +        assert!(lookup_result.contains(&entry));
 +    }
@@ -2265,6 +2265,67 @@ test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 本テストではルーティングテーブルにルートを書き込んだ後に、ルーティングテーブルを書き込んだルートのネットワークアドレスでlookupして、書き込んだルートが実際に書き込まれてることを確認しています。
 
 それでは本テストが通るように改変していきましょう。
+
+[source,rust,linenums,title=src/routing.rs]
+----
++fn add_route_to_routing_table(entry: &RoutingTableEntry) {
++    let rt = Runtime::new().unwrap();
++    rt.block_on(async {
++        let (connection, handle, _) = new_connection().unwrap();
++        tokio::spawn(connection);
++        let route = handle.route();
++        let gateway_addr = match &entry.nexthop {
++            &Nexthop::Ipv4Addr(ip_addr) => ip_addr,
++            _ => unimplemented!(),
++        };
++        route
++            .add()
++            .v4()
++            .destination_prefix(entry.network_address.ip_addr, entry.network_address.prefix)
++            .gateway(gateway_addr)
++            .execute()
++            .await
++            .unwrap();
++    })
++}
+----
+
+テストを実行してみます。
+
+----
+mrcsce@ubuntu1:~/mrbgpdv2/mrbgpdv2second$ cargo test -- --nocapture --test-threads=1
+   Compiling mrbgpdv2second v0.1.0 (/home/mrcsce/mrbgpdv2/mrbgpdv2second)
+    Finished test [unoptimized + debuginfo] target(s) in 10.79s
+     Running unittests (target/debug/deps/mrbgpdv2second-cb9af644a8ef7b55)
+[sudo] password for mrcsce: 
+
+running 6 tests
+test bgp::peer::tests::peer_can_transition_to_connect ... ok
+test bgp::peer::tests::peer_can_transition_to_established ... ok
+test bgp::peer::tests::peer_can_transition_to_open_confirm ... ok
+test bgp::peer::tests::peer_can_transition_to_open_sent ... ok
+test routing::tests::test_add_route_to_routing_table ... ok
+test routing::tests::test_lookup_routing_table ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.24s
+----
+
+無事通りました。
+
+ただし、現状では2回連続でテストを実行した場合、テストが失敗します。
+既にルーティングテーブルに存在するルートを再度書き込もうとした際にResult::Errが帰ってくるためです。
+
+現段階ではとりあえず該当のテストに#[ignore]指定をして、通常時は走らないようにすることで暫定的な対処とします。
+第4章の細かい完成度を上げるタイミングで、ルーティングテーブルからルートを削除する関数を追加する予定なので、その段階で恒久的な対処は行うこととします。
+
+[source,rust,linenums,title=src/routing.rs]
+----
+     #[test]
++    #[ignore]
+     fn test_add_route_to_routing_table() {
+         init();
+----
+
 
 === BGP Update Messageを送信可能にする
 
