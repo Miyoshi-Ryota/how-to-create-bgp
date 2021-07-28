@@ -552,6 +552,7 @@ pre.pygments .tok-il { color: #666666 } /* Literal.Number.Integer.Long */
 <ul class="sectlevel2">
 <li><a href="#_作業の明確化_2">作業の明確化</a></li>
 <li><a href="#_ルーティングテーブルの読みを可能にする">ルーティングテーブルの読みを可能にする。</a></li>
+<li><a href="#_ルーティングテーブルへの書き込みを可能にする">ルーティングテーブルへの書き込みを可能にする</a></li>
 <li><a href="#_bgp_update_messageを送信可能にする">BGP Update Messageを送信可能にする</a></li>
 </ul>
 </li>
@@ -8913,12 +8914,62 @@ test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 <p>&#10063; BGP Update Messageを送信可能にする</p>
 </li>
 <li>
-<p>&#10063; ルーティングテーブルへの書き込みを可能にする</p>
-</li>
-<li>
 <p>&#10063; BGP Update Messageの受信を可能にする</p>
 </li>
 </ul>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_ルーティングテーブルへの書き込みを可能にする">ルーティングテーブルへの書き込みを可能にする</h3>
+<div class="ulist checklist">
+<ul class="checklist">
+<li>
+<p>&#10063; ルーティングテーブルへの書き込みを可能にする</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>次は上記タスクに取り組みましょう。</p>
+</div>
+<div class="paragraph">
+<p>まずはテストを書きます。</p>
+</div>
+<div class="listingblock">
+<div class="title">src/routing.rs</div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span></pre></div></td><td class="code"><pre><span></span><span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-cp">#[test]</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">test_write_routing_table</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">init</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">entry</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">RoutingTableEntry</span>::<span class="tok-n">new</span><span class="tok-p">(</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-s">&quot;192.168.50.0/24&quot;</span><span class="tok-p">.</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">(),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">Nexthop</span>::<span class="tok-n">Ipv4Addr</span><span class="tok-p">(</span><span class="tok-s">&quot;10.0.2.2&quot;</span><span class="tok-p">.</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">()),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">write_routing_table</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-n">entry</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">lookup_result</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">lookup_routing_table</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-n">entry</span><span class="tok-p">.</span><span class="tok-n">network_address</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-fm">assert!</span><span class="tok-p">(</span><span class="tok-n">lookup_result</span><span class="tok-p">.</span><span class="tok-n">contains</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-n">entry</span><span class="tok-p">));</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-p">}</span><span class="tok-w"></span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>本テストではルーティングテーブルにルートを書き込んだ後に、ルーティングテーブルを書き込んだルートのネットワークアドレスでlookupして、書き込んだルートが実際に書き込まれてることを確認しています。</p>
+</div>
+<div class="paragraph">
+<p>それでは本テストが通るように改変していきましょう。</p>
 </div>
 </div>
 <div class="sect2">
@@ -8931,7 +8982,15 @@ test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 </ul>
 </div>
 <div class="paragraph">
-<p>次は上記タスクに取り組み、BGP Update Messageを送信可能にしましょう。</p>
+<p>次は上記タスクに取り組み、BGP Update Messageを送信可能にしましょう。
+BGP Update Messageは、ルーティング情報をやり取りするMessageです。
+BGP Update Messageは色々な条件で創出されます。
+最初ははピアが確立された段階で、ルータAが自身のルーティングテーブル中にあるネットワークあての通信はルータAに送信してよいよ、と周りのルータたちに広報します。
+そのため、先にルーティングテーブルの読みを可能にしました。</p>
+</div>
+<div class="paragraph">
+<p>ピアが確立された段階のBGP Update Messageを送信するためのプログラムを書きます。
+まずはテストを書きましょう。</p>
 </div>
 </div>
 </div>
@@ -8965,7 +9024,7 @@ test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-07-20 23:42:57 UTC
+Last updated 2021-07-28 09:22:24 UTC
 </div>
 </div>
 </body>

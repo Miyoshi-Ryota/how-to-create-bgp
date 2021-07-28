@@ -2235,15 +2235,49 @@ test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 
 * [x] ルーティングテーブルの読みを可能にする
 * [ ] BGP Update Messageを送信可能にする
-* [ ] ルーティングテーブルへの書き込みを可能にする
 * [ ] BGP Update Messageの受信を可能にする
+
+=== ルーティングテーブルへの書き込みを可能にする
+
+* [ ] ルーティングテーブルへの書き込みを可能にする
+
+次は上記タスクに取り組みましょう。
+
+まずはテストを書きます。
+
+[source,rust,linenums,title=src/routing.rs]
+----
++
++    #[test]
++    fn test_write_routing_table() {
++        init();
++        let entry = RoutingTableEntry::new(
++            "192.168.50.0/24".parse().unwrap(),
++            Nexthop::Ipv4Addr("10.0.2.2".parse().unwrap()),
++        );
++        write_routing_table(&entry);
++        let lookup_result = lookup_routing_table(&entry.network_address);
++        assert!(lookup_result.contains(&entry));
++    }
+ }
+----
+
+本テストではルーティングテーブルにルートを書き込んだ後に、ルーティングテーブルを書き込んだルートのネットワークアドレスでlookupして、書き込んだルートが実際に書き込まれてることを確認しています。
+
+それでは本テストが通るように改変していきましょう。
 
 === BGP Update Messageを送信可能にする
 
 * [ ] BGP Update Messageを送信可能にする
 
 次は上記タスクに取り組み、BGP Update Messageを送信可能にしましょう。
+BGP Update Messageは、ルーティング情報をやり取りするMessageです。
+BGP Update Messageは色々な条件で創出されます。
+最初ははピアが確立された段階で、ルータAが自身のルーティングテーブル中にあるネットワークあての通信はルータAに送信してよいよ、と周りのルータたちに広報します。
+そのため、先にルーティングテーブルの読みを可能にしました。
 
+ピアが確立された段階のBGP Update Messageを送信するためのプログラムを書きます。
+まずはテストを書きましょう。
 
 == 複数ピアをハンドリング可能な実装
 === 本章で作るものの全体像
