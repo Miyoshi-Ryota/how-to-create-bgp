@@ -1992,8 +1992,8 @@ BGPでは、Peer間で、ルーティングの情報をUpdate Messageと呼ば�
 本項で行う作業を明確化します。
 
 * [ ] ルーティングテーブルの読みを可能にする
-* [ ] BGP Update Messageを送信可能にする
 * [ ] ルーティングテーブルへの書き込みを可能にする
+* [ ] BGP Update Messageを送信可能にする
 * [ ] BGP Update Messageの受信を可能にする
 
 === ルーティングテーブルの読みを可能にする。
@@ -2234,6 +2234,7 @@ test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 これで、またタスクが一つ完了になりました。
 
 * [x] ルーティングテーブルの読みを可能にする
+* [ ] ルーティングテーブルへの書き込みを可能にする
 * [ ] BGP Update Messageを送信可能にする
 * [ ] BGP Update Messageの受信を可能にする
 
@@ -2339,6 +2340,40 @@ BGP Update Messageは色々な条件で創出されます。
 
 ピアが確立された段階のBGP Update Messageを送信するためのプログラムを書きます。
 まずはテストを書きましょう。
+
+ここではDockerを使用して、2コンテナを立ち上げ、コンテナ間で、
+BGP Update Messageを送受信した結果、ルーティングテーブルが書き変わっていることを確認することにしましょう。
+
+Docker、Docker-composeを使用して、下記の環境を作成し、host1 から host2-networkへの疎通があることを
+
+[nwdiag]
+----
+nwdiag {
+  network bgp-test-network {
+    address = "10.200.100.0/24"
+    host1 [address = "10.200.100.2"]
+    host2 [address = "10.200.100.3"]
+  }
+
+  network host1-network {
+    address = "10.100.210.0/24"
+    host1 [address = "10.200.100.2"]
+  }
+
+  network host2-network {
+      address = "10.100.220.0/24"
+      host2 [address = "10.100.220.3"]
+  }
+}
+----
+
+----
+docker network create --driver bridge --subnet 10.200.200.0/24  bgp-test-network
+----
+
+----
+
+----
 
 == 複数ピアをハンドリング可能な実装
 === 本章で作るものの全体像
