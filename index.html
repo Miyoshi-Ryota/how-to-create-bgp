@@ -9093,16 +9093,145 @@ BGP Update Messageは色々な条件で創出されます。
 BGP Update Messageを送受信した結果、ルーティングテーブルが書き変わっていることを確認することにしましょう。</p>
 </div>
 <div class="paragraph">
-<p>Docker、Docker-composeを使用して、下記の環境を作成し、host1 から host2-networkへの疎通があることを</p>
+<p>Docker、Docker-composeを使用して、テスト用の環境を一発で作成できるようにします。</p>
 </div>
 <div class="imageblock">
 <div class="content">
 <img src="diag-71bfbf9e19c0e4f46eaa32ec2afd496e.png" alt="Diagram" width="456" height="444">
 </div>
 </div>
+<div class="paragraph">
+<p>bgp-test-networkでhost1、 host2がBGPのピアリングをします。
+host2はhost1に対してhost2-networkを広報します。
+host1は広報を受け取ったらhost2-networkへの疎通が取れるようになります。</p>
+</div>
+<div class="listingblock">
+<div class="title">tests/host1/Dockerfile</div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="yaml"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><pre><span></span><span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+FROM rust</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+RUN apt install git</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+RUN git clone https://github.com/Miyoshi-Ryota/mrbgpdv2.git</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+WORKDIR /mrbgpdv2/mrbgpdv2second</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+RUN cargo build</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+CMD RUST_LOG=info ./target/debug/mrbgpdv2second &quot;64512 10.200.100.2 64513 10.200.100.3 active&quot;</span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">tests/host2/Dockerfile</div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="yaml"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><pre><span></span><span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+FROM rust</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+RUN apt install git</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+RUN git clone https://github.com/Miyoshi-Ryota/mrbgpdv2.git</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+WORKDIR /mrbgpdv2/mrbgpdv2second</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+RUN cargo build</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+CMD RUST_LOG=info ./target/debug/mrbgpdv2second &quot;64513 10.200.100.3 64512 10.200.100.2 passive&quot;</span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">/tests/docker-compose.yml</div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="yaml"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span></pre></div></td><td class="code"><pre><span></span><span class="tok-nt">+services</span><span class="tok-p">:</span>
+<span class="tok-nt">+  host1</span><span class="tok-p">:</span>
+<span class="tok-nt">+    cap_add</span><span class="tok-p">:</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+      - NET_ADMIN</span> <span class="tok-c1"># NET_ADMINがないと、ルーティングテーブルの操作ができない。</span>
+<span class="tok-nt">+    build</span><span class="tok-p">:</span> <span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">./host1</span>
+<span class="tok-nt">+    networks</span><span class="tok-p">:</span>
+<span class="tok-nt">+      bgp-test-network</span><span class="tok-p">:</span>
+<span class="tok-nt">+        ipv4_address</span><span class="tok-p">:</span> <span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">10.200.100.2</span>
+<span class="tok-nt">+      host1-network</span><span class="tok-p">:</span>
+<span class="tok-nt">+        ipv4_address</span><span class="tok-p">:</span> <span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">10.100.210.2</span>
+<span class="tok-nt">+    depends_on</span><span class="tok-p">:</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+      - host2</span>
+<span class="tok-nt">+  host2</span><span class="tok-p">:</span>
+<span class="tok-nt">+    cap_add</span><span class="tok-p">:</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+      - NET_ADMIN</span> <span class="tok-c1"># NET_ADMINがないと、ルーティングテーブルの操作ができない。</span>
+<span class="tok-nt">+    build</span><span class="tok-p">:</span> <span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">./host2</span>
+<span class="tok-nt">+    networks</span><span class="tok-p">:</span>
+<span class="tok-nt">+      bgp-test-network</span><span class="tok-p">:</span>
+<span class="tok-nt">+        ipv4_address</span><span class="tok-p">:</span> <span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">10.200.100.3</span>
+<span class="tok-nt">+      host2-network</span><span class="tok-p">:</span>
+<span class="tok-nt">+        ipv4_address</span><span class="tok-p">:</span> <span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">10.100.220.3</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+</span>
+<span class="tok-nt">+networks</span><span class="tok-p">:</span>
+<span class="tok-nt">+  bgp-test-network</span><span class="tok-p">:</span> <span class="tok-c1"># host1, host2がピアリングするためのネットワーク</span>
+<span class="tok-nt">+    driver</span><span class="tok-p">:</span> <span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">bridge</span>
+<span class="tok-nt">+    ipam</span><span class="tok-p">:</span>
+<span class="tok-nt">+      config</span><span class="tok-p">:</span>
+<span class="tok-nt">+        - subnet</span><span class="tok-p">:</span> <span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">10.200.100.0/24</span>
+<span class="tok-nt">+          gateway</span><span class="tok-p">:</span> <span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">10.200.100.1</span>
+<span class="tok-nt">+  host1-network</span><span class="tok-p">:</span>
+<span class="tok-nt">+    driver</span><span class="tok-p">:</span> <span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">bridge</span>
+<span class="tok-nt">+    ipam</span><span class="tok-p">:</span>
+<span class="tok-nt">+      config</span><span class="tok-p">:</span>
+<span class="tok-nt">+        - subnet</span><span class="tok-p">:</span> <span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">10.100.210.0/24</span>
+<span class="tok-nt">+  host2-network</span><span class="tok-p">:</span> <span class="tok-c1"># host2 -&gt; host1にアドバタイズするネットワーク</span>
+<span class="tok-nt">+    driver</span><span class="tok-p">:</span> <span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">bridge</span>
+<span class="tok-nt">+    ipam</span><span class="tok-p">:</span>
+<span class="tok-nt">+      config</span><span class="tok-p">:</span>
+<span class="tok-nt">+        - subnet</span><span class="tok-p">:</span> <span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">10.100.220.0/24</span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>さて、テストとしてこれらのDockerの環境を作成・使用し、host1 から host2-networkへの疎通があることを確認するshellscriptを用意します。</p>
+</div>
 <div class="listingblock">
 <div class="content">
-<pre class="nowrap">docker network create --driver bridge --subnet 10.200.200.0/24  bgp-test-network</pre>
+<pre class="nowrap"></pre>
 </div>
 </div>
 <div class="listingblock">
@@ -9142,7 +9271,7 @@ BGP Update Messageを送受信した結果、ルーティングテーブルが�
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-08-18 00:11:13 UTC
+Last updated 2021-08-18 22:22:45 UTC
 </div>
 </div>
 </body>

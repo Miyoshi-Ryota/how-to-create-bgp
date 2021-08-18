@@ -2344,7 +2344,7 @@ BGP Update Messageは色々な条件で創出されます。
 ここではDockerを使用して、2コンテナを立ち上げ、コンテナ間で、
 BGP Update Messageを送受信した結果、ルーティングテーブルが書き変わっていることを確認することにしましょう。
 
-Docker、Docker-composeを使用して、下記の環境を作成し、host1 から host2-networkへの疎通があることを
+Docker、Docker-composeを使用して、テスト用の環境を一発で作成できるようにします。
 
 [nwdiag]
 ----
@@ -2367,8 +2367,79 @@ nwdiag {
 }
 ----
 
+bgp-test-networkでhost1、 host2がBGPのピアリングをします。
+host2はhost1に対してhost2-networkを広報します。
+host1は広報を受け取ったらhost2-networkへの疎通が取れるようになります。
+
+[source,yaml,linenums,title=tests/host1/Dockerfile]
 ----
-docker network create --driver bridge --subnet 10.200.200.0/24  bgp-test-network
++FROM rust
++
++RUN apt install git
++RUN git clone https://github.com/Miyoshi-Ryota/mrbgpdv2.git
++WORKDIR /mrbgpdv2/mrbgpdv2second
++RUN cargo build
++CMD RUST_LOG=info ./target/debug/mrbgpdv2second "64512 10.200.100.2 64513 10.200.100.3 active"
+----
+
+[source,yaml,linenums,title=tests/host2/Dockerfile]
+----
++FROM rust
++
++RUN apt install git
++RUN git clone https://github.com/Miyoshi-Ryota/mrbgpdv2.git
++WORKDIR /mrbgpdv2/mrbgpdv2second
++RUN cargo build
++CMD RUST_LOG=info ./target/debug/mrbgpdv2second "64513 10.200.100.3 64512 10.200.100.2 passive"
+----
+
+
+[source,yaml,linenums,title=/tests/docker-compose.yml]
+----
++services:
++  host1:
++    cap_add: 
++      - NET_ADMIN # NET_ADMINがないと、ルーティングテーブルの操作ができない。
++    build: ./host1
++    networks:
++      bgp-test-network:
++        ipv4_address: 10.200.100.2
++      host1-network:
++        ipv4_address: 10.100.210.2
++    depends_on:
++      - host2
++  host2:
++    cap_add: 
++      - NET_ADMIN # NET_ADMINがないと、ルーティングテーブルの操作ができない。
++    build: ./host2
++    networks:
++      bgp-test-network:
++        ipv4_address: 10.200.100.3
++      host2-network:
++        ipv4_address: 10.100.220.3
++
++networks:
++  bgp-test-network: # host1, host2がピアリングするためのネットワーク
++    driver: bridge
++    ipam:
++      config:
++        - subnet: 10.200.100.0/24
++          gateway: 10.200.100.1
++  host1-network:
++    driver: bridge
++    ipam:
++      config:
++        - subnet: 10.100.210.0/24
++  host2-network: # host2 -> host1にアドバタイズするネットワーク
++    driver: bridge
++    ipam:
++      config:
++        - subnet: 10.100.220.0/24
+----
+
+さて、テストとしてこれらのDockerの環境を作成・使用し、host1 から host2-networkへの疎通があることを確認するshellscriptを用意します。
+
+----
 ----
 
 ----
