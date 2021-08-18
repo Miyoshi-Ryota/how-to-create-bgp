@@ -2483,9 +2483,120 @@ Dockerfile内でgit cloneするディレクトリや、WORKDIRのディレクト
 +
 ----
 
+さて、テストが失敗することを確認しましょう。
+----
+miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/tests on branch 統合テストの追加 > ./run_integration_test.sh
+Building host2
+Step 1/6 : FROM rust
+ ---> ceae1d63f79e
+Step 2/6 : RUN apt install git
+ ---> Running in 4446c4cc8140
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+Reading package lists...
+Building dependency tree...
+Reading state information...
+git is already the newest version (1:2.20.1-2+deb10u3).
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+Removing intermediate container 4446c4cc8140
+ ---> 3bd122e0df90
+Step 3/6 : RUN git clone https://github.com/Miyoshi-Ryota/mrbgpdv2.git
+ ---> Running in e5e4ffab8d04
+Cloning into 'mrbgpdv2'...
+Removing intermediate container e5e4ffab8d04
+ ---> 224c92879d95
+Step 4/6 : WORKDIR /mrbgpdv2/mrbgpdv2second
+ ---> Running in 3b34b02ca627
+Removing intermediate container 3b34b02ca627
+ ---> 1511e3579006
+Step 5/6 : RUN cargo build
+ ---> Running in a05726aece36
+    Updating crates.io index
+~~~~ビルドのログを省略~~~~~
+Removing intermediate container a05726aece36
+ ---> 7248f6ccafcb
+Step 6/6 : CMD RUST_LOG=info ./target/debug/mrbgpdv2second "64513 10.200.100.3 64512 10.200.100.2 passive"
+ ---> Running in 73bfbadc09d1
+Removing intermediate container 73bfbadc09d1
+ ---> 681b0d211db4
+
+Successfully built 681b0d211db4
+Successfully tagged tests_host2:latest
+Building host1
+Step 1/6 : FROM rust
+ ---> ceae1d63f79e
+Step 2/6 : RUN apt install git
+ ---> Running in 04b6040d65f4
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+Reading package lists...
+Building dependency tree...
+Reading state information...
+git is already the newest version (1:2.20.1-2+deb10u3).
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+Removing intermediate container 04b6040d65f4
+ ---> c7bef9e0ed53
+Step 3/6 : RUN git clone https://github.com/Miyoshi-Ryota/mrbgpdv2.git
+ ---> Running in 17adb5332843
+Cloning into 'mrbgpdv2'...
+Removing intermediate container 17adb5332843
+ ---> 35a202416ef6
+Step 4/6 : WORKDIR /mrbgpdv2/mrbgpdv2second
+ ---> Running in be5f3e072f73
+Removing intermediate container be5f3e072f73
+ ---> 7a125a13700b
+Step 5/6 : RUN cargo build
+ ---> Running in cc587538d1ce
+ ~~~~ビルドのログを省略~~~~~
+
+ Removing intermediate container cc587538d1ce
+ ---> d1ab9299603f
+Step 6/6 : CMD RUST_LOG=info ./target/debug/mrbgpdv2second "64512 10.200.100.2 64513 10.200.100.3 active"
+ ---> Running in 29bc7bcc7f2a
+Removing intermediate container 29bc7bcc7f2a
+ ---> 7e982c6a2d3c
+
+Successfully built 7e982c6a2d3c
+Successfully tagged tests_host1:latest
+Creating network "tests_bgp-test-network" with driver "bridge"
+Creating network "tests_host2-network" with driver "bridge"
+Creating network "tests_host1-network" with driver "bridge"
+Creating tests_host2_1 ... done
+Creating tests_host1_1 ... done
+Attaching to tests_host2_1, tests_host1_1
+host2_1  | [2021-08-18T22:26:12Z INFO  mrbgpdv2second::bgp::peer] Send bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64513), hold_time: HoldTime(240), bgp_identifier: 10.200.100.3, optional_parameter_length: 0, optional_parameters: [] })
+host1_1  | [2021-08-18T22:26:12Z INFO  mrbgpdv2second::bgp::peer] Send bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64512), hold_time: HoldTime(240), bgp_identifier: 10.200.100.2, optional_parameter_length: 0, optional_parameters: [] })
+host1_1  | [2021-08-18T22:26:12Z INFO  mrbgpdv2second::bgp::peer] Recive bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64513), hold_time: HoldTime(240), bgp_identifier: 10.200.100.3, optional_parameter_length: 0, optional_parameters: [] })
+host1_1  | [2021-08-18T22:26:12Z INFO  mrbgpdv2second::bgp::peer] Send bgp message Keepalive(BgpKeepaliveMessage { header: BgpMessageHeader { length: 19, type_: Keepalive } })
+host2_1  | [2021-08-18T22:26:12Z INFO  mrbgpdv2second::bgp::peer] Recive bgp message Open(BgpOpenMessage { header: BgpMessageHeader { length: 29, type_: Open }, version: BgpVersion(4), my_autonomous_system_number: AutonomousSystemNumber(64512), hold_time: HoldTime(240), bgp_identifier: 10.200.100.2, optional_parameter_length: 0, optional_parameters: [] })
+host2_1  | [2021-08-18T22:26:12Z INFO  mrbgpdv2second::bgp::peer] Send bgp message Keepalive(BgpKeepaliveMessage { header: BgpMessageHeader { length: 19, type_: Keepalive } })
+host1_1  | [2021-08-18T22:26:12Z INFO  mrbgpdv2second::bgp::peer] Recive bgp message Keepalive(BgpKeepaliveMessage { header: BgpMessageHeader { length: 19, type_: Keepalive } })
+host2_1  | [2021-08-18T22:26:12Z INFO  mrbgpdv2second::bgp::peer] Recive bgp message Keepalive(BgpKeepaliveMessage { header: BgpMessageHeader { length: 19, type_: Keepalive } })
+PING 10.100.220.3 (10.100.220.3) 56(84) bytes of data.
+
+--- 10.100.220.3 ping statistics ---
+5 packets transmitted, 0 received, 100% packet loss, time 110ms
+
+Stopping tests_host1_1 ... 
+Stopping tests_host1_1 ... done
+Stopping tests_host2_1 ... done
+tests_host2_1 exited with code 137
+Removing tests_host1_1 ... done
+Removing tests_host2_1 ... done
+Removing network tests_bgp-test-network
+Removing network tests_host2-network
+Removing network tests_host1-network
+統合テストが失敗しました。
+miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/tests on branch 統合テストの追加 > 
 ----
 
-----
+このように現状の実装ではテストが失敗することが確認取れました。
+
+さて、BGPのUpdateメッセージのやり取りを実装します。
+この実装によって、host1のルーティングテーブルが更新されるようになると、本テストが成功するはずです。
+
 
 == 複数ピアをハンドリング可能な実装
 === 本章で作るものの全体像
