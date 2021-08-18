@@ -9105,41 +9105,45 @@ BGP Update Messageを送受信した結果、ルーティングテーブルが�
 host2はhost1に対してhost2-networkを広報します。
 host1は広報を受け取ったらhost2-networkへの疎通が取れるようになります。</p>
 </div>
+<div class="paragraph">
+<p>下記Dockerfile、docker-compose.ymlを用意することで、`docker-compose up --build`一発で前述の環境を用意することができます。
+Dockerfile内でgit cloneするディレクトリや、WORKDIRのディレクトリは各自の環境に合わせて設定してください。</p>
+</div>
 <div class="listingblock">
 <div class="title">tests/host1/Dockerfile</div>
 <div class="content">
-<pre class="pygments highlight nowrap"><code data-lang="yaml"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<pre class="pygments highlight nowrap"><code data-lang="docker"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><pre><span></span><span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+FROM rust</span>
-<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+</span>
-<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+RUN apt install git</span>
-<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+RUN git clone https://github.com/Miyoshi-Ryota/mrbgpdv2.git</span>
-<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+WORKDIR /mrbgpdv2/mrbgpdv2second</span>
-<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+RUN cargo build</span>
-<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+CMD RUST_LOG=info ./target/debug/mrbgpdv2second &quot;64512 10.200.100.2 64513 10.200.100.3 active&quot;</span>
+<span class="normal">7</span></pre></div></td><td class="code"><pre><span></span>+FROM rust
++
++RUN apt install git
++RUN git clone https://github.com/Miyoshi-Ryota/mrbgpdv2.git
++WORKDIR /mrbgpdv2/mrbgpdv2second
++RUN cargo build
++CMD <span class="tok-nv">RUST_LOG</span><span class="tok-o">=</span>info ./target/debug/mrbgpdv2second <span class="tok-s2">&quot;64512 10.200.100.2 64513 10.200.100.3 active&quot;</span>
 </pre></td></tr></table></code></pre>
 </div>
 </div>
 <div class="listingblock">
 <div class="title">tests/host2/Dockerfile</div>
 <div class="content">
-<pre class="pygments highlight nowrap"><code data-lang="yaml"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
+<pre class="pygments highlight nowrap"><code data-lang="docker"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
 <span class="normal">4</span>
 <span class="normal">5</span>
 <span class="normal">6</span>
-<span class="normal">7</span></pre></div></td><td class="code"><pre><span></span><span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+FROM rust</span>
-<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+</span>
-<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+RUN apt install git</span>
-<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+RUN git clone https://github.com/Miyoshi-Ryota/mrbgpdv2.git</span>
-<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+WORKDIR /mrbgpdv2/mrbgpdv2second</span>
-<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+RUN cargo build</span>
-<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+CMD RUST_LOG=info ./target/debug/mrbgpdv2second &quot;64513 10.200.100.3 64512 10.200.100.2 passive&quot;</span>
+<span class="normal">7</span></pre></div></td><td class="code"><pre><span></span>+FROM rust
++
++RUN apt install git
++RUN git clone https://github.com/Miyoshi-Ryota/mrbgpdv2.git
++WORKDIR /mrbgpdv2/mrbgpdv2second
++RUN cargo build
++CMD <span class="tok-nv">RUST_LOG</span><span class="tok-o">=</span>info ./target/debug/mrbgpdv2second <span class="tok-s2">&quot;64513 10.200.100.3 64512 10.200.100.2 passive&quot;</span>
 </pre></td></tr></table></code></pre>
 </div>
 </div>
@@ -9195,7 +9199,7 @@ host1は広報を受け取ったらhost2-networkへの疎通が取れるよう�
 <span class="tok-nt">+      host1-network</span><span class="tok-p">:</span>
 <span class="tok-nt">+        ipv4_address</span><span class="tok-p">:</span> <span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">10.100.210.2</span>
 <span class="tok-nt">+    depends_on</span><span class="tok-p">:</span>
-<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+      - host2</span>
+<span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+      - host2</span> <span class="tok-c1"># host2から起動するようにしているのは、現状の実装ではBGPのpassiveモード側から起動しないとネイバーがはれないため。</span>
 <span class="tok-nt">+  host2</span><span class="tok-p">:</span>
 <span class="tok-nt">+    cap_add</span><span class="tok-p">:</span>
 <span class="tok-l tok-l-Scalar tok-l-Scalar-Plain">+      - NET_ADMIN</span> <span class="tok-c1"># NET_ADMINがないと、ルーティングテーブルの操作ができない。</span>
@@ -9230,8 +9234,80 @@ host1は広報を受け取ったらhost2-networkへの疎通が取れるよう�
 <p>さて、テストとしてこれらのDockerの環境を作成・使用し、host1 から host2-networkへの疎通があることを確認するshellscriptを用意します。</p>
 </div>
 <div class="listingblock">
+<div class="title">tests/run_integration_test.sh</div>
 <div class="content">
-<pre class="nowrap"></pre>
+<pre class="pygments highlight nowrap"><code data-lang="shellscript"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span></pre></div></td><td class="code"><pre><span></span>+#! /bin/bash
++docker-compose build --no-cache
++docker-compose up &amp;
++
++# dockerコンテナの起動が終わるまで待つ
++while ! docker container ls | grep tests_host2 &gt; /dev/null
++do
++    sleep 1
++done
++
++# dockerコンテナ内でコンパイルが終了しプロセスの起動が終わるまで待つ
++while ! docker exec tests_host2_1 ps | grep bgp &gt; /dev/null
++do
++    sleep 1
++done
++
++while ! docker exec tests_host1_1 ps | grep bgp &gt; /dev/null
++do
++    sleep 1
++done
++
++# docker execは実行したコマンドの終了コードをそのまま返す。pingは1パケットでも通ったら終了コード0、全部パケロスすると1が返す。
++HOST_2_LOOPBACK_IP=10.100.220.3
++docker exec tests_host1_1 ping -c 5 $HOST_2_LOOPBACK_IP
++TEST_RESULT=$?
++
++
++
++docker-compose down
++ESC=$(printf &#39;\033&#39;)
++if [ $TEST_RESULT -eq 0 ]; then
++    printf &quot;${ESC}[32m%s${ESC}[m\n&quot; &quot;統合テストが成功しました。&quot;
++else
++    printf &quot;${ESC}[31m%s${ESC}[m\n&quot; &quot;統合テストが失敗しました。&quot;
++fi
++
+</pre></td></tr></table></code></pre>
 </div>
 </div>
 <div class="listingblock">
@@ -9271,7 +9347,7 @@ host1は広報を受け取ったらhost2-networkへの疎通が取れるよう�
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-08-18 22:22:45 UTC
+Last updated 2021-08-18 22:24:15 UTC
 </div>
 </div>
 </body>

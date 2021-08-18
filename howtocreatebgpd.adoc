@@ -2371,7 +2371,10 @@ bgp-test-networkでhost1、 host2がBGPのピアリングをします。
 host2はhost1に対してhost2-networkを広報します。
 host1は広報を受け取ったらhost2-networkへの疎通が取れるようになります。
 
-[source,yaml,linenums,title=tests/host1/Dockerfile]
+下記Dockerfile、docker-compose.ymlを用意することで、`docker-compose up --build`一発で前述の環境を用意することができます。
+Dockerfile内でgit cloneするディレクトリや、WORKDIRのディレクトリは各自の環境に合わせて設定してください。
+
+[source,docker,linenums,title=tests/host1/Dockerfile]
 ----
 +FROM rust
 +
@@ -2382,7 +2385,7 @@ host1は広報を受け取ったらhost2-networkへの疎通が取れるよう�
 +CMD RUST_LOG=info ./target/debug/mrbgpdv2second "64512 10.200.100.2 64513 10.200.100.3 active"
 ----
 
-[source,yaml,linenums,title=tests/host2/Dockerfile]
+[source,docker,linenums,title=tests/host2/Dockerfile]
 ----
 +FROM rust
 +
@@ -2407,7 +2410,7 @@ host1は広報を受け取ったらhost2-networkへの疎通が取れるよう�
 +      host1-network:
 +        ipv4_address: 10.100.210.2
 +    depends_on:
-+      - host2
++      - host2 # host2から起動するようにしているのは、現状の実装ではBGPのpassiveモード側から起動しないとネイバーがはれないため。
 +  host2:
 +    cap_add: 
 +      - NET_ADMIN # NET_ADMINがないと、ルーティングテーブルの操作ができない。
@@ -2437,9 +2440,47 @@ host1は広報を受け取ったらhost2-networkへの疎通が取れるよう�
 +        - subnet: 10.100.220.0/24
 ----
 
+
 さて、テストとしてこれらのDockerの環境を作成・使用し、host1 から host2-networkへの疎通があることを確認するshellscriptを用意します。
 
+[source,shellscript,linenums,title=tests/run_integration_test.sh]
 ----
++#! /bin/bash
++docker-compose build --no-cache
++docker-compose up &
++
++# dockerコンテナの起動が終わるまで待つ
++while ! docker container ls | grep tests_host2 > /dev/null
++do
++    sleep 1
++done
++
++# dockerコンテナ内でコンパイルが終了しプロセスの起動が終わるまで待つ
++while ! docker exec tests_host2_1 ps | grep bgp > /dev/null
++do
++    sleep 1
++done
++
++while ! docker exec tests_host1_1 ps | grep bgp > /dev/null
++do
++    sleep 1
++done
++
++# docker execは実行したコマンドの終了コードをそのまま返す。pingは1パケットでも通ったら終了コード0、全部パケロスすると1が返す。
++HOST_2_LOOPBACK_IP=10.100.220.3
++docker exec tests_host1_1 ping -c 5 $HOST_2_LOOPBACK_IP
++TEST_RESULT=$?
++
++
++
++docker-compose down
++ESC=$(printf '\033')
++if [ $TEST_RESULT -eq 0 ]; then
++    printf "${ESC}[32m%s${ESC}[m\n" "統合テストが成功しました。"
++else
++    printf "${ESC}[31m%s${ESC}[m\n" "統合テストが失敗しました。"
++fi
++
 ----
 
 ----
