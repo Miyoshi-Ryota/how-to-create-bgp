@@ -2719,6 +2719,164 @@ end note
 ----
 
 ==== BGP Update Messageのやり取りの実装
+さて、ここまでで実装するものが明らかになりました。
+コードで言えば、下記ToDo部分を実装する必要があります。
+
+[source, rust, linenums, title=src/bgp/peer.rs]
+----
+        impl Peer {
+             State::OpenConfirm => match event {
+                 Event::Keepalive => {
+                     self.now_state = State::Established;
++                    // ToDo1: 現在のルーティングテーブルの情報をLoc-Ribにインストールする。
+                 }
+                 _ => {}
+             },
+-            _ => {}
++            State::Established => match event {
++                Event::UpdateMsg => {
++                    // ToDo4: 受信したUpdate MessageからAdj-RIB-Inを更新する。
++                    unimplemented!();
++                },
++                Event::AdjRibInChanged => {
++                    // ToDo5: Phase1:　Adj-RIB-InからLoc-RIBに格納するルートを選択する。
++                    // ToDo6: Phase2: Phase1の情報を使ってLoc-RIBを更新する。
++                    unimplemented!();
++                },
++                Event::LocRibChanged => {
++                    // ToDo2: Phase3: Loc-RIBからAdj-Rib-Outを更新する。
++                    unimplemented!();
++                },
++                Event::AdjRibOutChanged => {
++                    // ToDo3: Update Messageをピアに送信する。
++                    unimplemented!();
++                },
++                _ => {}
++            },
+         }
+     }
+ }
+@@ -196,6 +216,10 @@ pub enum Event {
+     TcpConnectionConfirmed,
+     BgpOpen,
+     Keepalive,
++    UpdateMsg,
++    LocRibChanged,
++    AdjRibInChanged,
++    AdjRibOutChanged,
+ }
+ 
+ #[cfg(test)]
+----
+
+ToDoコメント内の順番に沿って実装します。
+下記を実装します。
+
+* ToDo1: 現在のルーティングテーブルの情報をLoc-RIBにインストールする。
+
+[source,rust,linenums,title=src/bgp/mod.rs]
+----
+ pub mod peer;
+ mod queue;
+ mod timer;
++mod rib;
+----
+
+[source,rust,linenums,title=src/bgp/rib.rs]
+----
++use crate::routing::RoutingTableEntry;
++
++pub type LocRib = Rib;
++
++pub struct Rib {
++    table: Vec<RoutingTableEntry>,
++}
++
++impl Rib {
++    pub fn new(table: Vec<RoutingTableEntry>) -> Self {
++        Self { table }
++    }
++
++    pub fn insert_table(&mut self, table: Vec<RoutingTableEntry>) {
++        for entry in table {
++            self.insert_entry(entry);
++        };
++    }
++
++    pub fn insert_entry(&mut self, entry: RoutingTableEntry) {
++        if !self.table.contains(&entry) {
++            self.table.push(entry);
++        }
++    }
++}
+----
+
+[source,rust,linenums,title=src/bgp/peer.rs]
+----
+ use crate::bgp::config::Config;
+ use crate::bgp::config::Mode;
+ use crate::bgp::message::{BgpMessage, BgpMessageHeader, BgpMessageType};
++use crate::bgp::rib::LocRib;
++use crate::routing::{lookup_routing_table, RoutingTableEntry};
+
+ pub struct Peer {
+     now_state: State,
+     tcp_connection: Option<TcpStream>,
+     buffer: Vec<u8>,
++    loc_rib: LocRib,
+ }
+ 
+ impl Peer {
+     pub fn new(config: Config) -> Self {
+         let tcp_connection = None;
+         let buffer = vec![];
++        let loc_rib = LocRib::new(vec![]);
+         Self {
+             config,
+             event_queue,
+             now_state,
+             tcp_connection,
+             buffer,
++            loc_rib,
+         }
+     }
+ 
+ impl Peer {
+     fn handle_event(&mut self, event: Event) {
+             State::OpenConfirm => match event {
+                 Event::Keepalive => {
+                     self.now_state = State::Established;
+-                    // ToDo1: 現在のルーティングテーブルの情報をLoc-Ribにインストールする。
++                    let ribs: Vec<RoutingTableEntry> = self.config.advertise_networks.iter().map(
++                        |network| lookup_routing_table(network)).flatten().collect();
++                    self.loc_rib.insert_table(ribs);
++                    self.event_queue.enqueue(Event::LocRibChanged);
+                 }
+                 _ => {}
+             },
+----
+
+
+[source,rust,linenums,title=src/routing.rs]
+---- 
+ #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+-struct RoutingTableEntry {
++pub struct RoutingTableEntry {
+ 
+ #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+-struct IpPrefix {
++pub struct IpPrefix {
+ 
+ #[derive(Debug)]
+-struct ParseIpPrefixError;
++pub struct ParseIpPrefixError;
+  
+-fn lookup_routing_table(lookup_addr: &IpPrefix) -> Vec<RoutingTableEntry> {
++pub fn lookup_routing_table(lookup_addr: &IpPrefix) -> Vec<RoutingTableEntry> {
+     let mut route_messages: Vec<RouteMessage> = vec![];
+     let rt = Runtime::new().unwrap();
+----
+
 
 == 複数ピアをハンドリング可能な実装
 === 本章で作るものの全体像
