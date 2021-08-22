@@ -9464,24 +9464,38 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 </tbody>
 </table>
 <div class="paragraph">
-<p>これらの用語を使用してBGPのアップデートメッセージが送信されるまでのプロセスを見ていきましょう。
-BGPのアップデートメッセージに関するプロセスは決定プロセス、送信プロセスに分けられます。
+<p>これらの用語を使用してBGPのアップデートメッセージが送信されるまでのプロセスを見ていきましょう。</p>
+</div>
+<div class="paragraph">
+<p>BGPのアップデートメッセージに関するプロセスは決定プロセス、送信プロセスに分けられます。
 決定プロセスでは、Adj-RIB-InのルートからLoc-RIB及びAdj-RIB-Outに格納するルートを選択します。
 送信プロセスではAdj-RIB-Outの情報をピアに送信します。</p>
 </div>
 <div class="paragraph">
-<p>もう少し詳細に踏み込みます。決定プロセスはさらに次のPhase1, Phase2, Phase3に分けられます。
-* Phase1: Adj-RIB-InのRouteの優先度合いを計算する。
-* Phase2: Phase1で計算したRouteの優先度を使用して、Loc-RIBに格納するルートを選択し、そのルートをLoc-RIBに格納する。
-* Phase3: Loc-RIBからAdj-RIB-Outに格納するルートを選択し、そのルートをAdj-RIB-Outに格納する。
-送信プロセスでは、Adj-RIB-Outの情報からピアにUpdate Messageを送進します。
+<p>もう少し詳細に踏み込みます。決定プロセスはさらに次のPhase1, Phase2, Phase3に分けられます。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Phase1: Adj-RIB-InのRouteの優先度合いを計算する。</p>
+</li>
+<li>
+<p>Phase2: Phase1で計算したRouteの優先度を使用して、Loc-RIBに格納するルートを選択し、そのルートをLoc-RIBに格納する。</p>
+</li>
+<li>
+<p>Phase3: Loc-RIBからAdj-RIB-Outに格納するルートを選択し、そのルートをAdj-RIB-Outに格納する。</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>送信プロセスでは、Adj-RIB-Outの情報からピアにUpdate Messageを送進します。
 例えば、以前にUpdate Messageで送信したルートと同じルートは弾きます。Adj-RIB-Outから削除されたルートはピアに削除するようにwithdrawnとして送信する、などのことを行います。</p>
 </div>
 <div class="paragraph">
 <p>これらのプロセスを全て、今までのイベント駆動ステートマシンで扱うことにします。そのために以下のイベントを定義します。</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 3. Table 用語の説明</caption>
+<caption class="title">Table 3. Table 導入するEvent一覧</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -9574,7 +9588,7 @@ BGPのアップデートメッセージに関するプロセスは決定プロ�
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-08-22 02:41:16 UTC
+Last updated 2021-08-22 02:44:37 UTC
 </div>
 </div>
 </body>

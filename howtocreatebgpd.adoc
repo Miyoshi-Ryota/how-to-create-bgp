@@ -2618,20 +2618,23 @@ BGP Update Messageを送信する内部のプロセスは複雑です。
 |===
 
 これらの用語を使用してBGPのアップデートメッセージが送信されるまでのプロセスを見ていきましょう。
+
 BGPのアップデートメッセージに関するプロセスは決定プロセス、送信プロセスに分けられます。
 決定プロセスでは、Adj-RIB-InのルートからLoc-RIB及びAdj-RIB-Outに格納するルートを選択します。
 送信プロセスではAdj-RIB-Outの情報をピアに送信します。
 
 もう少し詳細に踏み込みます。決定プロセスはさらに次のPhase1, Phase2, Phase3に分けられます。
+
 * Phase1: Adj-RIB-InのRouteの優先度合いを計算する。
 * Phase2: Phase1で計算したRouteの優先度を使用して、Loc-RIBに格納するルートを選択し、そのルートをLoc-RIBに格納する。
 * Phase3: Loc-RIBからAdj-RIB-Outに格納するルートを選択し、そのルートをAdj-RIB-Outに格納する。
+
 送信プロセスでは、Adj-RIB-Outの情報からピアにUpdate Messageを送進します。
 例えば、以前にUpdate Messageで送信したルートと同じルートは弾きます。Adj-RIB-Outから削除されたルートはピアに削除するようにwithdrawnとして送信する、などのことを行います。
 
 これらのプロセスを全て、今までのイベント駆動ステートマシンで扱うことにします。そのために以下のイベントを定義します。
 
-.Table 用語の説明
+.Table 導入するEvent一覧
 |===
 |Event Name | 説明
 
