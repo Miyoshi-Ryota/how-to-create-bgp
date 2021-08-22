@@ -2689,23 +2689,23 @@ note on link
 自身のルーティングテーブルをLoc-RIBに格納する。
 end note
 
-Established -right-> Established : UpdateMsg event
+Established --> Established : UpdateMsg event
 note on link
 Adj-RIB-Inを更新する。
 end note
 
-Established -down-> Established : Adj-Rib-In-Changed
+Established --> Established : Adj-Rib-In-Changed
 note on link
 決定プロセスPhase1を実行する。
 決定プロセスPhase2を実行する。（Loc-Ribを更新する。）
 end note
 
-Established -left-> Established : Loc-Rib-Changed
+Established --> Established : Loc-Rib-Changed
 note on link
 決定プロセスPhase3を実行する。（Adj-Rib-Outを更新する。）
 end note
 
-Established -up-> Established : Adj-Rib-Out-Changed
+Established --> Established : Adj-Rib-Out-Changed
 note on link
 送信プロセスを実行する。（Update Messageを送信する。）
 end note
