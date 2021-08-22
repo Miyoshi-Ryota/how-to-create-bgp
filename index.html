@@ -9470,15 +9470,61 @@ BGPのアップデートメッセージに関するプロセスは決定プロ�
 送信プロセスではAdj-RIB-Outの情報をピアに送信します。</p>
 </div>
 <div class="paragraph">
-<p>決定プロセスはさらにPhase1, Phase2, Phase3に分けられます。
-決定プロセス
+<p>もう少し詳細に踏み込みます。決定プロセスはさらに次のPhase1, Phase2, Phase3に分けられます。
 * Phase1: Adj-RIB-InのRouteの優先度合いを計算する。
 * Phase2: Phase1で計算したRouteの優先度を使用して、Loc-RIBに格納するルートを選択し、そのルートをLoc-RIBに格納する。
-* Phase3: Loc-RIBからAdj-RIB-Outに格納するルートを選択し、そのルートをAdj-RIB-Outに格納する。</p>
+* Phase3: Loc-RIBからAdj-RIB-Outに格納するルートを選択し、そのルートをAdj-RIB-Outに格納する。
+送信プロセスでは、Adj-RIB-Outの情報からピアにUpdate Messageを送進します。
+例えば、以前にUpdate Messageで送信したルートと同じルートは弾きます。Adj-RIB-Outから削除されたルートはピアに削除するようにwithdrawnとして送信する、などのことを行います。</p>
+</div>
+<div class="paragraph">
+<p>これらのプロセスを全て、今までのイベント駆動ステートマシンで扱うことにします。そのために以下のイベントを定義します。</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 3. Table 用語の説明</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Event Name</th>
+<th class="tableblock halign-left valign-top">説明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Update Msg</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Update Messageを受信した時に発行されるイベント。RFCに定義されているまま。</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Loc-RIB-Changed</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Loc-RIBが更新された時に発行されるイベント。RFCには定義されていない。このイベントを導入する方が実装が簡単で、今までとほとんど同じコードを書くだけで実装できるため導入した。</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Adj-RIB-In-Changed</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Adj-RIB-Inが更新された時に発行されるイベント。RFCには定義されていない。このイベントを導入する方が実装が簡単で、今までとほとんど同じコードを書くだけで実装できるため導入した。</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Adj-RIB-Out-Changed</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Adj-RIB-Outが更新された時に発行されるイベント。RFCには定義されていない。このイベントを導入する方が実装が簡単で、今までとほとんど同じコードを書くだけで実装できるため導入した。</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>以下のタイミングで実施することにします。
+- 決定プロセス
+    - Phase1: Adj-RIB-Inが変更された時。（RFCではUpdate Messageを受信した時と定義されている。）
+    - Phase2: Phase1終了時。（RFCではPhase1が終了した時と定義されている）
+    - Phase3: Loc-RIBが変更された時。（RFCではLoc-RIBが変更された時、自分のルーティングテーブルが書き変わった時、新しくBGPピアがEstablishedなった時と定義されている。）
+- 送信プロセス: Adj-RIB-Outが変更された時。（RFCでは特に定義されていない。）</p>
+</div>
+<div class="paragraph">
+<p>これら導入した概念を使用して実装するイベント駆動ステートマシンを図にします。</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="diag-78c2d648d649522610580123f62a68e6.png" alt="Diagram" width="390" height="829">
+<img src="diag-853438436d6dd18ccfb5550154dffdbb.png" alt="Diagram" width="1523" height="829">
 </div>
 <div class="title">Figure 4. Update Messageの送信プロセス</div>
 </div>
@@ -9514,7 +9560,7 @@ BGPのアップデートメッセージに関するプロセスは決定プロ�
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-08-22 01:53:09 UTC
+Last updated 2021-08-22 02:28:53 UTC
 </div>
 </div>
 </body>
