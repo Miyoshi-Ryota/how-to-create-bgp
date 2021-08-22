@@ -9088,6 +9088,8 @@ BGP Update Messageは色々な条件で創出されます。
 <p>ピアが確立された段階のBGP Update Messageを送信するためのプログラムを書きます。
 まずはテストを書きましょう。</p>
 </div>
+<div class="sect3">
+<h4 id="_統合テストを書く">統合テストを書く</h4>
 <div class="paragraph">
 <p>ここではDockerを使用して、2コンテナを立ち上げ、コンテナ間で、
 BGP Update Messageを送受信した結果、ルーティングテーブルが書き変わっていることを確認することにしましょう。</p>
@@ -9429,6 +9431,9 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 <p>さて、BGPのUpdateメッセージのやり取りを実装します。
 この実装によって、host1のルーティングテーブルが更新されるようになると、本テストが成功するはずです。</p>
 </div>
+</div>
+<div class="sect3">
+<h4 id="_bgp_update_messageのやり取りの実装内容の説明">BGP Update Messageのやり取りの実装内容の説明。</h4>
 <div class="paragraph">
 <p>BGP Update Messageを送信する内部のプロセスは複雑です。
 概要を掴みやすくするためにコードを用いた説明の前に自然言語で説明をします。</p>
@@ -9557,6 +9562,11 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 <div class="title">Figure 4. Update Messageの送信プロセス</div>
 </div>
 </div>
+<div class="sect3">
+<h4 id="_bgp_update_messageのやり取りの実装">BGP Update Messageのやり取りの実装</h4>
+
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -9588,7 +9598,7 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-08-22 02:44:37 UTC
+Last updated 2021-08-22 02:46:24 UTC
 </div>
 </div>
 </body>

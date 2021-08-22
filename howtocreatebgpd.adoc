@@ -2341,6 +2341,7 @@ BGP Update Messageは色々な条件で創出されます。
 ピアが確立された段階のBGP Update Messageを送信するためのプログラムを書きます。
 まずはテストを書きましょう。
 
+==== 統合テストを書く
 ここではDockerを使用して、2コンテナを立ち上げ、コンテナ間で、
 BGP Update Messageを送受信した結果、ルーティングテーブルが書き変わっていることを確認することにしましょう。
 
@@ -2597,7 +2598,7 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 さて、BGPのUpdateメッセージのやり取りを実装します。
 この実装によって、host1のルーティングテーブルが更新されるようになると、本テストが成功するはずです。
 
-
+==== BGP Update Messageのやり取りの実装内容の説明。
 BGP Update Messageを送信する内部のプロセスは複雑です。
 概要を掴みやすくするためにコードを用いた説明の前に自然言語で説明をします。
 
@@ -2717,6 +2718,7 @@ end note
 @enduml
 ----
 
+==== BGP Update Messageのやり取りの実装
 
 == 複数ピアをハンドリング可能な実装
 === 本章で作るものの全体像
