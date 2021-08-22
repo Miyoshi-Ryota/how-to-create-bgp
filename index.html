@@ -9512,19 +9512,33 @@ BGPのアップデートメッセージに関するプロセスは決定プロ�
 </tbody>
 </table>
 <div class="paragraph">
-<p>以下のタイミングで実施することにします。
-- 決定プロセス
-    - Phase1: Adj-RIB-Inが変更された時。（RFCではUpdate Messageを受信した時と定義されている。）
-    - Phase2: Phase1終了時。（RFCではPhase1が終了した時と定義されている）
-    - Phase3: Loc-RIBが変更された時。（RFCではLoc-RIBが変更された時、自分のルーティングテーブルが書き変わった時、新しくBGPピアがEstablishedなった時と定義されている。）
-- 送信プロセス: Adj-RIB-Outが変更された時。（RFCでは特に定義されていない。）</p>
+<p>以下のタイミングで実施することにします。</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>決定プロセス</p>
+</li>
+<li>
+<p>Phase1: Adj-RIB-Inが変更された時。（RFCではUpdate Messageを受信した時と定義されている。）</p>
+</li>
+<li>
+<p>Phase2: Phase1終了時。（RFCではPhase1が終了した時と定義されている）</p>
+</li>
+<li>
+<p>Phase3: Loc-RIBが変更された時。（RFCではLoc-RIBが変更された時、自分のルーティングテーブルが書き変わった時、新しくBGPピアがEstablishedなった時と定義されている。）</p>
+</li>
+<li>
+<p>送信プロセス: Adj-RIB-Outが変更された時。（RFCでは特に定義されていない。）</p>
+</li>
+</ul>
 </div>
 <div class="paragraph">
 <p>これら導入した概念を使用して実装するイベント駆動ステートマシンを図にします。</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="diag-853438436d6dd18ccfb5550154dffdbb.png" alt="Diagram" width="1523" height="829">
+<img src="diag-2e66a666de2750a0b2d83a4fc2bb23a2.png" alt="Diagram" width="1523" height="829">
 </div>
 <div class="title">Figure 4. Update Messageの送信プロセス</div>
 </div>
@@ -9560,7 +9574,7 @@ BGPのアップデートメッセージに関するプロセスは決定プロ�
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-08-22 02:28:53 UTC
+Last updated 2021-08-22 02:32:59 UTC
 </div>
 </div>
 </body>

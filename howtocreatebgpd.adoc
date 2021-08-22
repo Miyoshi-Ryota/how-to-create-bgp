@@ -2649,6 +2649,7 @@ BGPのアップデートメッセージに関するプロセスは決定プロ�
 |===
 
 以下のタイミングで実施することにします。
+
 - 決定プロセス
     - Phase1: Adj-RIB-Inが変更された時。（RFCではUpdate Messageを受信した時と定義されている。）
     - Phase2: Phase1終了時。（RFCではPhase1が終了した時と定義されている）
@@ -2672,36 +2673,39 @@ Idle --> Connect : ManualStart event
 note on link
    対向側機器とTCPコネクションを作成を試みる。
 end note
+
 Connect --> OpenSent : Tcp_CR_Acked | TcpConnectionConfirmed event
 note on link
    対向側機器にBGP OpenMessageを送信する。
 end note
+
 OpenSent --> OpenConfirm : BGPOpen event
 note on link
     対向機器にBGP Keepalive Messageを送信する。
 end note
+
 OpenConfirm --> Established : KeepAliveMsg event
 note on link
 自身のルーティングテーブルをLoc-RIBに格納する。
 end note
 
-Established --> Established : UpdateMsg event
+Established -right-> Established : UpdateMsg event
 note on link
 Adj-RIB-Inを更新する。
 end note
 
-Established --> Established : Adj-Rib-In-Changed
+Established -down-> Established : Adj-Rib-In-Changed
 note on link
 決定プロセスPhase1を実行する。
 決定プロセスPhase2を実行する。（Loc-Ribを更新する。）
 end note
 
-Established --> Established : Loc-Rib-Changed
+Established -left-> Established : Loc-Rib-Changed
 note on link
 決定プロセスPhase3を実行する。（Adj-Rib-Outを更新する。）
 end note
 
-Established --> Established : Adj-Rib-Out-Changed
+Established -up-> Established : Adj-Rib-Out-Changed
 note on link
 送信プロセスを実行する。（Update Messageを送信する。）
 end note
