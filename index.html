@@ -9429,6 +9429,59 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 <p>さて、BGPのUpdateメッセージのやり取りを実装します。
 この実装によって、host1のルーティングテーブルが更新されるようになると、本テストが成功するはずです。</p>
 </div>
+<div class="paragraph">
+<p>BGP Update Messageを送信する内部のプロセスは複雑です。
+概要を掴みやすくするためにコードを用いた説明の前に自然言語で説明をします。</p>
+</div>
+<div class="paragraph">
+<p>説明のためにLoc-RIB, Adj-RIB-In, Adj-RIB-Outの3つの用語を導入します。これらはBGPのRFCで用いられている用語です。</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 2. Table 用語の説明</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">用語</th>
+<th class="tableblock halign-left valign-top">説明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Loc-RIB</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Local Routing Information Baseの略。要はただのルーティングテーブル。</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Adj-RIB-In</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BGPのネイバーから受信したルーティング情報。</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Adj-RIB-Out</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">BGPのネイバーに送信する / したルーティング情報。</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>これらの用語を使用してBGPのアップデートメッセージが送信されるまでのプロセスを見ていきましょう。
+BGPのアップデートメッセージに関するプロセスは決定プロセス、送信プロセスに分けられます。
+決定プロセスでは、Adj-RIB-InのルートからLoc-RIB及びAdj-RIB-Outに格納するルートを選択します。
+送信プロセスではAdj-RIB-Outの情報をピアに送信します。</p>
+</div>
+<div class="paragraph">
+<p>決定プロセスはさらにPhase1, Phase2, Phase3に分けられます。
+決定プロセス
+* Phase1: Adj-RIB-InのRouteの優先度合いを計算する。
+* Phase2: Phase1で計算したRouteの優先度を使用して、Loc-RIBに格納するルートを選択し、そのルートをLoc-RIBに格納する。
+* Phase3: Loc-RIBからAdj-RIB-Outに格納するルートを選択し、そのルートをAdj-RIB-Outに格納する。</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="diag-78c2d648d649522610580123f62a68e6.png" alt="Diagram" width="390" height="829">
+</div>
+<div class="title">Figure 4. Update Messageの送信プロセス</div>
+</div>
 </div>
 </div>
 </div>
@@ -9461,7 +9514,7 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-08-18 22:36:01 UTC
+Last updated 2021-08-22 01:53:09 UTC
 </div>
 </div>
 </body>

@@ -2598,6 +2598,76 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 この実装によって、host1のルーティングテーブルが更新されるようになると、本テストが成功するはずです。
 
 
+BGP Update Messageを送信する内部のプロセスは複雑です。
+概要を掴みやすくするためにコードを用いた説明の前に自然言語で説明をします。
+
+説明のためにLoc-RIB, Adj-RIB-In, Adj-RIB-Outの3つの用語を導入します。これらはBGPのRFCで用いられている用語です。
+
+.Table 用語の説明
+|===
+|用語 | 説明
+
+|Loc-RIB
+|Local Routing Information Baseの略。要はただのルーティングテーブル。
+
+|Adj-RIB-In
+|BGPのネイバーから受信したルーティング情報。
+
+|Adj-RIB-Out
+|BGPのネイバーに送信する / したルーティング情報。
+|===
+
+これらの用語を使用してBGPのアップデートメッセージが送信されるまでのプロセスを見ていきましょう。
+BGPのアップデートメッセージに関するプロセスは決定プロセス、送信プロセスに分けられます。
+決定プロセスでは、Adj-RIB-InのルートからLoc-RIB及びAdj-RIB-Outに格納するルートを選択します。
+送信プロセスではAdj-RIB-Outの情報をピアに送信します。
+
+決定プロセスはさらにPhase1, Phase2, Phase3に分けられます。
+決定プロセス
+* Phase1: Adj-RIB-InのRouteの優先度合いを計算する。
+* Phase2: Phase1で計算したRouteの優先度を使用して、Loc-RIBに格納するルートを選択し、そのルートをLoc-RIBに格納する。
+* Phase3: Loc-RIBからAdj-RIB-Outに格納するルートを選択し、そのルートをAdj-RIB-Outに格納する。
+
+
+[plantuml,title="Update Messageの送信プロセス"]
+----
+@startuml
+
+state Idle
+state Connect
+state OpenConfirm
+state OpenSent
+state Established
+
+[*] --> Idle
+Idle --> Connect : ManualStart event
+note on link
+   対向側機器とTCPコネクションを作成を試みる。
+end note
+Connect --> OpenSent : Tcp_CR_Acked | TcpConnectionConfirmed event
+note on link
+   対向側機器にBGP OpenMessageを送信する。
+end note
+OpenSent --> OpenConfirm : BGPOpen event
+note on link
+    対向機器にBGP Keepalive Messageを送信する。
+end note
+OpenConfirm --> Established : KeepAliveMsg event
+note on link
+Phase3を実行する。
+end note
+
+Established --> Established : UpdateMsg event
+note on link
+Phase1を実行する。
+Phase2を実行する。
+end note
+
+
+@enduml
+----
+
+
 == 複数ピアをハンドリング可能な実装
 === 本章で作るものの全体像
 
