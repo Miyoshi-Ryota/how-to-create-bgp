@@ -2895,6 +2895,19 @@ ToDoコメント内の順番に沿って実装します。
 +        }
 +    }
 +}
++
++impl PartialEq for RibEntry {
++    fn eq(&self, other: &Self) -> bool {
++        self.routing_table_entry.network_address == other.routing_table_entry.network_address
++        && self.path_attributes == other.path_attributes
++    }
++}
++
++pub enum RibEntryStatus {
++    Updated,
++    Withdrawn,
++    UnChanged,
++}
 ----
 
 [source,rust,linenums,title=src/bgp/config.rs]
@@ -2945,7 +2958,7 @@ ToDoコメント内の順番に沿って実装します。
 +use std::str::FromStr;
 +use std::net::Ipv4Addr;
 +
-+#[derive(Debug)]
++#[derive(Debug, PartialEq, Eq)]
 +pub enum PathAttribute {
 +    // 全てのルータが認識可能である必要のある最低限のパスアトリビュートのみ実装する。
 +    // LOCAL_PREFは、EBGPでは使用しないため、全てのルータが識別可能である必要があるが、今回は省略した。
@@ -2956,7 +2969,7 @@ ToDoコメント内の順番に沿って実装します。
 +    DontKnow(Vec<u8>),
 +}
 +
-+#[derive(Debug)]
++#[derive(Debug, PartialEq, Eq)]
 +pub enum Origin {
 +    Igp,
 +    Egp,
@@ -2979,7 +2992,7 @@ ToDoコメント内の順番に沿って実装します。
 +    }
 +}
 +
-+#[derive(Debug)]
++#[derive(Debug, PartialEq, Eq)]
 +struct AsPath;
 +
 +impl PathAttribute {

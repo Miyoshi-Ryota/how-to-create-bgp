@@ -9858,7 +9858,20 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 <span class="normal">43</span>
 <span class="normal">44</span>
 <span class="normal">45</span>
-<span class="normal">46</span></pre></div></td><td class="code"><pre><span></span><span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-o">-</span><span class="tok-mi">0</span><span class="tok-p">,</span><span class="tok-mi">0</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-mi">1</span><span class="tok-p">,</span><span class="tok-mi">45</span><span class="tok-w"> </span><span class="tok-o">@@</span><span class="tok-w"></span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span></pre></div></td><td class="code"><pre><span></span><span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-o">-</span><span class="tok-mi">0</span><span class="tok-p">,</span><span class="tok-mi">0</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-mi">1</span><span class="tok-p">,</span><span class="tok-mi">45</span><span class="tok-w"> </span><span class="tok-o">@@</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span>::<span class="tok-n">path_attribute</span>::<span class="tok-n">PathAttribute</span><span class="tok-p">;</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">routing</span>::<span class="tok-p">{</span><span class="tok-n">IpPrefix</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">RoutingTableEntry</span><span class="tok-p">};</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">type</span> <span class="tok-nc">LocRib</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">Rib</span><span class="tok-p">;</span><span class="tok-w"></span>
@@ -9903,6 +9916,19 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 <span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">table</span><span class="tok-p">.</span><span class="tok-n">push</span><span class="tok-p">(</span><span class="tok-n">entry</span><span class="tok-p">);</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-nb">PartialEq</span><span class="tok-w"> </span><span class="tok-k">for</span><span class="tok-w"> </span><span class="tok-n">RibEntry</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">eq</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-bp">self</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">other</span>: <span class="tok-kp">&amp;</span><span class="tok-nc">Self</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-kt">bool</span> <span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">routing_table_entry</span><span class="tok-p">.</span><span class="tok-n">network_address</span><span class="tok-w"> </span><span class="tok-o">==</span><span class="tok-w"> </span><span class="tok-n">other</span><span class="tok-p">.</span><span class="tok-n">routing_table_entry</span><span class="tok-p">.</span><span class="tok-n">network_address</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-o">&amp;&amp;</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">path_attributes</span><span class="tok-w"> </span><span class="tok-o">==</span><span class="tok-w"> </span><span class="tok-n">other</span><span class="tok-p">.</span><span class="tok-n">path_attributes</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">enum</span> <span class="tok-nc">RibEntryStatus</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">Updated</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">Withdrawn</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">UnChanged</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
 </pre></td></tr></table></code></pre>
 </div>
@@ -10040,7 +10066,7 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 <span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-kt">str</span>::<span class="tok-n">FromStr</span><span class="tok-p">;</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-n">net</span>::<span class="tok-n">Ipv4Addr</span><span class="tok-p">;</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-cp">#[derive(Debug)]</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-cp">#[derive(Debug, PartialEq, Eq)]</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">enum</span> <span class="tok-nc">PathAttribute</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-c1">// 全てのルータが認識可能である必要のある最低限のパスアトリビュートのみ実装する。</span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-c1">// LOCAL_PREFは、EBGPでは使用しないため、全てのルータが識別可能である必要があるが、今回は省略した。</span>
@@ -10051,7 +10077,7 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">DontKnow</span><span class="tok-p">(</span><span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-kt">u8</span><span class="tok-o">&gt;</span><span class="tok-p">),</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-cp">#[derive(Debug)]</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-cp">#[derive(Debug, PartialEq, Eq)]</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">enum</span> <span class="tok-nc">Origin</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">Igp</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">Egp</span><span class="tok-p">,</span><span class="tok-w"></span>
@@ -10074,7 +10100,7 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-cp">#[derive(Debug)]</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-cp">#[derive(Debug, PartialEq, Eq)]</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-k">struct</span> <span class="tok-nc">AsPath</span><span class="tok-p">;</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">PathAttribute</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
@@ -10193,7 +10219,7 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-08-25 23:10:17 UTC
+Last updated 2021-08-25 23:58:43 UTC
 </div>
 </div>
 </body>
