@@ -2731,26 +2731,26 @@ end note
 +                    // ToDo1: 現在のルーティングテーブルの情報をLoc-Ribにインストールする。
                  }
                  _ => {}
-             },
+             }
 -            _ => {}
 +            State::Established => match event {
 +                Event::UpdateMsg => {
 +                    // ToDo4: 受信したUpdate MessageからAdj-RIB-Inを更新する。
 +                    unimplemented!();
-+                },
++                }
 +                Event::AdjRibInChanged => {
 +                    // ToDo5: Phase1:　Adj-RIB-InからLoc-RIBに格納するルートを選択する。
 +                    // ToDo6: Phase2: Phase1の情報を使ってLoc-RIBを更新する。
 +                    unimplemented!();
-+                },
++                }
 +                Event::LocRibChanged => {
 +                    // ToDo2: Phase3: Loc-RIBからAdj-Rib-Outを更新する。
 +                    unimplemented!();
-+                },
++                }
 +                Event::AdjRibOutChanged => {
 +                    // ToDo3: Update Messageをピアに送信する。
 +                    unimplemented!();
-+                },
++                }
 +                _ => {}
 +            },
          }
@@ -2776,50 +2776,28 @@ ToDoコメント内の順番に沿って実装します。
 
 [source,rust,linenums,title=src/bgp/mod.rs]
 ----
+@@ -2,6 +2,8 @@ pub mod config;
+ mod message;
  pub mod peer;
  mod queue;
- mod timer;
 +mod rib;
-----
-
-[source,rust,linenums,title=src/bgp/rib.rs]
-----
-+use crate::routing::RoutingTableEntry;
-+
-+pub type LocRib = Rib;
-+
-+pub struct Rib {
-+    table: Vec<RoutingTableEntry>,
-+}
-+
-+impl Rib {
-+    pub fn new(table: Vec<RoutingTableEntry>) -> Self {
-+        Self { table }
-+    }
-+
-+    pub fn insert_table(&mut self, table: Vec<RoutingTableEntry>) {
-+        for entry in table {
-+            self.insert_entry(entry);
-+        };
-+    }
-+
-+    pub fn insert_entry(&mut self, entry: RoutingTableEntry) {
-+        if !self.table.contains(&entry) {
-+            self.table.push(entry);
-+        }
-+    }
-+}
++mod path_attribute;
+ mod timer;
 ----
 
 [source,rust,linenums,title=src/bgp/peer.rs]
 ----
+@@ -5,6 +5,9 @@ use super::{
  use crate::bgp::config::Config;
  use crate::bgp::config::Mode;
  use crate::bgp::message::{BgpMessage, BgpMessageHeader, BgpMessageType};
-+use crate::bgp::rib::LocRib;
-+use crate::routing::{lookup_routing_table, RoutingTableEntry};
-
- pub struct Peer {
++use crate::bgp::rib::{LocRib, RibEntry, RibEntryStatus};
++use crate::bgp::path_attribute::PathAttribute;
++use crate::routing::lookup_routing_table;
+ use std::{
+     io::{self, Read, Write},
+     net::{TcpListener, TcpStream},
+@@ -17,6 +20,7 @@ pub struct Peer {
      now_state: State,
      tcp_connection: Option<TcpStream>,
      buffer: Vec<u8>,
@@ -2827,13 +2805,15 @@ ToDoコメント内の順番に沿って実装します。
  }
  
  impl Peer {
-     pub fn new(config: Config) -> Self {
+@@ -26,6 +30,7 @@ impl Peer {
+         let now_state = State::Idle;
          let tcp_connection = None;
          let buffer = vec![];
 +        let loc_rib = LocRib::new(vec![]);
          Self {
              config,
              event_queue,
+@@ -33,6 +38,7 @@ impl Peer {
              now_state,
              tcp_connection,
              buffer,
@@ -2841,14 +2821,25 @@ ToDoコメント内の順番に沿って実装します。
          }
      }
  
- impl Peer {
-     fn handle_event(&mut self, event: Event) {
+@@ -172,7 +178,22 @@ impl Peer {
              State::OpenConfirm => match event {
                  Event::Keepalive => {
                      self.now_state = State::Established;
 -                    // ToDo1: 現在のルーティングテーブルの情報をLoc-Ribにインストールする。
-+                    let ribs: Vec<RoutingTableEntry> = self.config.advertise_networks.iter().map(
-+                        |network| lookup_routing_table(network)).flatten().collect();
++                    let ribs: Vec<RibEntry> = self
++                        .config
++                        .advertise_networks
++                        .iter()
++                        .map(|network| lookup_routing_table(network))
++                        .flatten()
++                        .map(|entry| {
++                            RibEntry::new(
++                                entry,
++                                RibEntryStatus::Updated,
++                                vec![PathAttribute::Origin("IGP".parse().unwrap())],
++                            )
++                        })
++                        .collect();
 +                    self.loc_rib.insert_table(ribs);
 +                    self.event_queue.enqueue(Event::LocRibChanged);
                  }
@@ -2856,17 +2847,179 @@ ToDoコメント内の順番に沿って実装します。
              },
 ----
 
+[source,rust,linenums,title=src/bgp/rib.rs]
+----
+@@ -0,0 +1,45 @@
++use crate::bgp::path_attribute::PathAttribute;
++use crate::routing::{IpPrefix, RoutingTableEntry};
++pub type LocRib = Rib;
++
++pub struct Rib {
++    table: Vec<RibEntry>,
++}
++
++pub struct RibEntry {
++    routing_table_entry: RoutingTableEntry,
++    status: RibEntryStatus,
++    path_attributes: Vec<PathAttribute>,
++}
++
++impl RibEntry {
++    pub fn new(
++        routing_table_entry: RoutingTableEntry,
++        status: RibEntryStatus,
++        path_attributes: Vec<PathAttribute>,
++    ) -> Self {
++        Self {
++            routing_table_entry,
++            status,
++            path_attributes,
++        }
++    }
++}
++
++impl Rib {
++    pub fn new(table: Vec<RibEntry>) -> Self {
++        Self { table }
++    }
++
++    pub fn insert_table(&mut self, table: Vec<RibEntry>) {
++        for entry in table {
++            self.insert_entry(entry);
++        }
++    }
++
++    pub fn insert_entry(&mut self, entry: RibEntry) {
++        if !self.table.contains(&entry) {
++            self.table.push(entry);
++        }
++    }
++}
+----
+
+[source,rust,linenums,title=src/bgp/config.rs]
+----
+@@ -1,4 +1,5 @@
+ use crate::bgp;
++use crate::routing::IpPrefix;
+ use std::{net::Ipv4Addr, str::FromStr};
+ 
+ #[derive(Debug)]
+@@ -8,6 +9,7 @@ pub struct Config {
+     remote_as_number: bgp::AutonomousSystemNumber,
+     pub remote_ip_address: Ipv4Addr,
+     pub mode: Mode,
++    pub advertise_networks: Vec<IpPrefix>,
+ }
+ 
+ #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+@@ -50,12 +52,21 @@ impl FromStr for Config {
+ 
+         let mode = c[4].parse().expect("cannot parse mode");
+ 
++        let mut advertise_networks = vec![];
++        for advertise_network_str in c[5..].iter() {
++            let advertise_network: IpPrefix = advertise_network_str.parse().expect("cannot parse advertise_network");
++            if advertise_network.is_network_address() {
++                panic!("advertise_network is not network address");
++            }
++            advertise_networks.push(advertise_network);
++        }
+         Ok(Config {
+             local_as_number,
+             local_ip_address,
+             remote_as_number,
+             remote_ip_address,
+             mode,
++            advertise_networks,
+         })
+     }
+ }
+----
+
+
+
+[source,rust,linenums,title=src/bgp/path_attributes.rs]
+----
+@@ -0,0 +1,49 @@
++use std::str::FromStr;
++use std::net::Ipv4Addr;
++
++#[derive(Debug)]
++pub enum PathAttribute {
++    // 全てのルータが認識可能である必要のある最低限のパスアトリビュートのみ実装する。
++    // LOCAL_PREFは、EBGPでは使用しないため、全てのルータが識別可能である必要があるが、今回は省略した。
++    Origin(Origin),
++    AsPath(AsPath),
++    NextHop(Ipv4Addr),
++    AtomicAggregate,
++    DontKnow(Vec<u8>),
++}
++
++#[derive(Debug)]
++pub enum Origin {
++    Igp,
++    Egp,
++    Incomplete,
++}
++
++#[derive(Debug)]
++pub struct ParseOriginError;
++
++impl FromStr for Origin {
++    type Err = ParseOriginError;
++
++    fn from_str(s: &str) -> Result<Self, Self::Err> {
++        match s {
++            "IGP" => Ok(Origin::Igp),
++            "EGP" => Ok(Origin::Egp),
++            "INCOMPLETE" => Ok(Origin::Incomplete),
++            _ => Err(ParseOriginError),
++        }
++    }
++}
++
++#[derive(Debug)]
++struct AsPath;
++
++impl PathAttribute {
++    pub fn serialize(&self) -> Vec<u8> {
++        unimplemented!();
++    }
++
++    pub fn deserialize(bytes: &[u8]) -> Self {
++        unimplemented!();
++    }
++}
+----
+
 
 [source,rust,linenums,title=src/routing.rs]
----- 
+----
+ use tokio::runtime::Runtime;
+ 
  #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 -struct RoutingTableEntry {
+-    network_address: IpPrefix,
 +pub struct RoutingTableEntry {
++    pub network_address: IpPrefix,
+     nexthop: Nexthop,
+ }
  
  #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 -struct IpPrefix {
 +pub struct IpPrefix {
+     ip_addr: Ipv4Addr,
+     prefix: u8,
+ }
  
+ impl IpPrefix {
+-    fn is_network_address(&self) -> bool {
++    pub fn is_network_address(&self) -> bool {
+         let netmask = self.get_subnet_netmask();
+         let ip_addr_bit: u32 = self.ip_addr.into();
+         netmask | ip_addr_bit == netmask
+
  #[derive(Debug)]
 -struct ParseIpPrefixError;
 +pub struct ParseIpPrefixError;
@@ -2875,6 +3028,7 @@ ToDoコメント内の順番に沿って実装します。
 +pub fn lookup_routing_table(lookup_addr: &IpPrefix) -> Vec<RoutingTableEntry> {
      let mut route_messages: Vec<RouteMessage> = vec![];
      let rt = Runtime::new().unwrap();
+     rt.block_on(async {
 ----
 
 

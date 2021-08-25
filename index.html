@@ -9620,26 +9620,26 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-c1">// ToDo1: 現在のルーティングテーブルの情報をLoc-Ribにインストールする。</span>
 <span class="tok-w">                 </span><span class="tok-p">}</span><span class="tok-w"></span>
 <span class="tok-w">                 </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{}</span><span class="tok-w"></span>
-<span class="tok-w">             </span><span class="tok-p">},</span><span class="tok-w"></span>
+<span class="tok-w">             </span><span class="tok-p">}</span><span class="tok-w"></span>
 <span class="tok-o">-</span><span class="tok-w">            </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{}</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">State</span>::<span class="tok-n">Established</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-k">match</span><span class="tok-w"> </span><span class="tok-n">event</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-n">Event</span>::<span class="tok-n">UpdateMsg</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-c1">// ToDo4: 受信したUpdate MessageからAdj-RIB-Inを更新する。</span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-fm">unimplemented!</span><span class="tok-p">();</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-p">},</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-p">}</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-n">Event</span>::<span class="tok-n">AdjRibInChanged</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-c1">// ToDo5: Phase1:　Adj-RIB-InからLoc-RIBに格納するルートを選択する。</span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-c1">// ToDo6: Phase2: Phase1の情報を使ってLoc-RIBを更新する。</span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-fm">unimplemented!</span><span class="tok-p">();</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-p">},</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-p">}</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-n">Event</span>::<span class="tok-n">LocRibChanged</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-c1">// ToDo2: Phase3: Loc-RIBからAdj-Rib-Outを更新する。</span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-fm">unimplemented!</span><span class="tok-p">();</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-p">},</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-p">}</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-n">Event</span>::<span class="tok-n">AdjRibOutChanged</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-c1">// ToDo3: Update Messageをピアに送信する。</span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-fm">unimplemented!</span><span class="tok-p">();</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-p">},</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-p">}</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{}</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">},</span><span class="tok-w"></span>
 <span class="tok-w">         </span><span class="tok-p">}</span><span class="tok-w"></span>
@@ -9676,65 +9676,16 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 <pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">1</span>
 <span class="normal">2</span>
 <span class="normal">3</span>
-<span class="normal">4</span></pre></div></td><td class="code"><pre><span></span><span class="tok-w"> </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">mod</span> <span class="tok-nn">peer</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="normal">4</span>
+<span class="normal">5</span>
+<span class="normal">6</span>
+<span class="normal">7</span></pre></div></td><td class="code"><pre><span></span><span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-o">-</span><span class="tok-mi">2</span><span class="tok-p">,</span><span class="tok-mi">6</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-mi">2</span><span class="tok-p">,</span><span class="tok-mi">8</span><span class="tok-w"> </span><span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">mod</span> <span class="tok-nn">config</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-k">mod</span> <span class="tok-nn">message</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">mod</span> <span class="tok-nn">peer</span><span class="tok-p">;</span><span class="tok-w"></span>
 <span class="tok-w"> </span><span class="tok-k">mod</span> <span class="tok-nn">queue</span><span class="tok-p">;</span><span class="tok-w"></span>
-<span class="tok-w"> </span><span class="tok-k">mod</span> <span class="tok-nn">timer</span><span class="tok-p">;</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-k">mod</span> <span class="tok-nn">rib</span><span class="tok-p">;</span><span class="tok-w"></span>
-</pre></td></tr></table></code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="title">src/bgp/rib.rs</div>
-<div class="content">
-<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
-<span class="normal"> 2</span>
-<span class="normal"> 3</span>
-<span class="normal"> 4</span>
-<span class="normal"> 5</span>
-<span class="normal"> 6</span>
-<span class="normal"> 7</span>
-<span class="normal"> 8</span>
-<span class="normal"> 9</span>
-<span class="normal">10</span>
-<span class="normal">11</span>
-<span class="normal">12</span>
-<span class="normal">13</span>
-<span class="normal">14</span>
-<span class="normal">15</span>
-<span class="normal">16</span>
-<span class="normal">17</span>
-<span class="normal">18</span>
-<span class="normal">19</span>
-<span class="normal">20</span>
-<span class="normal">21</span>
-<span class="normal">22</span>
-<span class="normal">23</span>
-<span class="normal">24</span>
-<span class="normal">25</span></pre></div></td><td class="code"><pre><span></span><span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">routing</span>::<span class="tok-n">RoutingTableEntry</span><span class="tok-p">;</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">type</span> <span class="tok-nc">LocRib</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">Rib</span><span class="tok-p">;</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">struct</span> <span class="tok-nc">Rib</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">table</span>: <span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-n">RoutingTableEntry</span><span class="tok-o">&gt;</span><span class="tok-p">,</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">Rib</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">fn</span> <span class="tok-nf">new</span><span class="tok-p">(</span><span class="tok-n">table</span>: <span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-n">RoutingTableEntry</span><span class="tok-o">&gt;</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-nc">Self</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-bp">Self</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"> </span><span class="tok-n">table</span><span class="tok-w"> </span><span class="tok-p">}</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">fn</span> <span class="tok-nf">insert_table</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">table</span>: <span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-n">RoutingTableEntry</span><span class="tok-o">&gt;</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-k">for</span><span class="tok-w"> </span><span class="tok-n">entry</span><span class="tok-w"> </span><span class="tok-k">in</span><span class="tok-w"> </span><span class="tok-n">table</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">insert_entry</span><span class="tok-p">(</span><span class="tok-n">entry</span><span class="tok-p">);</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">};</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">fn</span> <span class="tok-nf">insert_entry</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">entry</span>: <span class="tok-nc">RoutingTableEntry</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-o">!</span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">table</span><span class="tok-p">.</span><span class="tok-n">contains</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-n">entry</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">table</span><span class="tok-p">.</span><span class="tok-n">push</span><span class="tok-p">(</span><span class="tok-n">entry</span><span class="tok-p">);</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">mod</span> <span class="tok-nn">path_attribute</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-k">mod</span> <span class="tok-nn">timer</span><span class="tok-p">;</span><span class="tok-w"></span>
 </pre></td></tr></table></code></pre>
 </div>
 </div>
@@ -9781,13 +9732,34 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 <span class="normal">38</span>
 <span class="normal">39</span>
 <span class="normal">40</span>
-<span class="normal">41</span></pre></div></td><td class="code"><pre><span></span><span class="tok-w"> </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span>::<span class="tok-n">config</span>::<span class="tok-n">Config</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span></pre></div></td><td class="code"><pre><span></span><span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-o">-</span><span class="tok-mi">5</span><span class="tok-p">,</span><span class="tok-mi">6</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-mi">5</span><span class="tok-p">,</span><span class="tok-mi">9</span><span class="tok-w"> </span><span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">super</span>::<span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span>::<span class="tok-n">config</span>::<span class="tok-n">Config</span><span class="tok-p">;</span><span class="tok-w"></span>
 <span class="tok-w"> </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span>::<span class="tok-n">config</span>::<span class="tok-n">Mode</span><span class="tok-p">;</span><span class="tok-w"></span>
 <span class="tok-w"> </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span>::<span class="tok-n">message</span>::<span class="tok-p">{</span><span class="tok-n">BgpMessage</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">BgpMessageHeader</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">BgpMessageType</span><span class="tok-p">};</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span>::<span class="tok-n">rib</span>::<span class="tok-n">LocRib</span><span class="tok-p">;</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">routing</span>::<span class="tok-p">{</span><span class="tok-n">lookup_routing_table</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">RoutingTableEntry</span><span class="tok-p">};</span><span class="tok-w"></span>
-
-<span class="tok-w"> </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">struct</span> <span class="tok-nc">Peer</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span>::<span class="tok-n">rib</span>::<span class="tok-p">{</span><span class="tok-n">LocRib</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">RibEntry</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">RibEntryStatus</span><span class="tok-p">};</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span>::<span class="tok-n">path_attribute</span>::<span class="tok-n">PathAttribute</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">routing</span>::<span class="tok-n">lookup_routing_table</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-n">io</span>::<span class="tok-p">{</span><span class="tok-bp">self</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">Read</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">Write</span><span class="tok-p">},</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-n">net</span>::<span class="tok-p">{</span><span class="tok-n">TcpListener</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">TcpStream</span><span class="tok-p">},</span><span class="tok-w"></span>
+<span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-o">-</span><span class="tok-mi">17</span><span class="tok-p">,</span><span class="tok-mi">6</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-mi">20</span><span class="tok-p">,</span><span class="tok-mi">7</span><span class="tok-w"> </span><span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">struct</span> <span class="tok-nc">Peer</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-w">     </span><span class="tok-n">now_state</span>: <span class="tok-nc">State</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-w">     </span><span class="tok-n">tcp_connection</span>: <span class="tok-nb">Option</span><span class="tok-o">&lt;</span><span class="tok-n">TcpStream</span><span class="tok-o">&gt;</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-w">     </span><span class="tok-n">buffer</span>: <span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-kt">u8</span><span class="tok-o">&gt;</span><span class="tok-p">,</span><span class="tok-w"></span>
@@ -9795,13 +9767,15 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 <span class="tok-w"> </span><span class="tok-p">}</span><span class="tok-w"></span>
 
 <span class="tok-w"> </span><span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">Peer</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-w">     </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">fn</span> <span class="tok-nf">new</span><span class="tok-p">(</span><span class="tok-n">config</span>: <span class="tok-nc">Config</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-nc">Self</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-o">-</span><span class="tok-mi">26</span><span class="tok-p">,</span><span class="tok-mi">6</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-mi">30</span><span class="tok-p">,</span><span class="tok-mi">7</span><span class="tok-w"> </span><span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">Peer</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">         </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">now_state</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">State</span>::<span class="tok-n">Idle</span><span class="tok-p">;</span><span class="tok-w"></span>
 <span class="tok-w">         </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">tcp_connection</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-nb">None</span><span class="tok-p">;</span><span class="tok-w"></span>
 <span class="tok-w">         </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">buffer</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-fm">vec!</span><span class="tok-p">[];</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">loc_rib</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">LocRib</span>::<span class="tok-n">new</span><span class="tok-p">(</span><span class="tok-fm">vec!</span><span class="tok-p">[]);</span><span class="tok-w"></span>
 <span class="tok-w">         </span><span class="tok-bp">Self</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-w">             </span><span class="tok-n">config</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-w">             </span><span class="tok-n">event_queue</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-o">-</span><span class="tok-mi">33</span><span class="tok-p">,</span><span class="tok-mi">6</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-mi">38</span><span class="tok-p">,</span><span class="tok-mi">7</span><span class="tok-w"> </span><span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">Peer</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-w">             </span><span class="tok-n">now_state</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-w">             </span><span class="tok-n">tcp_connection</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-w">             </span><span class="tok-n">buffer</span><span class="tok-p">,</span><span class="tok-w"></span>
@@ -9809,19 +9783,309 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 <span class="tok-w">         </span><span class="tok-p">}</span><span class="tok-w"></span>
 <span class="tok-w">     </span><span class="tok-p">}</span><span class="tok-w"></span>
 
-<span class="tok-w"> </span><span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">Peer</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
-<span class="tok-w">     </span><span class="tok-k">fn</span> <span class="tok-nf">handle_event</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">event</span>: <span class="tok-nc">Event</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-o">-</span><span class="tok-mi">172</span><span class="tok-p">,</span><span class="tok-mi">7</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-mi">178</span><span class="tok-p">,</span><span class="tok-mi">22</span><span class="tok-w"> </span><span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">Peer</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-w">             </span><span class="tok-n">State</span>::<span class="tok-n">OpenConfirm</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-k">match</span><span class="tok-w"> </span><span class="tok-n">event</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-w">                 </span><span class="tok-n">Event</span>::<span class="tok-n">Keepalive</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-w">                     </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">now_state</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">State</span>::<span class="tok-n">Established</span><span class="tok-p">;</span><span class="tok-w"></span>
 <span class="tok-o">-</span><span class="tok-w">                    </span><span class="tok-c1">// ToDo1: 現在のルーティングテーブルの情報をLoc-Ribにインストールする。</span>
-<span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">ribs</span>: <span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-n">RoutingTableEntry</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">config</span><span class="tok-p">.</span><span class="tok-n">advertise_networks</span><span class="tok-p">.</span><span class="tok-n">iter</span><span class="tok-p">().</span><span class="tok-n">map</span><span class="tok-p">(</span><span class="tok-w"></span>
-<span class="tok-o">+</span><span class="tok-w">                        </span><span class="tok-o">|</span><span class="tok-n">network</span><span class="tok-o">|</span><span class="tok-w"> </span><span class="tok-n">lookup_routing_table</span><span class="tok-p">(</span><span class="tok-n">network</span><span class="tok-p">)).</span><span class="tok-n">flatten</span><span class="tok-p">().</span><span class="tok-n">collect</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">ribs</span>: <span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-n">RibEntry</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                        </span><span class="tok-p">.</span><span class="tok-n">config</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                        </span><span class="tok-p">.</span><span class="tok-n">advertise_networks</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                        </span><span class="tok-p">.</span><span class="tok-n">iter</span><span class="tok-p">()</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                        </span><span class="tok-p">.</span><span class="tok-n">map</span><span class="tok-p">(</span><span class="tok-o">|</span><span class="tok-n">network</span><span class="tok-o">|</span><span class="tok-w"> </span><span class="tok-n">lookup_routing_table</span><span class="tok-p">(</span><span class="tok-n">network</span><span class="tok-p">))</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                        </span><span class="tok-p">.</span><span class="tok-n">flatten</span><span class="tok-p">()</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                        </span><span class="tok-p">.</span><span class="tok-n">map</span><span class="tok-p">(</span><span class="tok-o">|</span><span class="tok-n">entry</span><span class="tok-o">|</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                            </span><span class="tok-n">RibEntry</span>::<span class="tok-n">new</span><span class="tok-p">(</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                                </span><span class="tok-n">entry</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                                </span><span class="tok-n">RibEntryStatus</span>::<span class="tok-n">Updated</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                                </span><span class="tok-fm">vec!</span><span class="tok-p">[</span><span class="tok-n">PathAttribute</span>::<span class="tok-n">Origin</span><span class="tok-p">(</span><span class="tok-s">&quot;IGP&quot;</span><span class="tok-p">.</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">())],</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                            </span><span class="tok-p">)</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                        </span><span class="tok-p">})</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                        </span><span class="tok-p">.</span><span class="tok-n">collect</span><span class="tok-p">();</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">loc_rib</span><span class="tok-p">.</span><span class="tok-n">insert_table</span><span class="tok-p">(</span><span class="tok-n">ribs</span><span class="tok-p">);</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">event_queue</span><span class="tok-p">.</span><span class="tok-n">enqueue</span><span class="tok-p">(</span><span class="tok-n">Event</span>::<span class="tok-n">LocRibChanged</span><span class="tok-p">);</span><span class="tok-w"></span>
 <span class="tok-w">                 </span><span class="tok-p">}</span><span class="tok-w"></span>
 <span class="tok-w">                 </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{}</span><span class="tok-w"></span>
 <span class="tok-w">             </span><span class="tok-p">},</span><span class="tok-w"></span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">src/bgp/rib.rs</div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span></pre></div></td><td class="code"><pre><span></span><span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-o">-</span><span class="tok-mi">0</span><span class="tok-p">,</span><span class="tok-mi">0</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-mi">1</span><span class="tok-p">,</span><span class="tok-mi">45</span><span class="tok-w"> </span><span class="tok-o">@@</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span>::<span class="tok-n">path_attribute</span>::<span class="tok-n">PathAttribute</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">routing</span>::<span class="tok-p">{</span><span class="tok-n">IpPrefix</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">RoutingTableEntry</span><span class="tok-p">};</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">type</span> <span class="tok-nc">LocRib</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">Rib</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">struct</span> <span class="tok-nc">Rib</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">table</span>: <span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-n">RibEntry</span><span class="tok-o">&gt;</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">struct</span> <span class="tok-nc">RibEntry</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">routing_table_entry</span>: <span class="tok-nc">RoutingTableEntry</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">status</span>: <span class="tok-nc">RibEntryStatus</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">path_attributes</span>: <span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-n">PathAttribute</span><span class="tok-o">&gt;</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">RibEntry</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">fn</span> <span class="tok-nf">new</span><span class="tok-p">(</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">routing_table_entry</span>: <span class="tok-nc">RoutingTableEntry</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">status</span>: <span class="tok-nc">RibEntryStatus</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">path_attributes</span>: <span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-n">PathAttribute</span><span class="tok-o">&gt;</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-nc">Self</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-bp">Self</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">routing_table_entry</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">status</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">path_attributes</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">Rib</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">fn</span> <span class="tok-nf">new</span><span class="tok-p">(</span><span class="tok-n">table</span>: <span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-n">RibEntry</span><span class="tok-o">&gt;</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-nc">Self</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-bp">Self</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"> </span><span class="tok-n">table</span><span class="tok-w"> </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">fn</span> <span class="tok-nf">insert_table</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">table</span>: <span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-n">RibEntry</span><span class="tok-o">&gt;</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-k">for</span><span class="tok-w"> </span><span class="tok-n">entry</span><span class="tok-w"> </span><span class="tok-k">in</span><span class="tok-w"> </span><span class="tok-n">table</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">insert_entry</span><span class="tok-p">(</span><span class="tok-n">entry</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">fn</span> <span class="tok-nf">insert_entry</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">entry</span>: <span class="tok-nc">RibEntry</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-o">!</span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">table</span><span class="tok-p">.</span><span class="tok-n">contains</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-n">entry</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">table</span><span class="tok-p">.</span><span class="tok-n">push</span><span class="tok-p">(</span><span class="tok-n">entry</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">src/bgp/config.rs</div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span></pre></div></td><td class="code"><pre><span></span><span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-o">-</span><span class="tok-mi">1</span><span class="tok-p">,</span><span class="tok-mi">4</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-mi">1</span><span class="tok-p">,</span><span class="tok-mi">5</span><span class="tok-w"> </span><span class="tok-o">@@</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">routing</span>::<span class="tok-n">IpPrefix</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-p">{</span><span class="tok-n">net</span>::<span class="tok-n">Ipv4Addr</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-kt">str</span>::<span class="tok-n">FromStr</span><span class="tok-p">};</span><span class="tok-w"></span>
+
+<span class="tok-w"> </span><span class="tok-cp">#[derive(Debug)]</span><span class="tok-w"></span>
+<span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-o">-</span><span class="tok-mi">8</span><span class="tok-p">,</span><span class="tok-mi">6</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-mi">9</span><span class="tok-p">,</span><span class="tok-mi">7</span><span class="tok-w"> </span><span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">struct</span> <span class="tok-nc">Config</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-n">remote_as_number</span>: <span class="tok-nc">bgp</span>::<span class="tok-n">AutonomousSystemNumber</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-n">remote_ip_address</span>: <span class="tok-nc">Ipv4Addr</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-n">mode</span>: <span class="tok-nc">Mode</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-n">advertise_networks</span>: <span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-n">IpPrefix</span><span class="tok-o">&gt;</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-p">}</span><span class="tok-w"></span>
+
+<span class="tok-w"> </span><span class="tok-cp">#[derive(Debug, Clone, Copy, PartialEq, Eq)]</span><span class="tok-w"></span>
+<span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-o">-</span><span class="tok-mi">50</span><span class="tok-p">,</span><span class="tok-mi">12</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-mi">52</span><span class="tok-p">,</span><span class="tok-mi">21</span><span class="tok-w"> </span><span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">FromStr</span><span class="tok-w"> </span><span class="tok-k">for</span><span class="tok-w"> </span><span class="tok-n">Config</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+
+<span class="tok-w">         </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">mode</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">c</span><span class="tok-p">[</span><span class="tok-mi">4</span><span class="tok-p">].</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">expect</span><span class="tok-p">(</span><span class="tok-s">&quot;cannot parse mode&quot;</span><span class="tok-p">);</span><span class="tok-w"></span>
+
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">advertise_networks</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-fm">vec!</span><span class="tok-p">[];</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-k">for</span><span class="tok-w"> </span><span class="tok-n">advertise_network_str</span><span class="tok-w"> </span><span class="tok-k">in</span><span class="tok-w"> </span><span class="tok-n">c</span><span class="tok-p">[</span><span class="tok-mi">5</span><span class="tok-o">..</span><span class="tok-p">].</span><span class="tok-n">iter</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">advertise_network</span>: <span class="tok-nc">IpPrefix</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">advertise_network_str</span><span class="tok-p">.</span><span class="tok-n">parse</span><span class="tok-p">().</span><span class="tok-n">expect</span><span class="tok-p">(</span><span class="tok-s">&quot;cannot parse advertise_network&quot;</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-n">advertise_network</span><span class="tok-p">.</span><span class="tok-n">is_network_address</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-fm">panic!</span><span class="tok-p">(</span><span class="tok-s">&quot;advertise_network is not network address&quot;</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">advertise_networks</span><span class="tok-p">.</span><span class="tok-n">push</span><span class="tok-p">(</span><span class="tok-n">advertise_network</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-w">         </span><span class="tok-nb">Ok</span><span class="tok-p">(</span><span class="tok-n">Config</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">             </span><span class="tok-n">local_as_number</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">             </span><span class="tok-n">local_ip_address</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">             </span><span class="tok-n">remote_as_number</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">             </span><span class="tok-n">remote_ip_address</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">             </span><span class="tok-n">mode</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">advertise_networks</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">         </span><span class="tok-p">})</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-p">}</span><span class="tok-w"></span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">src/bgp/path_attributes.rs</div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span></pre></div></td><td class="code"><pre><span></span><span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-o">-</span><span class="tok-mi">0</span><span class="tok-p">,</span><span class="tok-mi">0</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-mi">1</span><span class="tok-p">,</span><span class="tok-mi">49</span><span class="tok-w"> </span><span class="tok-o">@@</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-kt">str</span>::<span class="tok-n">FromStr</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-n">net</span>::<span class="tok-n">Ipv4Addr</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-cp">#[derive(Debug)]</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">enum</span> <span class="tok-nc">PathAttribute</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-c1">// 全てのルータが認識可能である必要のある最低限のパスアトリビュートのみ実装する。</span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-c1">// LOCAL_PREFは、EBGPでは使用しないため、全てのルータが識別可能である必要があるが、今回は省略した。</span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">Origin</span><span class="tok-p">(</span><span class="tok-n">Origin</span><span class="tok-p">),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">AsPath</span><span class="tok-p">(</span><span class="tok-n">AsPath</span><span class="tok-p">),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">NextHop</span><span class="tok-p">(</span><span class="tok-n">Ipv4Addr</span><span class="tok-p">),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">AtomicAggregate</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">DontKnow</span><span class="tok-p">(</span><span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-kt">u8</span><span class="tok-o">&gt;</span><span class="tok-p">),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-cp">#[derive(Debug)]</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">enum</span> <span class="tok-nc">Origin</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">Igp</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">Egp</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-n">Incomplete</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-cp">#[derive(Debug)]</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">struct</span> <span class="tok-nc">ParseOriginError</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">FromStr</span><span class="tok-w"> </span><span class="tok-k">for</span><span class="tok-w"> </span><span class="tok-n">Origin</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">type</span> <span class="tok-nb">Err</span> <span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">ParseOriginError</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">from_str</span><span class="tok-p">(</span><span class="tok-n">s</span>: <span class="tok-kp">&amp;</span><span class="tok-kt">str</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-nb">Result</span><span class="tok-o">&lt;</span><span class="tok-bp">Self</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-bp">Self</span>::<span class="tok-nb">Err</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-k">match</span><span class="tok-w"> </span><span class="tok-n">s</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-s">&quot;IGP&quot;</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-nb">Ok</span><span class="tok-p">(</span><span class="tok-n">Origin</span>::<span class="tok-n">Igp</span><span class="tok-p">),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-s">&quot;EGP&quot;</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-nb">Ok</span><span class="tok-p">(</span><span class="tok-n">Origin</span>::<span class="tok-n">Egp</span><span class="tok-p">),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-s">&quot;INCOMPLETE&quot;</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-nb">Ok</span><span class="tok-p">(</span><span class="tok-n">Origin</span>::<span class="tok-n">Incomplete</span><span class="tok-p">),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-nb">Err</span><span class="tok-p">(</span><span class="tok-n">ParseOriginError</span><span class="tok-p">),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-cp">#[derive(Debug)]</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">struct</span> <span class="tok-nc">AsPath</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">PathAttribute</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">fn</span> <span class="tok-nf">serialize</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-bp">self</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-kt">u8</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-fm">unimplemented!</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">fn</span> <span class="tok-nf">deserialize</span><span class="tok-p">(</span><span class="tok-n">bytes</span>: <span class="tok-kp">&amp;</span><span class="tok-p">[</span><span class="tok-kt">u8</span><span class="tok-p">])</span><span class="tok-w"> </span>-&gt; <span class="tok-nc">Self</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-fm">unimplemented!</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-p">}</span><span class="tok-w"></span>
 </pre></td></tr></table></code></pre>
 </div>
 </div>
@@ -9843,13 +10107,46 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 <span class="normal">13</span>
 <span class="normal">14</span>
 <span class="normal">15</span>
-<span class="normal">16</span></pre></div></td><td class="code"><pre><span></span><span class="tok-w"> </span><span class="tok-cp">#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]</span><span class="tok-w"></span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span></pre></div></td><td class="code"><pre><span></span><span class="tok-w"> </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">tokio</span>::<span class="tok-n">runtime</span>::<span class="tok-n">Runtime</span><span class="tok-p">;</span><span class="tok-w"></span>
+
+<span class="tok-w"> </span><span class="tok-cp">#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]</span><span class="tok-w"></span>
 <span class="tok-o">-</span><span class="tok-k">struct</span> <span class="tok-nc">RoutingTableEntry</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">-</span><span class="tok-w">    </span><span class="tok-n">network_address</span>: <span class="tok-nc">IpPrefix</span><span class="tok-p">,</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">struct</span> <span class="tok-nc">RoutingTableEntry</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-n">network_address</span>: <span class="tok-nc">IpPrefix</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-n">nexthop</span>: <span class="tok-nc">Nexthop</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-p">}</span><span class="tok-w"></span>
 
 <span class="tok-w"> </span><span class="tok-cp">#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]</span><span class="tok-w"></span>
 <span class="tok-o">-</span><span class="tok-k">struct</span> <span class="tok-nc">IpPrefix</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">struct</span> <span class="tok-nc">IpPrefix</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-n">ip_addr</span>: <span class="tok-nc">Ipv4Addr</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-n">prefix</span>: <span class="tok-kt">u8</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-p">}</span><span class="tok-w"></span>
+
+<span class="tok-w"> </span><span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">IpPrefix</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">-</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">is_network_address</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-bp">self</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-kt">bool</span> <span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">fn</span> <span class="tok-nf">is_network_address</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-bp">self</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-kt">bool</span> <span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">         </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">netmask</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">get_subnet_netmask</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-w">         </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">ip_addr_bit</span>: <span class="tok-kt">u32</span> <span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">ip_addr</span><span class="tok-p">.</span><span class="tok-n">into</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-w">         </span><span class="tok-n">netmask</span><span class="tok-w"> </span><span class="tok-o">|</span><span class="tok-w"> </span><span class="tok-n">ip_addr_bit</span><span class="tok-w"> </span><span class="tok-o">==</span><span class="tok-w"> </span><span class="tok-n">netmask</span><span class="tok-w"></span>
 
 <span class="tok-w"> </span><span class="tok-cp">#[derive(Debug)]</span><span class="tok-w"></span>
 <span class="tok-o">-</span><span class="tok-k">struct</span> <span class="tok-nc">ParseIpPrefixError</span><span class="tok-p">;</span><span class="tok-w"></span>
@@ -9859,6 +10156,7 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 <span class="tok-o">+</span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">fn</span> <span class="tok-nf">lookup_routing_table</span><span class="tok-p">(</span><span class="tok-n">lookup_addr</span>: <span class="tok-kp">&amp;</span><span class="tok-nc">IpPrefix</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-n">RoutingTableEntry</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-w">     </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">route_messages</span>: <span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-n">RouteMessage</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-fm">vec!</span><span class="tok-p">[];</span><span class="tok-w"></span>
 <span class="tok-w">     </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">rt</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">Runtime</span>::<span class="tok-n">new</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-n">rt</span><span class="tok-p">.</span><span class="tok-n">block_on</span><span class="tok-p">(</span><span class="tok-k">async</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 </pre></td></tr></table></code></pre>
 </div>
 </div>
@@ -9895,7 +10193,7 @@ miyoshi-ryota in ~/Documents/programming/RustProjects/mrbgpdv2/mrbgpdv2second/te
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-08-22 22:57:58 UTC
+Last updated 2021-08-25 23:10:17 UTC
 </div>
 </div>
 </body>
