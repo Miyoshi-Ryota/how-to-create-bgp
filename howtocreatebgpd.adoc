@@ -2722,6 +2722,18 @@ end note
 さて、ここまでで実装するものが明らかになりました。
 コードで言えば、下記ToDo部分を実装する必要があります。
 
+
+[source, rust, linenums, title=src/bgp/mod.rs]
+----
++++ b/mrbgpdv2second/src/bgp/mod.rs
+@@ -6,5 +6,5 @@ mod rib;
+ mod path_attribute;
+ mod timer;
+ 
+-#[derive(Debug, Copy, Clone)]
++#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+----
+
 [source, rust, linenums, title=src/bgp/peer.rs]
 ----
         impl Peer {
@@ -2792,7 +2804,7 @@ ToDoコメント内の順番に沿って実装します。
  use crate::bgp::config::Mode;
  use crate::bgp::message::{BgpMessage, BgpMessageHeader, BgpMessageType};
 +use crate::bgp::rib::{LocRib, RibEntry, RibEntryStatus};
-+use crate::bgp::path_attribute::PathAttribute;
++use crate::bgp::path_attribute::{PathAttribute, AsPath};
 +use crate::routing::lookup_routing_table;
  use std::{
      io::{self, Read, Write},
@@ -2836,7 +2848,9 @@ ToDoコメント内の順番に沿って実装します。
 +                            RibEntry::new(
 +                                entry,
 +                                RibEntryStatus::Updated,
-+                                vec![PathAttribute::Origin("IGP".parse().unwrap())],
++                                vec![PathAttribute::Origin("IGP".parse().unwrap()),
++                                PathAttribute::AsPath(AsPath::AsSequence(vec![])),
++                                PathAttribute::NextHop("0.0.0.0".parse().unwrap())],
 +                            )
 +                        })
 +                        .collect();
@@ -2895,7 +2909,6 @@ ToDoコメント内の順番に沿って実装します。
 +        }
 +    }
 +}
-+
 +impl PartialEq for RibEntry {
 +    fn eq(&self, other: &Self) -> bool {
 +        self.routing_table_entry.network_address == other.routing_table_entry.network_address
@@ -2957,6 +2970,8 @@ ToDoコメント内の順番に沿って実装します。
 @@ -0,0 +1,49 @@
 +use std::str::FromStr;
 +use std::net::Ipv4Addr;
++use std::collections::HashSet;
++use crate::bgp;
 +
 +#[derive(Debug, PartialEq, Eq)]
 +pub enum PathAttribute {
@@ -2993,7 +3008,10 @@ ToDoコメント内の順番に沿って実装します。
 +}
 +
 +#[derive(Debug, PartialEq, Eq)]
-+struct AsPath;
++pub enum AsPath {
++    AsSequence(Vec<bgp::AutonomousSystemNumber>),
++    AsSet(HashSet<bgp::AutonomousSystemNumber>),
++}
 +
 +impl PathAttribute {
 +    pub fn serialize(&self) -> Vec<u8> {
