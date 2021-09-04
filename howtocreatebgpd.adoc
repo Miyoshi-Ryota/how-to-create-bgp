@@ -2782,7 +2782,37 @@ end note
 ----
 
 ToDoコメント内の順番に沿って実装します。
-下記を実装します。
+
+〜〜実装方針として、〜〜
+// statusを書き換えるタイミングは考え中
+// 実装方針
+// Routingtable -> LocRib
+// * status: Updated
+// * path attributes:
+//      * Origin: IGP,
+//      * AS_PATH: 無し,
+//      * Nexthop: 無し
+//      * ATOMIC_AGGREGATEL: 無し
+//
+// LocRib -> AdjRibOut
+// * status: そのまま。ただしAdjRibOutに送信後に自分のStatusはUnChangedに変更する。
+// * path attributes:
+//       * AS_PATH: 自分のAS番号を追加する。
+//       * nexthop: 書き換える。自分のIPに書き換える。routingtableentryのnexthopも書き換える。
+//       * その他: そのまま
+// AdjRibOut -> external peer
+// * status: UpdateMessage送信後にAdjRibOutのStatusはUnChangedにする。
+//
+// Update Message -> AdjRibIn
+// * status: Update or Withdrawnのメッセージのまま
+// * path attributes:
+//     * そのまま
+//
+// AdjRibIn -> LocRib
+// * AdjRibInのStatusだけ、UnChangedにする。
+// * 全部そのまま
+
+それでは下記を実装します。
 
 * ToDo1: 現在のルーティングテーブルの情報をLoc-RIBにインストールする。
 
@@ -3061,6 +3091,171 @@ ToDoコメント内の順番に沿って実装します。
      let rt = Runtime::new().unwrap();
      rt.block_on(async {
 ----
+
+次に下記を実装します。
+
+* ToDo2: Phase3: Loc-RIBからAdj-Rib-Outを更新する。
+
+RibにLocRib => AdjRibOutにルートをインストールするメソッドを実装し、それを呼び出しているだけです。
+LocRib => AdjRibOutにインストールする際には、
+〜〜〜〜
+
+[source,rust,linenums,title=src/bgp/rib.rs]
+----
+--- a/mrbgpdv2second/src/bgp/rib.rs
++++ b/mrbgpdv2second/src/bgp/rib.rs
+@@ -1,12 +1,19 @@
++use std::net::Ipv4Addr;
++use std::str::FromStr;
++
+ use crate::bgp::path_attribute::PathAttribute;
++use crate::bgp::AutonomousSystemNumber;
+ use crate::routing::{IpPrefix, RoutingTableEntry};
++
+ pub type LocRib = Rib;
+ pub type AdjRibOut = Rib;
+ 
++#[derive(Clone)]
+ pub struct Rib {
+     table: Vec<RibEntry>,
+ }
+ 
++#[derive(Clone)]
+ pub struct RibEntry {
+     routing_table_entry: RoutingTableEntry,
+     status: RibEntryStatus,
+@@ -43,6 +50,36 @@ impl Rib {
+             self.table.push(entry);
+         }
+     }
++
++    pub fn install_route_to_adj_rib_out(
++        &mut self,
++        adj_rib_out: &mut AdjRibOut,
++        local_as_number: AutonomousSystemNumber,
++        local_ip: Ipv4Addr,
++    ) {
++        let mut rib: Vec<RibEntry> = self
++            .table
++            .clone()
++            .into_iter()
++            .filter(|e| &e.status != &RibEntryStatus::UnChanged)
++            .collect();
++
++        let nexthop_addr = Ipv4Addr::from_str("192.168.1.1").unwrap();
++        for entry in &mut rib {
++            for attribute in &mut entry.path_attributes {
++                match attribute {
++                    PathAttribute::AsPath(as_path) => as_path.push(local_as_number),
++                    PathAttribute::NextHop(addr) => *addr = local_ip,
++                    _ => (),
++                }
++            }
++        }
++
++        self.table
++            .iter_mut()
++            .for_each(|e| e.status = RibEntryStatus::UnChanged);
++        adj_rib_out.insert_table(rib);
++    }
+ }
+ 
+ 
++#[derive(Debug, PartialEq, Eq, Clone)]
+ pub enum RibEntryStatus {
+     Updated,
+     Withdrawn,
+----
+
+
+[source, rust, linenums, title=src/bgp/peer.rs]
+----
+@@ -1,6 +1,7 @@
+ use super::{
++    rib::AdjRibOut,
+ };
+
+
+@@ -21,6 +22,7 @@ pub struct Peer {
+     tcp_connection: Option<TcpStream>,
+     buffer: Vec<u8>,
+     loc_rib: LocRib,
++    adj_rib_out: AdjRibOut,
+ }
+ 
+ impl Peer {
+@@ -31,6 +33,7 @@ impl Peer {
+         let tcp_connection = None;
+         let buffer = vec![];
+         let loc_rib = LocRib::new(vec![]);
++        let adj_rib_out = AdjRibOut::new(vec![]);
+         Self {
+             config,
+             event_queue,
+@@ -39,6 +42,7 @@ impl Peer {
+             tcp_connection,
+             buffer,
+             loc_rib,
++            adj_rib_out,
+         }
+     }
+ 
+@@ -210,10 +214,11 @@ impl Peer {
+                     unimplemented!();
+                 }
+                 Event::LocRibChanged => {
+-                    // ToDo2: Phase3: Loc-RIBからAdj-Rib-Outを更新する。
+-                    // adj_rib_outは更新した / 削除した / そのまま/
+-                    // self.adj_rib_out.update(&self.loc_rib);
+-                    unimplemented!();
++                    self.loc_rib.install_route_to_adj_rib_out(
++                        &mut self.adj_rib_out,
++                        self.config.local_as_number,
++                        self.config.local_ip_address,
++                    );
+                 }
+                 Event::AdjRibOutChanged => {
+                     // ToDo3: Update Messageをピアに送信する。
+----
+
+
+[source,rust,linenums,title=src/routing.rs]
+----
+diff --git a/mrbgpdv2second/src/bgp/path_attribute.rs b/mrbgpdv2second/src/bgp/path_attribute.rs
+index 41f8c9f..bbc8845 100644
+--- a/mrbgpdv2second/src/bgp/path_attribute.rs
++++ b/mrbgpdv2second/src/bgp/path_attribute.rs
+@@ -1,10 +1,9 @@
+ use crate::bgp;
++use std::collections::HashSet;
++use std::net::Ipv4Addr;
++use std::str::FromStr;
+ 
+-#[derive(Debug, PartialEq, Eq)]
++#[derive(Debug, PartialEq, Eq, Clone)]
+ pub enum PathAttribute {
+ 
+-#[derive(Debug, PartialEq, Eq)]
++#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+ pub enum Origin {
+ 
+-#[derive(Debug, PartialEq, Eq)]
++#[derive(Debug, PartialEq, Eq, Clone)]
+ pub enum AsPath {
+ 
++impl AsPath {
++    pub fn push(&mut self, as_number: bgp::AutonomousSystemNumber) {
++        match self {
++            AsPath::AsSequence(seq) => seq.push(as_number),
++            AsPath::AsSet(set) => {
++                set.insert(as_number);
++            }
++        }
++    }
++}
++
+----
+
 
 
 == 複数ピアをハンドリング可能な実装
