@@ -2976,7 +2976,7 @@ ToDoコメント内の順番に沿って実装します。
 +        let mut advertise_networks = vec![];
 +        for advertise_network_str in c[5..].iter() {
 +            let advertise_network: IpPrefix = advertise_network_str.parse().expect("cannot parse advertise_network");
-+            if advertise_network.is_network_address() {
++            if !advertise_network.is_network_address() {
 +                panic!("advertise_network is not network address");
 +            }
 +            advertise_networks.push(advertise_network);
@@ -3256,8 +3256,460 @@ index 41f8c9f..bbc8845 100644
 +
 ----
 
+次に下記を実装しましょう。
 
+* ToDo3: Update Messageをピアに送信する。
 
+[source, rust, linenums, title=src/bgp/message.rs]
+----
+diff --git a/mrbgpdv2second/src/bgp/message.rs b/mrbgpdv2second/src/bgp/message.rs
+index 9a25384..508401f 100644
+--- a/mrbgpdv2second/src/bgp/message.rs
++++ b/mrbgpdv2second/src/bgp/message.rs
+@@ -1,11 +1,15 @@
+ use super::timer::HoldTime;
+ use super::AutonomousSystemNumber;
+-use std::{convert::TryInto, net::Ipv4Addr};
++use crate::bgp::path_attribute::PathAttribute;
++use crate::bgp::rib::AdjRibOut;
++use crate::routing::IpPrefix;
++use std::{borrow::Borrow, convert::TryInto, net::Ipv4Addr};
+ 
+ #[derive(Debug)]
+ pub enum BgpMessage {
+     Open(BgpOpenMessage),
+     Keepalive(BgpKeepaliveMessage),
++    Update(BgpUpdateMessage),
+ }
+ 
+ impl BgpMessage {
+@@ -13,6 +17,7 @@ impl BgpMessage {
+         match self {
+             BgpMessage::Open(open) => open.serialize(),
+             BgpMessage::Keepalive(keepalive) => keepalive.serialize(),
++            BgpMessage::Update(update) => update.serialize(),
+         }
+     }
+ 
+@@ -23,6 +28,7 @@ impl BgpMessage {
+             BgpMessageType::Keepalive => {
+                 BgpMessage::Keepalive(BgpKeepaliveMessage::deserialize(bytes))
+             }
++            BgpMessageType::Update => BgpMessage::Update(BgpUpdateMessage::deserialize(bytes)),
+         }
+     }
+ 
+@@ -30,6 +36,7 @@ impl BgpMessage {
+         match self {
+             BgpMessage::Open(_) => BgpMessageType::Open,
+             BgpMessage::Keepalive(_) => BgpMessageType::Keepalive,
++            BgpMessage::Update(_) => BgpMessageType::Update,
+         }
+     }
+ }
+@@ -63,12 +70,14 @@ impl BgpMessageHeader {
+ pub enum BgpMessageType {
+     Open,
+     Keepalive,
++    Update,
+ }
+ 
+ impl BgpMessageType {
+     fn to_type_number(self) -> u8 {
+         match self {
+             BgpMessageType::Open => 1,
++            BgpMessageType::Update => 2,
+             BgpMessageType::Keepalive => 4,
+         }
+     }
+@@ -76,6 +85,7 @@ impl BgpMessageType {
+     fn from_type_number(type_number: u8) -> Self {
+         match type_number {
+             1 => BgpMessageType::Open,
++            2 => BgpMessageType::Update,
+             4 => BgpMessageType::Keepalive,
+             _ => panic!(),
+         }
+@@ -180,3 +190,107 @@ impl BgpKeepaliveMessage {
+         Self { header }
+     }
+ }
++
++#[derive(Debug)]
++pub struct BgpUpdateMessage {
++    header: BgpMessageHeader,
++    withdrawn_routes_length: u16,
++    withdrawn_routes: Vec<IpPrefix>,
++    total_path_attribute_length: u16,
++    path_attributes: Vec<PathAttribute>,
++    network_layer_reachability_information: Vec<IpPrefix>,
++}
++
++impl BgpUpdateMessage {
++    pub fn new(
++        path_attributes: Vec<PathAttribute>,
++        withdrawn_routes: Vec<IpPrefix>,
++        network_layer_reachability_information: Vec<IpPrefix>,
++    ) -> Self {
++        let total_path_attribute_length: u16 = path_attributes
++            .iter()
++            .map(|p| p.serialize().len().try_into().unwrap())
++            .fold(0, |acc, a: u16| a + acc);
++        let withdrawn_routes_length: u16 = withdrawn_routes
++            .iter()
++            .map(|r| r.serialize().len().try_into().unwrap())
++            .fold(0, |acc, a: u16| a + acc);
++        let nlri_routes_length: u16 = network_layer_reachability_information
++            .iter()
++            .map(|r| r.serialize().len().try_into().unwrap())
++            .fold(0, |acc, a: u16| a + acc);
++        let minimum_header_length = 19;
++        let header = BgpMessageHeader {
++            length: minimum_header_length
++                + total_path_attribute_length
++                + withdrawn_routes_length
++                + nlri_routes_length,
++            type_: BgpMessageType::Update,
++        };
++        BgpUpdateMessage {
++            header,
++            withdrawn_routes_length,
++            withdrawn_routes,
++            total_path_attribute_length,
++            path_attributes,
++            network_layer_reachability_information,
++        }
++    }
++
++    fn serialize(&self) -> Vec<u8> {
++        let mut bytes = vec![];
++        bytes.append(&mut self.header.serialize());
++        bytes.append(&mut self.withdrawn_routes_length.to_be_bytes().to_vec());
++        bytes.append(
++            &mut self
++                .withdrawn_routes
++                .iter()
++                .map(|r| r.serialize())
++                .flatten()
++                .collect(),
++        );
++        bytes.append(&mut self.total_path_attribute_length.to_be_bytes().to_vec());
++        bytes.append(
++            &mut self
++                .path_attributes
++                .iter()
++                .map(|p| p.serialize())
++                .flatten()
++                .collect(),
++        );
++        bytes.append(
++            &mut self
++                .network_layer_reachability_information
++                .iter()
++                .map(|r| r.serialize())
++                .flatten()
++                .collect(),
++        );
++        bytes
++    }
++
++    fn deserialize(bytes: &[u8]) -> Self {
++        unimplemented!();
++    }
++}
++
++impl IpPrefix {
++    pub fn serialize(&self) -> Vec<u8> {
++        let mut bytes = vec![];
++        bytes.push(self.prefix);
++        let ip_addr_octates = match self.prefix {
++            0 => 0,
++            1..=8 => 1,
++            9..=16 => 2,
++            17..=24 => 3,
++            25..=32 => 4,
++            _ => panic!(),
++        };
++        bytes.append(&mut self.ip_addr.octets()[0..ip_addr_octates].to_vec());
++        bytes
++    }
++
++    fn deserialize(bytes: &[u8]) -> Self {
++        unimplemented!();
++    }
++}
+----
+
+[source,rust,linenums,title=src/bgp/mod.rs]
+----
+diff --git a/mrbgpdv2second/src/bgp/mod.rs b/mrbgpdv2second/src/bgp/mod.rs
+index 2220311..8199a2d 100644
+--- a/mrbgpdv2second/src/bgp/mod.rs
++++ b/mrbgpdv2second/src/bgp/mod.rs
+@@ -6,5 +6,5 @@ mod queue;
+ mod rib;
+ mod timer;
+ 
+-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
++#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+ pub struct AutonomousSystemNumber(u16);
+----
+
+[source,rust,linenums,title=src/bgp/path_attribute.rs]
+----
+diff --git a/mrbgpdv2second/src/bgp/path_attribute.rs b/mrbgpdv2second/src/bgp/path_attribute.rs
+index bbc8845..c0bf6ed 100644
+--- a/mrbgpdv2second/src/bgp/path_attribute.rs
++++ b/mrbgpdv2second/src/bgp/path_attribute.rs
+@@ -1,9 +1,11 @@
+ use crate::bgp;
+-use std::collections::HashSet;
++use std::collections::BTreeSet;
++use std::convert::TryInto;
+ use std::net::Ipv4Addr;
+ use std::str::FromStr;
++use std::vec;
+ 
+-#[derive(Debug, PartialEq, Eq, Clone)]
++#[derive(Debug, PartialEq, Eq, Clone, Hash)]
+ pub enum PathAttribute {
+     // 全てのルータが認識可能である必要のある最低限のパスアトリビュートのみ実装する。
+     // LOCAL_PREFは、EBGPでは使用しないため、全てのルータが識別可能である必要があるが、今回は省略した。
+@@ -14,7 +16,7 @@ pub enum PathAttribute {
+     DontKnow(Vec<u8>),
+ }
+ 
+-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
++#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
+ pub enum Origin {
+     Igp,
+     Egp,
+@@ -37,10 +39,10 @@ impl FromStr for Origin {
+     }
+ }
+ 
+-#[derive(Debug, PartialEq, Eq, Clone)]
++#[derive(Debug, PartialEq, Eq, Clone, Hash)]
+ pub enum AsPath {
+     AsSequence(Vec<bgp::AutonomousSystemNumber>),
+-    AsSet(HashSet<bgp::AutonomousSystemNumber>),
++    AsSet(BTreeSet<bgp::AutonomousSystemNumber>),
+ }
+ 
+ impl AsPath {
+@@ -56,7 +58,89 @@ impl AsPath {
+ 
+ impl PathAttribute {
+     pub fn serialize(&self) -> Vec<u8> {
+-        unimplemented!();
++        match self {
++            PathAttribute::Origin(o) => {
++                // attribute_flagの意味。左から
++                // 1bit: attribute is optional (if set to 1) or well-known (if set to 0)
++                // 2bit: It defines whether an optional attribute is
++                //       transitive (if set to 1) or non-transitive (if set to 0). (well-known is transitive)
++                // 3bit: It defines whether the information
++                //       contained in the optional transitive attribute is partial (if
++                //       set to 1) or complete (if set to 0).  For well-known attributes
++                //       and for optional non-transitive attributes, the Partial bit
++                //       MUST be set to 0.
++                // 4bit: It defines whether the Attribute
++                //       Length is one octet (if set to 0) or two octets (if set to 1).
++                let attribute_flag: u8 = 0b01000000;
++                let attribute_type: u8 = 1;
++                let attribute_length: u8 = 1; // octates of attribute bytes
++                let attribute_bytes: u8 = match o {
++                    &Origin::Igp => 0,
++                    &Origin::Egp => 1,
++                    &Origin::Incomplete => 2,
++                };
++                vec![
++                    attribute_flag,
++                    attribute_type,
++                    attribute_length,
++                    attribute_bytes,
++                ]
++            }
++            PathAttribute::AsPath(a) => {
++                let attribute_flag: u8;
++                let attribute_type: u8 = 2;
++                let mut attribute_bytes: Vec<u8> = match a {
++                    AsPath::AsSequence(ases) => {
++                        let as_path_segment_type = 1;
++                        let as_path_segment_length: u8 = ases.len().try_into().unwrap();
++                        let mut as_path_segment: Vec<u8> = ases
++                            .iter()
++                            .map(|a| a.0.to_be_bytes().to_vec())
++                            .flatten()
++                            .collect();
++                        let mut bytes = vec![as_path_segment_type, as_path_segment_length];
++                        bytes.append(&mut as_path_segment);
++                        bytes
++                    }
++                    AsPath::AsSet(ases) => {
++                        let as_path_segment_type = 2;
++                        let as_path_segment_length: u8 = ases.len().try_into().unwrap();
++                        let mut as_path_segment: Vec<u8> = ases
++                            .iter()
++                            .map(|a| a.0.to_be_bytes().to_vec())
++                            .flatten()
++                            .collect();
++                        let mut bytes = vec![as_path_segment_type, as_path_segment_length];
++                        bytes.append(&mut as_path_segment);
++                        bytes
++                    }
++                };
++                let mut attribute_length = vec![];
++                if attribute_bytes.len() >= u8::MAX.into() {
++                    attribute_length.push(attribute_bytes.len().try_into().unwrap());
++                    attribute_flag = 0b01000000;
++                } else {
++                    let l: u16 = attribute_bytes.len().try_into().unwrap();
++                    attribute_length.append(&mut l.to_be_bytes().to_vec());
++                    attribute_flag = 0b01100000
++                }
++                let mut bytes = vec![attribute_flag, attribute_type];
++                bytes.append(&mut attribute_length);
++                bytes.append(&mut attribute_bytes);
++                bytes
++            }
++            PathAttribute::NextHop(ip) => {
++                let attribute_flag: u8 = 0b01000000;
++                let attribute_type: u8 = 3;
++                let attribute_length: u8 = 4;
++                let mut attribute_bytes = ip.octets().to_vec();
++                let mut bytes = vec![attribute_flag, attribute_type, attribute_length];
++                bytes.append(&mut attribute_bytes);
++                bytes
++            }
++            PathAttribute::AtomicAggregate => unimplemented!(),
++            PathAttribute::DontKnow(v) => v.to_vec(),
++        }
+     }
+----
+
+[source, rust, linenums, title=/src/bgp/peer.rs]
+----
+diff --git a/mrbgpdv2second/src/bgp/peer.rs b/mrbgpdv2second/src/bgp/peer.rs
+index 18c1cd2..621c1bf 100644
+--- a/mrbgpdv2second/src/bgp/peer.rs
++++ b/mrbgpdv2second/src/bgp/peer.rs
+@@ -88,6 +88,9 @@ impl Peer {
+             BgpMessageType::Keepalive => {
+                 self.event_queue.enqueue(Event::Keepalive);
+             }
++            BgpMessageType::Update => {
++                self.event_queue.enqueue(Event::UpdateMsg);
++            }
+         }
+         self.message_queue.enqueue(bgp_message);
+     }
+@@ -216,15 +219,22 @@ impl Peer {
+                     unimplemented!();
+                 }
+                 Event::LocRibChanged => {
++                    debug!("loc rib is {:?}", &self.loc_rib);
+                     self.loc_rib.install_route_to_adj_rib_out(
+                         &mut self.adj_rib_out,
+                         self.config.local_as_number,
+                         self.config.local_ip_address,
+                     );
++                    self.event_queue.enqueue(Event::AdjRibOutChanged);
+                 }
+                 Event::AdjRibOutChanged => {
+                     // ToDo3: Update Messageをピアに送信する。
+-                    unimplemented!();
++                    debug!("adj rib out is {:?}", &self.adj_rib_out);
++                    let update_messages = self.adj_rib_out.to_bgp_update_messages();
++                    self.adj_rib_out.update_all_entries_status_to_unchanged();
++                    for update_message in update_messages {
++                        self.send_bgp_message_to_remote_peer(BgpMessage::Update(update_message));
++                    }
+                 }
+                 _ => {}
+             },
+----
+
+[source,rust,linenums,title=src/bgp/rib.rs]
+----
+diff --git a/mrbgpdv2second/src/bgp/rib.rs b/mrbgpdv2second/src/bgp/rib.rs
+index c941ea8..819ee13 100644
+--- a/mrbgpdv2second/src/bgp/rib.rs
++++ b/mrbgpdv2second/src/bgp/rib.rs
+@@ -1,6 +1,9 @@
++use std::collections::HashMap;
++use std::convert::TryInto;
+ use std::net::Ipv4Addr;
+ use std::str::FromStr;
+ 
++use crate::bgp::message::{BgpMessageHeader, BgpMessageType, BgpUpdateMessage};
+ use crate::bgp::path_attribute::PathAttribute;
+ use crate::bgp::AutonomousSystemNumber;
+ use crate::routing::{IpPrefix, RoutingTableEntry};
+@@ -8,12 +11,12 @@ use crate::routing::{IpPrefix, RoutingTableEntry};
+ pub type LocRib = Rib;
+ pub type AdjRibOut = Rib;
+ 
+-#[derive(Clone)]
++#[derive(Clone, Debug)]
+ pub struct Rib {
+     table: Vec<RibEntry>,
+ }
+ 
+-#[derive(Clone)]
++#[derive(Clone, Debug)]
+ pub struct RibEntry {
+     routing_table_entry: RoutingTableEntry,
+     status: RibEntryStatus,
+@@ -75,10 +78,53 @@ impl Rib {
+             }
+         }
+ 
++        self.update_all_entries_status_to_unchanged();
++        adj_rib_out.insert_table(rib);
++    }
++
++    pub fn update_all_entries_status_to_unchanged(&mut self) {
+         self.table
+             .iter_mut()
+             .for_each(|e| e.status = RibEntryStatus::UnChanged);
+-        adj_rib_out.insert_table(rib);
++    }
++
++    fn split_by_path_attribute(&self) -> Vec<Rib> {
++        let mut result = HashMap::new();
++        let mut rib = self.table.clone();
++        for entry in rib {
++            if !result.contains_key(&entry.path_attributes) {
++                result.insert(entry.path_attributes.clone(), vec![entry]);
++            } else {
++                result.get_mut(&entry.path_attributes).unwrap().push(entry);
++            }
++        }
++        result.values().cloned().map(|r| Rib::new(r)).collect()
++    }
++
++    pub fn to_bgp_update_messages(&self) -> Vec<BgpUpdateMessage> {
++        let rib = self.split_by_path_attribute();
++        rib.iter().map(|r| r.to_bgp_update_message()).collect()
++    }
++
++    fn to_bgp_update_message(&self) -> BgpUpdateMessage {
++        let path_attributes = self.table[0].path_attributes.clone();
++        let withdrawn_routes: Vec<IpPrefix> = self
++            .table
++            .iter()
++            .filter(|e| e.status == RibEntryStatus::Withdrawn)
++            .map(|e| e.routing_table_entry.network_address)
++            .collect();
++        let network_layer_reachability_information: Vec<IpPrefix> = self
++            .table
++            .iter()
++            .filter(|e| e.status == RibEntryStatus::Updated)
++            .map(|e| e.routing_table_entry.network_address)
++            .collect();
++        BgpUpdateMessage::new(
+----
 == 複数ピアをハンドリング可能な実装
 === 本章で作るものの全体像
 
