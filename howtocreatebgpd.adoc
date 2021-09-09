@@ -3367,7 +3367,9 @@ index 9a25384..508401f 100644
 +        let header = BgpMessageHeader {
 +            length: minimum_header_length
 +                + total_path_attribute_length
++                + 2 // total_path_attribute_lengthを表すバイト列が使う2byte
 +                + withdrawn_routes_length
++                + 2 // withdrawn_routes_lengthを表すバイト列が使う2byte
 +                + nlri_routes_length,
 +            type_: BgpMessageType::Update,
 +        };
@@ -3535,7 +3537,7 @@ index bbc8845..c0bf6ed 100644
 +                let attribute_type: u8 = 2;
 +                let mut attribute_bytes: Vec<u8> = match a {
 +                    AsPath::AsSequence(ases) => {
-+                        let as_path_segment_type = 1;
++                        let as_path_segment_type = 2;
 +                        let as_path_segment_length: u8 = ases.len().try_into().unwrap();
 +                        let mut as_path_segment: Vec<u8> = ases
 +                            .iter()
@@ -3547,7 +3549,7 @@ index bbc8845..c0bf6ed 100644
 +                        bytes
 +                    }
 +                    AsPath::AsSet(ases) => {
-+                        let as_path_segment_type = 2;
++                        let as_path_segment_type = 1;
 +                        let as_path_segment_length: u8 = ases.len().try_into().unwrap();
 +                        let mut as_path_segment: Vec<u8> = ases
 +                            .iter()
@@ -3560,13 +3562,13 @@ index bbc8845..c0bf6ed 100644
 +                    }
 +                };
 +                let mut attribute_length = vec![];
-+                if attribute_bytes.len() >= u8::MAX.into() {
++                if attribute_bytes.len() <= u8::MAX.into() {
 +                    attribute_length.push(attribute_bytes.len().try_into().unwrap());
 +                    attribute_flag = 0b01000000;
 +                } else {
 +                    let l: u16 = attribute_bytes.len().try_into().unwrap();
 +                    attribute_length.append(&mut l.to_be_bytes().to_vec());
-+                    attribute_flag = 0b01100000
++                    attribute_flag = 0b01010000;
 +                }
 +                let mut bytes = vec![attribute_flag, attribute_type];
 +                bytes.append(&mut attribute_length);
