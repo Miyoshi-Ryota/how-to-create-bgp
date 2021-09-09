@@ -947,7 +947,7 @@ deleted file mode 100644
 +
 +impl BgpMessageHeader {
 +    fn serialize(&self) -> Vec<u8> {
-+        let marker = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
++        let marker = [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255];
 +        let length = self.length.to_be_bytes();
 +        let type_ = self.type_.to_type_number();
 +        let mut bytes = vec![];
