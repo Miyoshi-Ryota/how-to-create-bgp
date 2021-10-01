@@ -8753,7 +8753,10 @@ netlinkでの問い合わせをrt.block_on()にて同期的に実行していま
 <span class="normal">124</span>
 <span class="normal">125</span>
 <span class="normal">126</span>
-<span class="normal">127</span></pre></div></td><td class="code"><pre><span></span><span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">futures</span>::<span class="tok-n">TryStreamExt</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span></pre></div></td><td class="code"><pre><span></span><span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">futures</span>::<span class="tok-n">TryStreamExt</span><span class="tok-p">;</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">rtnetlink</span>::<span class="tok-n">packet</span>::<span class="tok-n">RouteMessage</span><span class="tok-p">;</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">rtnetlink</span>::<span class="tok-p">{</span><span class="tok-n">new_connection</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">IpVersion</span><span class="tok-p">};</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-n">net</span>::<span class="tok-n">IpAddr</span><span class="tok-p">;</span><span class="tok-w"></span>
@@ -8840,6 +8843,9 @@ netlinkでの問い合わせをrt.block_on()にて同期的に実行していま
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">get_subnet_netmask</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-bp">self</span><span class="tok-p">)</span><span class="tok-w"> </span>-&gt; <span class="tok-kt">u32</span> <span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">prefix</span><span class="tok-w"> </span><span class="tok-o">==</span><span class="tok-w"> </span><span class="tok-mi">0</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-k">return</span><span class="tok-w"> </span><span class="tok-mi">0</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">netmask</span>: <span class="tok-kt">u32</span> <span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-mi">0</span><span class="tok-p">;</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-k">for</span><span class="tok-w"> </span><span class="tok-n">i</span><span class="tok-w"> </span><span class="tok-k">in</span><span class="tok-w"> </span><span class="tok-mi">0</span><span class="tok-o">..</span><span class="tok-bp">self</span><span class="tok-p">.</span><span class="tok-n">prefix</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
 <span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">netmask</span><span class="tok-w"> </span><span class="tok-o">+=</span><span class="tok-w"> </span><span class="tok-mi">1</span><span class="tok-w"> </span><span class="tok-o">&lt;&lt;</span><span class="tok-w"> </span><span class="tok-n">i</span><span class="tok-p">;</span><span class="tok-w"></span>
@@ -11437,6 +11443,406 @@ LocRib &#8658; AdjRibOutにインストールする際には、
 </pre></td></tr></table></code></pre>
 </div>
 </div>
+<div class="paragraph">
+<p>これにて送信は可能になりました。
+現在の実装では送信のみ対応しており、受信時にバイト列から内部の構造体に変換するところでunimplemented!()にあたり、panic!()します。
+受信時にバイト列から構造体に変換できるように、BgpUpdateMessage::deserialize()メソッドに関連するunimplemented!()の部分を実装していきます。</p>
+</div>
+<div class="paragraph">
+<p>以下のようになります。</p>
+</div>
+<div class="listingblock">
+<div class="title">src/bgp/message.rs</div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span></pre></div></td><td class="code"><pre><span></span><span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-o">-</span><span class="tok-mi">272</span><span class="tok-p">,</span><span class="tok-mi">7</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-mi">272</span><span class="tok-p">,</span><span class="tok-mi">38</span><span class="tok-w"> </span><span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">BgpUpdateMessage</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-p">}</span><span class="tok-w"></span>
+
+<span class="tok-w">     </span><span class="tok-k">fn</span> <span class="tok-nf">deserialize</span><span class="tok-p">(</span><span class="tok-n">bytes</span>: <span class="tok-kp">&amp;</span><span class="tok-p">[</span><span class="tok-kt">u8</span><span class="tok-p">])</span><span class="tok-w"> </span>-&gt; <span class="tok-nc">Self</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">-</span><span class="tok-w">        </span><span class="tok-fm">unimplemented!</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">header</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">BgpMessageHeader</span>::<span class="tok-n">deserialize</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-mi">0</span><span class="tok-o">..</span><span class="tok-mi">19</span><span class="tok-p">]);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">withdrawn_routes_length</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-kt">u16</span>::<span class="tok-n">from_be_bytes</span><span class="tok-p">(</span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-mi">19</span><span class="tok-o">..</span><span class="tok-mi">21</span><span class="tok-p">].</span><span class="tok-n">try_into</span><span class="tok-p">().</span><span class="tok-n">unwrap</span><span class="tok-p">());</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">start_index_of_total_path_attribute_length</span>: <span class="tok-kt">usize</span> <span class="tok-o">=</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-mi">21</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-n">withdrawn_routes_length</span><span class="tok-w"> </span><span class="tok-k">as</span><span class="tok-w"> </span><span class="tok-kt">usize</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">withdrawn_routes</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">IpPrefix</span>::<span class="tok-n">deserialize_multiple_ip_prefix_bytes</span><span class="tok-p">(</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-o">&amp;</span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-mi">21</span><span class="tok-o">..</span><span class="tok-n">start_index_of_total_path_attribute_length</span><span class="tok-p">],</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">total_path_attribute_length</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-kt">u16</span>::<span class="tok-n">from_be_bytes</span><span class="tok-p">(</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-n">start_index_of_total_path_attribute_length</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-o">..</span><span class="tok-n">start_index_of_total_path_attribute_length</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-mi">2</span><span class="tok-p">]</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-p">.</span><span class="tok-n">try_into</span><span class="tok-p">()</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-p">.</span><span class="tok-n">unwrap</span><span class="tok-p">(),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">start_index_of_nlri</span>: <span class="tok-kt">usize</span> <span class="tok-o">=</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">start_index_of_total_path_attribute_length</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-mi">2</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-n">total_path_attribute_length</span><span class="tok-w"> </span><span class="tok-k">as</span><span class="tok-w"> </span><span class="tok-kt">usize</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">path_attributes</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">PathAttribute</span>::<span class="tok-n">deserialize</span><span class="tok-p">(</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-o">&amp;</span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-n">start_index_of_total_path_attribute_length</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-mi">2</span><span class="tok-o">..</span><span class="tok-n">start_index_of_nlri</span><span class="tok-p">],</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">network_layer_reachability_information</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">IpPrefix</span>::<span class="tok-n">deserialize_multiple_ip_prefix_bytes</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-n">start_index_of_nlri</span><span class="tok-o">..</span><span class="tok-p">]);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-bp">Self</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">header</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">withdrawn_routes_length</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">withdrawn_routes</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">total_path_attribute_length</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">path_attributes</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">network_layer_reachability_information</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-p">}</span><span class="tok-w"></span>
+
+<span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-o">-</span><span class="tok-mi">293</span><span class="tok-p">,</span><span class="tok-mi">6</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-mi">324</span><span class="tok-p">,</span><span class="tok-mi">36</span><span class="tok-w"> </span><span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">IpPrefix</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-p">}</span><span class="tok-w"></span>
+
+<span class="tok-w">     </span><span class="tok-k">fn</span> <span class="tok-nf">deserialize</span><span class="tok-p">(</span><span class="tok-n">bytes</span>: <span class="tok-kp">&amp;</span><span class="tok-p">[</span><span class="tok-kt">u8</span><span class="tok-p">])</span><span class="tok-w"> </span>-&gt; <span class="tok-nc">Self</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">-</span><span class="tok-w">        </span><span class="tok-fm">unimplemented!</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">ip_octets</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-mi">1</span><span class="tok-o">..</span><span class="tok-p">].</span><span class="tok-n">to_vec</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-k">while</span><span class="tok-w"> </span><span class="tok-n">ip_octets</span><span class="tok-p">.</span><span class="tok-n">len</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-o">&lt;</span><span class="tok-w"> </span><span class="tok-mi">4</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">ip_octets</span><span class="tok-p">.</span><span class="tok-n">push</span><span class="tok-p">(</span><span class="tok-mi">0</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">res</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">IpPrefix</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">ip_addr</span>: <span class="tok-nc">Ipv4Addr</span>::<span class="tok-n">new</span><span class="tok-p">(</span><span class="tok-n">ip_octets</span><span class="tok-p">[</span><span class="tok-mi">0</span><span class="tok-p">],</span><span class="tok-w"> </span><span class="tok-n">ip_octets</span><span class="tok-p">[</span><span class="tok-mi">1</span><span class="tok-p">],</span><span class="tok-w"> </span><span class="tok-n">ip_octets</span><span class="tok-p">[</span><span class="tok-mi">2</span><span class="tok-p">],</span><span class="tok-w"> </span><span class="tok-n">ip_octets</span><span class="tok-p">[</span><span class="tok-mi">3</span><span class="tok-p">]),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">prefix</span>: <span class="tok-mi">0</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">};</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-k">while</span><span class="tok-w"> </span><span class="tok-o">!</span><span class="tok-n">res</span><span class="tok-p">.</span><span class="tok-n">is_network_address</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">res</span><span class="tok-p">.</span><span class="tok-n">prefix</span><span class="tok-w"> </span><span class="tok-o">+=</span><span class="tok-w"> </span><span class="tok-mi">1</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">res</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">deserialize_multiple_ip_prefix_bytes</span><span class="tok-p">(</span><span class="tok-n">bytes</span>: <span class="tok-kp">&amp;</span><span class="tok-p">[</span><span class="tok-kt">u8</span><span class="tok-p">])</span><span class="tok-w"> </span>-&gt; <span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-bp">Self</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">result</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-fm">vec!</span><span class="tok-p">[];</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">start_index</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-mi">0</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-k">while</span><span class="tok-w"> </span><span class="tok-n">start_index</span><span class="tok-w"> </span><span class="tok-o">&lt;</span><span class="tok-w"> </span><span class="tok-n">bytes</span><span class="tok-p">.</span><span class="tok-n">len</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">number_of_byte</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-k">match</span><span class="tok-w"> </span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-n">start_index</span><span class="tok-p">]</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-mi">0</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-mi">0</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-mi">1</span><span class="tok-o">..=</span><span class="tok-mi">8</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-mi">1</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-mi">9</span><span class="tok-o">..=</span><span class="tok-mi">16</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-mi">2</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-mi">17</span><span class="tok-o">..=</span><span class="tok-mi">24</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-mi">3</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-mi">25</span><span class="tok-o">..=</span><span class="tok-mi">32</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-mi">4</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-fm">unreachable!</span><span class="tok-p">(),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">};</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">result</span><span class="tok-p">.</span><span class="tok-n">push</span><span class="tok-p">(</span><span class="tok-n">IpPrefix</span>::<span class="tok-n">deserialize</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-n">start_index</span><span class="tok-o">..</span><span class="tok-n">start_index</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-n">number_of_byte</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-mi">1</span><span class="tok-p">]));</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">start_index</span><span class="tok-w"> </span><span class="tok-o">+=</span><span class="tok-w"> </span><span class="tok-n">number_of_byte</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-mi">1</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">result</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-p">}</span><span class="tok-w"></span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">src/bgp/path_attribute.rs</div>
+<div class="content">
+<pre class="pygments highlight nowrap"><code data-lang="rust"><table class="linenotable"><tr><td class="linenos"><div class="linenodiv"><pre><span class="normal">  1</span>
+<span class="normal">  2</span>
+<span class="normal">  3</span>
+<span class="normal">  4</span>
+<span class="normal">  5</span>
+<span class="normal">  6</span>
+<span class="normal">  7</span>
+<span class="normal">  8</span>
+<span class="normal">  9</span>
+<span class="normal"> 10</span>
+<span class="normal"> 11</span>
+<span class="normal"> 12</span>
+<span class="normal"> 13</span>
+<span class="normal"> 14</span>
+<span class="normal"> 15</span>
+<span class="normal"> 16</span>
+<span class="normal"> 17</span>
+<span class="normal"> 18</span>
+<span class="normal"> 19</span>
+<span class="normal"> 20</span>
+<span class="normal"> 21</span>
+<span class="normal"> 22</span>
+<span class="normal"> 23</span>
+<span class="normal"> 24</span>
+<span class="normal"> 25</span>
+<span class="normal"> 26</span>
+<span class="normal"> 27</span>
+<span class="normal"> 28</span>
+<span class="normal"> 29</span>
+<span class="normal"> 30</span>
+<span class="normal"> 31</span>
+<span class="normal"> 32</span>
+<span class="normal"> 33</span>
+<span class="normal"> 34</span>
+<span class="normal"> 35</span>
+<span class="normal"> 36</span>
+<span class="normal"> 37</span>
+<span class="normal"> 38</span>
+<span class="normal"> 39</span>
+<span class="normal"> 40</span>
+<span class="normal"> 41</span>
+<span class="normal"> 42</span>
+<span class="normal"> 43</span>
+<span class="normal"> 44</span>
+<span class="normal"> 45</span>
+<span class="normal"> 46</span>
+<span class="normal"> 47</span>
+<span class="normal"> 48</span>
+<span class="normal"> 49</span>
+<span class="normal"> 50</span>
+<span class="normal"> 51</span>
+<span class="normal"> 52</span>
+<span class="normal"> 53</span>
+<span class="normal"> 54</span>
+<span class="normal"> 55</span>
+<span class="normal"> 56</span>
+<span class="normal"> 57</span>
+<span class="normal"> 58</span>
+<span class="normal"> 59</span>
+<span class="normal"> 60</span>
+<span class="normal"> 61</span>
+<span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span></pre></div></td><td class="code"><pre><span></span><span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-o">-</span><span class="tok-mi">1</span><span class="tok-p">,</span><span class="tok-mi">6</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-mi">1</span><span class="tok-p">,</span><span class="tok-mi">7</span><span class="tok-w"> </span><span class="tok-o">@@</span><span class="tok-w"></span>
+<span class="tok-o">-</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-k">crate</span>::<span class="tok-n">bgp</span>::<span class="tok-p">{</span><span class="tok-bp">self</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">AutonomousSystemNumber</span><span class="tok-p">};</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-n">collections</span>::<span class="tok-n">BTreeSet</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-n">convert</span>::<span class="tok-n">TryInto</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-n">io</span>::<span class="tok-n">BufWriter</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-n">net</span>::<span class="tok-n">Ipv4Addr</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-kt">str</span>::<span class="tok-n">FromStr</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-k">use</span><span class="tok-w"> </span><span class="tok-n">std</span>::<span class="tok-n">vec</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-o">-</span><span class="tok-mi">143</span><span class="tok-p">,</span><span class="tok-mi">7</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-mi">144</span><span class="tok-p">,</span><span class="tok-mi">101</span><span class="tok-w"> </span><span class="tok-o">@@</span><span class="tok-w"> </span><span class="tok-k">impl</span><span class="tok-w"> </span><span class="tok-n">PathAttribute</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-w">         </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-p">}</span><span class="tok-w"></span>
+
+<span class="tok-o">-</span><span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">fn</span> <span class="tok-nf">deserialize</span><span class="tok-p">(</span><span class="tok-n">bytes</span>: <span class="tok-kp">&amp;</span><span class="tok-p">[</span><span class="tok-kt">u8</span><span class="tok-p">])</span><span class="tok-w"> </span>-&gt; <span class="tok-nc">Self</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">-</span><span class="tok-w">        </span><span class="tok-fm">unimplemented!</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">pub</span><span class="tok-w"> </span><span class="tok-k">fn</span> <span class="tok-nf">deserialize</span><span class="tok-p">(</span><span class="tok-n">bytes</span>: <span class="tok-kp">&amp;</span><span class="tok-p">[</span><span class="tok-kt">u8</span><span class="tok-p">])</span><span class="tok-w"> </span>-&gt; <span class="tok-nb">Vec</span><span class="tok-o">&lt;</span><span class="tok-bp">Self</span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">next_path_attribute_start_index</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-mi">0</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">path_attributes</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-fm">vec!</span><span class="tok-p">[];</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-k">while</span><span class="tok-w"> </span><span class="tok-n">bytes</span><span class="tok-p">.</span><span class="tok-n">len</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-o">&gt;</span><span class="tok-w"> </span><span class="tok-n">next_path_attribute_start_index</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">debug</span><span class="tok-o">!</span><span class="tok-p">(</span><span class="tok-s">&quot;Path attribute raw byte, {:?}, is deserialized&quot;</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-o">&amp;</span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-n">next_path_attribute_start_index</span><span class="tok-o">..</span><span class="tok-p">]);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-p">(</span><span class="tok-n">path_attribute</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">i</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-bp">Self</span>::<span class="tok-n">deserialize_one_attribute</span><span class="tok-p">(</span><span class="tok-o">&amp;</span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-n">next_path_attribute_start_index</span><span class="tok-o">..</span><span class="tok-p">]);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">debug</span><span class="tok-o">!</span><span class="tok-p">(</span><span class="tok-s">&quot;deserialized path attribute result is {:?}&quot;</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">path_attribute</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">next_path_attribute_start_index</span><span class="tok-w"> </span><span class="tok-o">+=</span><span class="tok-w"> </span><span class="tok-n">i</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">path_attributes</span><span class="tok-p">.</span><span class="tok-n">push</span><span class="tok-p">(</span><span class="tok-n">path_attribute</span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-n">path_attributes</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">    </span><span class="tok-k">fn</span> <span class="tok-nf">deserialize_one_attribute</span><span class="tok-p">(</span><span class="tok-n">bytes</span>: <span class="tok-kp">&amp;</span><span class="tok-p">[</span><span class="tok-kt">u8</span><span class="tok-p">])</span><span class="tok-w"> </span>-&gt; <span class="tok-p">(</span><span class="tok-bp">Self</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-kt">usize</span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-c1">// bytesからPathAttributeを返す。usizeは次のpath_attributeのスタート位置</span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">attribute_length_octets</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-k">match</span><span class="tok-w"> </span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-mi">0</span><span class="tok-p">]</span><span class="tok-w"> </span><span class="tok-o">&amp;</span><span class="tok-w"> </span><span class="tok-mb">0b0001000</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-mb">0b00000000</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-mi">1</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-mb">0b00010000</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-mi">2</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-fm">unreachable!</span><span class="tok-p">(),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">};</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">attribute_length_start_index</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-mi">2</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">attribute_length</span>: <span class="tok-kt">usize</span> <span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-k">if</span><span class="tok-w"> </span><span class="tok-n">attribute_length_octets</span><span class="tok-w"> </span><span class="tok-o">==</span><span class="tok-w"> </span><span class="tok-mi">1</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-kt">u16</span>::<span class="tok-n">from_be_bytes</span><span class="tok-p">([</span><span class="tok-mi">0</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-n">attribute_length_start_index</span><span class="tok-p">]])</span><span class="tok-w"> </span><span class="tok-k">as</span><span class="tok-w"> </span><span class="tok-kt">usize</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">}</span><span class="tok-w"> </span><span class="tok-k">else</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-kt">u16</span>::<span class="tok-n">from_be_bytes</span><span class="tok-p">(</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-n">attribute_length_start_index</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-o">..</span><span class="tok-n">attribute_length_start_index</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-n">attribute_length_octets</span><span class="tok-p">]</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-p">.</span><span class="tok-n">try_into</span><span class="tok-p">()</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-p">.</span><span class="tok-n">unwrap</span><span class="tok-p">(),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">)</span><span class="tok-w"> </span><span class="tok-k">as</span><span class="tok-w"> </span><span class="tok-kt">usize</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">};</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">attribute_value_start_index</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">attribute_length_start_index</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-n">attribute_length_octets</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">attribute_type_code_index</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-mi">1</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">attribute</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-k">match</span><span class="tok-w"> </span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-n">attribute_type_code_index</span><span class="tok-p">]</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-mi">1</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">origin_number</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-n">attribute_value_start_index</span><span class="tok-p">];</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">origin</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-k">match</span><span class="tok-w"> </span><span class="tok-n">origin_number</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-mi">0</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-n">Origin</span>::<span class="tok-n">Igp</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-mi">1</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-n">Origin</span>::<span class="tok-n">Egp</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-mi">2</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-n">Origin</span>::<span class="tok-n">Incomplete</span><span class="tok-p">,</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-fm">unreachable!</span><span class="tok-p">(),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-p">};</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-n">PathAttribute</span>::<span class="tok-n">Origin</span><span class="tok-p">(</span><span class="tok-n">origin</span><span class="tok-p">)</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-mi">2</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">as_path_type</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-n">attribute_value_start_index</span><span class="tok-p">];</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">number_of_ases</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-n">attribute_value_start_index</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-mi">1</span><span class="tok-p">];</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">path_segment_value_start_index</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">attribute_length_start_index</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-mi">3</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">as_path</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-k">match</span><span class="tok-w"> </span><span class="tok-n">as_path_type</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-mi">1</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">as_set</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">BTreeSet</span>::<span class="tok-n">new</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                        </span><span class="tok-k">while</span><span class="tok-w"> </span><span class="tok-n">as_set</span><span class="tok-p">.</span><span class="tok-n">len</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-o">&lt;</span><span class="tok-w"> </span><span class="tok-n">number_of_ases</span><span class="tok-p">.</span><span class="tok-n">into</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                            </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">as_number_bytes</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-o">&amp;</span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-n">path_segment_value_start_index</span><span class="tok-o">..</span><span class="tok-n">path_segment_value_start_index</span><span class="tok-o">+</span><span class="tok-mi">2</span><span class="tok-p">];</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                            </span><span class="tok-n">as_set</span><span class="tok-p">.</span><span class="tok-n">insert</span><span class="tok-p">(</span><span class="tok-n">AutonomousSystemNumber</span><span class="tok-p">(</span><span class="tok-kt">u16</span>::<span class="tok-n">from_be_bytes</span><span class="tok-p">([</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                                </span><span class="tok-n">as_number_bytes</span><span class="tok-p">[</span><span class="tok-mi">0</span><span class="tok-p">],</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                                </span><span class="tok-n">as_number_bytes</span><span class="tok-p">[</span><span class="tok-mi">1</span><span class="tok-p">],</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                            </span><span class="tok-p">])));</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                            </span><span class="tok-n">path_segment_value_start_index</span><span class="tok-w"> </span><span class="tok-o">+=</span><span class="tok-w"> </span><span class="tok-mi">2</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                        </span><span class="tok-n">AsPath</span>::<span class="tok-n">AsSet</span><span class="tok-p">(</span><span class="tok-n">as_set</span><span class="tok-p">)</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-mi">2</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-k">mut</span><span class="tok-w"> </span><span class="tok-n">as_seq</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-fm">vec!</span><span class="tok-p">[];</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                        </span><span class="tok-k">while</span><span class="tok-w"> </span><span class="tok-n">as_seq</span><span class="tok-p">.</span><span class="tok-n">len</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-o">&lt;</span><span class="tok-w"> </span><span class="tok-n">number_of_ases</span><span class="tok-p">.</span><span class="tok-n">into</span><span class="tok-p">()</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                            </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">as_number_bytes</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-o">&amp;</span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-n">path_segment_value_start_index</span><span class="tok-o">..</span><span class="tok-n">path_segment_value_start_index</span><span class="tok-o">+</span><span class="tok-mi">2</span><span class="tok-p">];</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                            </span><span class="tok-n">as_seq</span><span class="tok-p">.</span><span class="tok-n">push</span><span class="tok-p">(</span><span class="tok-n">AutonomousSystemNumber</span><span class="tok-p">(</span><span class="tok-kt">u16</span>::<span class="tok-n">from_be_bytes</span><span class="tok-p">([</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                                </span><span class="tok-n">as_number_bytes</span><span class="tok-p">[</span><span class="tok-mi">0</span><span class="tok-p">],</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                                </span><span class="tok-n">as_number_bytes</span><span class="tok-p">[</span><span class="tok-mi">1</span><span class="tok-p">],</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                            </span><span class="tok-p">])));</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                            </span><span class="tok-n">path_segment_value_start_index</span><span class="tok-w"> </span><span class="tok-o">+=</span><span class="tok-w"> </span><span class="tok-mi">2</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                        </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                        </span><span class="tok-n">AsPath</span>::<span class="tok-n">AsSequence</span><span class="tok-p">(</span><span class="tok-n">as_seq</span><span class="tok-p">)</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                        </span><span class="tok-fm">unreachable!</span><span class="tok-p">();</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-p">};</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-n">PathAttribute</span>::<span class="tok-n">AsPath</span><span class="tok-p">(</span><span class="tok-n">as_path</span><span class="tok-p">)</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-mi">3</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">nexthop</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">Ipv4Addr</span>::<span class="tok-n">new</span><span class="tok-p">(</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-n">attribute_value_start_index</span><span class="tok-p">],</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-n">attribute_value_start_index</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-mi">1</span><span class="tok-p">],</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-n">attribute_value_start_index</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-mi">2</span><span class="tok-p">],</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                    </span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-n">attribute_value_start_index</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-mi">3</span><span class="tok-p">],</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-p">);</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-n">PathAttribute</span>::<span class="tok-n">NextHop</span><span class="tok-p">(</span><span class="tok-n">nexthop</span><span class="tok-p">)</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-mi">4</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-p">{</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">                </span><span class="tok-fm">unimplemented!</span><span class="tok-p">(</span><span class="tok-s">&quot;AtomicAggregateのdeserializeは未実装です。&quot;</span><span class="tok-p">)</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-mi">5</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-n">PathAttribute</span>::<span class="tok-n">DontKnow</span><span class="tok-p">(</span><span class="tok-n">bytes</span><span class="tok-p">[</span><span class="tok-mi">0</span><span class="tok-o">..</span><span class="tok-n">attribute_length</span><span class="tok-p">].</span><span class="tok-n">to_vec</span><span class="tok-p">()),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">            </span><span class="tok-n">_</span><span class="tok-w"> </span><span class="tok-o">=&gt;</span><span class="tok-w"> </span><span class="tok-fm">unimplemented!</span><span class="tok-p">(),</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">};</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-kd">let</span><span class="tok-w"> </span><span class="tok-n">end_of_path_attribute</span><span class="tok-w"> </span><span class="tok-o">=</span><span class="tok-w"> </span><span class="tok-n">attribute_length_start_index</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-n">attribute_length_octets</span><span class="tok-w"> </span><span class="tok-o">+</span><span class="tok-w"> </span><span class="tok-n">attribute_length</span><span class="tok-p">;</span><span class="tok-w"></span>
+<span class="tok-o">+</span><span class="tok-w">        </span><span class="tok-p">(</span><span class="tok-n">attribute</span><span class="tok-p">,</span><span class="tok-w"> </span><span class="tok-n">end_of_path_attribute</span><span class="tok-p">)</span><span class="tok-w"></span>
+<span class="tok-w">     </span><span class="tok-p">}</span><span class="tok-w"></span>
+<span class="tok-w"> </span><span class="tok-p">}</span><span class="tok-w"></span>
+</pre></td></tr></table></code></pre>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -11470,7 +11876,7 @@ LocRib &#8658; AdjRibOutにインストールする際には、
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2021-09-09 00:50:32 UTC
+Last updated 2021-10-01 13:34:23 UTC
 </div>
 </div>
 </body>

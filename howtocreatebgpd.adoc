@@ -2170,6 +2170,9 @@ netlinkでの問い合わせをrt.block_on()にて同期的に実行していま
 +    }
 +
 +    fn get_subnet_netmask(&self) -> u32 {
++        if self.prefix == 0 {
++            return 0;
++        }
 +        let mut netmask: u32 = 0;
 +        for i in 0..self.prefix {
 +            netmask += 1 << i;
@@ -3712,6 +3715,214 @@ index c941ea8..819ee13 100644
 +            .collect();
 +        BgpUpdateMessage::new(
 ----
+
+
+これにて送信は可能になりました。
+現在の実装では送信のみ対応しており、受信時にバイト列から内部の構造体に変換するところでunimplemented!()にあたり、panic!()します。
+受信時にバイト列から構造体に変換できるように、BgpUpdateMessage::deserialize()メソッドに関連するunimplemented!()の部分を実装していきます。
+
+以下のようになります。
+
+[source,rust,linenums,title=src/bgp/message.rs]
+----
+@@ -272,7 +272,38 @@ impl BgpUpdateMessage {
+     }
+ 
+     fn deserialize(bytes: &[u8]) -> Self {
+-        unimplemented!();
++        let header = BgpMessageHeader::deserialize(&bytes[0..19]);
++        let withdrawn_routes_length = u16::from_be_bytes(bytes[19..21].try_into().unwrap());
++
++        let start_index_of_total_path_attribute_length: usize =
++            21 + withdrawn_routes_length as usize;
++
++        let withdrawn_routes = IpPrefix::deserialize_multiple_ip_prefix_bytes(
++            &bytes[21..start_index_of_total_path_attribute_length],
++        );
++
++        let total_path_attribute_length = u16::from_be_bytes(
++            bytes[start_index_of_total_path_attribute_length
++                ..start_index_of_total_path_attribute_length + 2]
++                .try_into()
++                .unwrap(),
++        );
++
++        let start_index_of_nlri: usize =
++            start_index_of_total_path_attribute_length + 2 + total_path_attribute_length as usize;
++        let path_attributes = PathAttribute::deserialize(
++            &bytes[start_index_of_total_path_attribute_length + 2..start_index_of_nlri],
++        );
++        let network_layer_reachability_information =
++            IpPrefix::deserialize_multiple_ip_prefix_bytes(&bytes[start_index_of_nlri..]);
++        Self {
++            header,
++            withdrawn_routes_length,
++            withdrawn_routes,
++            total_path_attribute_length,
++            path_attributes,
++            network_layer_reachability_information,
++        }
+     }
+ }
+ 
+@@ -293,6 +324,36 @@ impl IpPrefix {
+     }
+ 
+     fn deserialize(bytes: &[u8]) -> Self {
+-        unimplemented!();
++        let mut ip_octets = bytes[1..].to_vec();
++        while ip_octets.len() < 4 {
++            ip_octets.push(0);
++        }
++
++        let mut res = IpPrefix {
++            ip_addr: Ipv4Addr::new(ip_octets[0], ip_octets[1], ip_octets[2], ip_octets[3]),
++            prefix: 0,
++        };
++        while !res.is_network_address() {
++            res.prefix += 1;
++        }
++        res
++    }
++
++    fn deserialize_multiple_ip_prefix_bytes(bytes: &[u8]) -> Vec<Self> {
++        let mut result = vec![];
++        let mut start_index = 0;
++        while start_index < bytes.len() {
++            let number_of_byte = match bytes[start_index] {
++                0 => 0,
++                1..=8 => 1,
++                9..=16 => 2,
++                17..=24 => 3,
++                25..=32 => 4,
++                _ => unreachable!(),
++            };
++            result.push(IpPrefix::deserialize(&bytes[start_index..start_index + number_of_byte + 1]));
++            start_index += number_of_byte + 1;
++        }
++        result
+     }
+ }
+----
+
+
+[source, rust, linenums, title=src/bgp/path_attribute.rs]
+----
+@@ -1,6 +1,7 @@
+-use crate::bgp;
++use crate::bgp::{self, AutonomousSystemNumber};
+ use std::collections::BTreeSet;
+ use std::convert::TryInto;
++use std::io::BufWriter;
+ use std::net::Ipv4Addr;
+ use std::str::FromStr;
+ use std::vec;
+@@ -143,7 +144,101 @@ impl PathAttribute {
+         }
+     }
+ 
+-    pub fn deserialize(bytes: &[u8]) -> Self {
+-        unimplemented!();
++    pub fn deserialize(bytes: &[u8]) -> Vec<Self> {
++        let mut next_path_attribute_start_index = 0;
++        let mut path_attributes = vec![];
++        while bytes.len() > next_path_attribute_start_index {
++            debug!("Path attribute raw byte, {:?}, is deserialized", &bytes[next_path_attribute_start_index..]);
++            let (path_attribute, i) =
++                Self::deserialize_one_attribute(&bytes[next_path_attribute_start_index..]);
++            debug!("deserialized path attribute result is {:?}", path_attribute);
++            next_path_attribute_start_index += i;
++            path_attributes.push(path_attribute);
++        }
++        path_attributes
++    }
++    fn deserialize_one_attribute(bytes: &[u8]) -> (Self, usize) {
++        // bytesからPathAttributeを返す。usizeは次のpath_attributeのスタート位置
++        let attribute_length_octets = match bytes[0] & 0b0001000 {
++            0b00000000 => 1,
++            0b00010000 => 2,
++            _ => unreachable!(),
++        };
++        let attribute_length_start_index = 2;
++        let attribute_length: usize = if attribute_length_octets == 1 {
++            u16::from_be_bytes([0, bytes[attribute_length_start_index]]) as usize
++        } else {
++            u16::from_be_bytes(
++                bytes[attribute_length_start_index
++                    ..attribute_length_start_index + attribute_length_octets]
++                    .try_into()
++                    .unwrap(),
++            ) as usize
++        };
++        let attribute_value_start_index = attribute_length_start_index + attribute_length_octets;
++        let attribute_type_code_index = 1;
++        let attribute = match bytes[attribute_type_code_index] {
++            1 => {
++                let origin_number = bytes[attribute_value_start_index];
++                let origin = match origin_number {
++                    0 => Origin::Igp,
++                    1 => Origin::Egp,
++                    2 => Origin::Incomplete,
++                    _ => unreachable!(),
++                };
++                PathAttribute::Origin(origin)
++            }
++            2 => {
++                let as_path_type = bytes[attribute_value_start_index];
++                let number_of_ases = bytes[attribute_value_start_index + 1];
++                let mut path_segment_value_start_index = attribute_length_start_index + 3;
++                let as_path = match as_path_type {
++                    1 => {
++                        let mut as_set = BTreeSet::new();
++                        while as_set.len() < number_of_ases.into() {
++                            let as_number_bytes = &bytes[path_segment_value_start_index..path_segment_value_start_index+2];
++                            as_set.insert(AutonomousSystemNumber(u16::from_be_bytes([
++                                as_number_bytes[0],
++                                as_number_bytes[1],
++                            ])));
++                            path_segment_value_start_index += 2;
++                        }
++                        AsPath::AsSet(as_set)
++                    }
++                    2 => {
++                        let mut as_seq = vec![];
++                        while as_seq.len() < number_of_ases.into() {
++                            let as_number_bytes = &bytes[path_segment_value_start_index..path_segment_value_start_index+2];
++                            as_seq.push(AutonomousSystemNumber(u16::from_be_bytes([
++                                as_number_bytes[0],
++                                as_number_bytes[1],
++                            ])));
++                            path_segment_value_start_index += 2;
++                        }
++                        AsPath::AsSequence(as_seq)
++                    }
++                    _ => {
++                        unreachable!();
++                    }
++                };
++                PathAttribute::AsPath(as_path)
++            }
++            3 => {
++                let nexthop = Ipv4Addr::new(
++                    bytes[attribute_value_start_index],
++                    bytes[attribute_value_start_index + 1],
++                    bytes[attribute_value_start_index + 2],
++                    bytes[attribute_value_start_index + 3],
++                );
++                PathAttribute::NextHop(nexthop)
++            }
++            4 => {
++                unimplemented!("AtomicAggregateのdeserializeは未実装です。")
++            }
++            5 => PathAttribute::DontKnow(bytes[0..attribute_length].to_vec()),
++            _ => unimplemented!(),
++        };
++        let end_of_path_attribute = attribute_length_start_index + attribute_length_octets + attribute_length;
++        (attribute, end_of_path_attribute)
+     }
+ }
+----
+
 == 複数ピアをハンドリング可能な実装
 === 本章で作るものの全体像
 
