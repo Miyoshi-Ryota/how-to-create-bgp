@@ -2,9 +2,12 @@ PREDEF:
   - preface.re
 
 CHAPS:
-  - article.re
+  - learning_background.re
+  - starting_point.re
+  - established.re
+  - exchange_update_message.re
 
 APPENDIX:
 
 POSTDEF:
-  - contributors.re
+
