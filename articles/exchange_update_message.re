@@ -127,4 +127,87 @@ Path Attributeの定義は@<href>{https://datatracker.ietf.org/doc/html/rfc4271#
 //footnote[path-def][https://datatracker.ietf.org/doc/html/rfc4271#section-5.1]
 
 == Update Messageの送信の実装
+広報するネットワークを指定する方法を実装します。一般的にnetworkコマンドで設定されるものです。
+今回はConfigに追加し、コマンドライン引数で渡すことにしましょう。
+
+//emlistnum[src/config.rs][Rust]{
+#[derive(PartialEq, Eq, Debug, Clone, Hash, PartialOrd, Ord)]
+pub struct Config {
+    pub networks: Vec<Ipv4Network>,
+}
+//}
+
+また、テスト時に広報するネットワークを指定するようにします。
+@<chap>[integration_tests]で説明したようにhost2 -> host1にhost2-networkを広報するように指定します。
+
+//emlistnum[tests/host2/Dockerfile][{}]{
+CMD ./target/debug/mrbgpdv2 "64513 10.200.100.3 64512 10.200.100.2 passive 10.100.220.0/24"
+//}
+
+この変更により、あとはうまくUpdate Messageの送受信が完了すれば、統合テストが通るようになります。
+Update Messageの送信自体は、Open Messageの送信と変わらないため書内では省略します。この実装を確認したい場合は、以下のPRを確認してください。
+
+ * @<href>{https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/11,Update messageを送信可能にする #11}
+ * @<href>{https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/13,Update messageの送信に関するバグを修正した。 #13}
+ * @<href>{https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/14,UpdateMessageにNLRIが欠落するバグの修正 #14}
+
 == Update Messageの受信の実装
+Update Messageは受信した内容に従って、ルーティングテーブルの書き込みを行います。ルーティングテーブルの書き込みは本書内では初なので、以下にコードを記載します。 
+
+//emlistnum[src/routing.rs][Rust]{
+impl LocRib {
+    pub async fn write_to_kernel_routing_table(&self) -> Result<()> {
+        let (connection, handle, _) = new_connection()?;
+        tokio::spawn(connection);
+        for e in &self.0 {
+            for p in &e.path_attributes {
+                if let PathAttribute::NextHop(gateway) = p {
+                    let dest = e.network_address;
+                    handle
+                        .route()
+                        .add()
+                        .v4()
+                        .destination_prefix(dest.ip(), dest.prefix())
+                        .gateway(*gateway)
+                        .execute()
+                        .await?;
+                    break;
+                }
+            }
+        }
+        Ok(())
+    }
+}
+//}
+
+その他のUpdate Messageの受信もOpen Messageの受信と大差ないため概ね省略します。
+すべてのコードを確認したい場合は、以下のPRを参照してください。
+
+ * @<href>{https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/15,Update messageを受信可能にする #15}
+
+最後に@<code>{tests/run_integration_tests.sh}を実行して、統合テストが通るようになったことを確認しましょう。
+
+//emlistnum[統合テストの実行][{}]{
+mrcsce@pop-os:~/programming/rustProjects/bgp/mrbgpdv2$ ./tests/run_integration_tests.sh 
+<中略>
+Successfully built 09fb776025aa
+Successfully tagged tests_host1:latest
+Recreating tests_host2_1 ... done
+Recreating tests_host1_1 ... done
+PING 10.100.220.3 (10.100.220.3) 56(84) bytes of data.
+64 bytes from 10.100.220.3: icmp_seq=1 ttl=64 time=0.101 ms
+64 bytes from 10.100.220.3: icmp_seq=2 ttl=64 time=0.051 ms
+64 bytes from 10.100.220.3: icmp_seq=3 ttl=64 time=0.059 ms
+64 bytes from 10.100.220.3: icmp_seq=4 ttl=64 time=0.062 ms
+64 bytes from 10.100.220.3: icmp_seq=5 ttl=64 time=0.065 ms
+
+--- 10.100.220.3 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 4102ms
+rtt min/avg/max/mdev = 0.051/0.067/0.101/0.017 ms
+統合テストが成功しました。
+mrcsce@pop-os:~/programming/rustProjects/bgp/mrbgpdv2$ git status
+//}
+
+これにて本書は完了とします！
+ここまで実装した方は、その実装に肉付けすることで、異常系や実装していないPathAttributeの実装も行っていけるはずです。
+おつかれさまでした。
