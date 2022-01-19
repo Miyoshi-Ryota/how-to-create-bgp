@@ -5,8 +5,8 @@
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="style.css" />
   <link rel="stylesheet" type="text/css" href="style-web.css" />
-<link rel="next" title="章タイトル" href="exchange_update_message.html" /><link rel="prev" title="章タイトル" href="starting_point.html" />  <meta name="generator" content="Re:VIEW" />
-  <title>章タイトル | 作って学ぶルーティングプロトコル〜RustでBGPを実装〜</title>
+<link rel="next" title="Update Messageを交換する！" href="exchange_update_message.html" /><link rel="prev" title="テスト環境の作成" href="integration_tests.html" />  <meta name="generator" content="Re:VIEW" />
+  <title>Established Stateまでの実装！ | 作って学ぶルーティングプロトコル〜RustでBGPを実装〜</title>
 </head>
 <body>
   <div class="book">
@@ -15,10 +15,11 @@
       <ul class="book-toc">
 <li><a href="index.html">TOP</a></li>
 <li><a href="preface.html">前書き</a></li>
-<li><a href="learning_background.html">第1章　章タイトル</a></li>
-<li><a href="starting_point.html">第2章　章タイトル</a></li>
-<li><a href="established.html">第3章　章タイトル</a></li>
-<li><a href="exchange_update_message.html">第4章　章タイトル</a></li>
+<li><a href="learning_background.html">第1章　BGPの実装に必要な知識の学習</a></li>
+<li><a href="starting_point.html">第2章　実装開始！</a></li>
+<li><a href="integration_tests.html">第3章　テスト環境の作成</a></li>
+<li><a href="established.html">第4章　Established Stateまでの実装！</a></li>
+<li><a href="exchange_update_message.html">第5章　Update Messageを交換する！</a></li>
 </ul>
       <p class="review-signature">powered by <a href="http://reviewml.org/">Re:VIEW</a></p>
     </nav>
@@ -26,18 +27,441 @@
       <header>
       </header>
       <div class="book-page">
-        <h1><a id="h3"></a><span class="secno">第3章　</span>章タイトル</h1>
-<p>ここからすべてが始まる！</p>
+        <h1><a id="h4"></a><span class="secno">第4章　</span>Established Stateまでの実装！</h1>
+
+<h2><a id="h4-1"></a><span class="secno">4.1　</span>OpenSent Stateに遷移する</h2>
+<p>OpenSent Stateまでの遷移を実装します。タスクとしては以下になります。</p>
+<ul>
+<li>OpenSent Stateまで遷移することを確認するテストの追加</li>
+<li>テストを通るようにする。</li>
+<li>Open Messageを送信可能にする。</li>
+</ul>
+<p>この章でもすべての差分は載せずに主要な差分を載せます。すべての差分を確認したい場合は、<a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/4" class="link">Open sent stateに遷移できるようにする。 #4</a><a id="fnb-pr-open-sent" href="#fn-pr-open-sent" class="noteref" epub:type="noteref">*1</a>,<a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/5" class="link">データを送信関連のバグの修正 #5</a><a id="fnb-pr-open-sent-fix" href="#fn-pr-open-sent-fix" class="noteref" epub:type="noteref">*2</a>を確認してください。</p>
+<div class="footnote" epub:type="footnote" id="fn-pr-open-sent"><p class="footnote">[*1] https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/4</p></div>
+<div class="footnote" epub:type="footnote" id="fn-pr-open-sent-fix"><p class="footnote">[*2] https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/5</p></div>
+<p>本章では実際に通信を発生させたりする点が今までの実装と異なります。それ以外は今までの実装の延長線上にあるため簡単にのみ説明します。</p>
+
+<h3><a id="h4-1-1"></a><span class="secno">4.1.1　</span>テストの追加</h3>
+<p>以下のように、OpenSentステートに遷移していることを確認するテストを追加します。これも今までのものと変わりません。</p>
 <div class="emlistnum-code">
-<p class="caption">アイウエオ</p>
-<pre class="emlist language-Rust"> 1: fn main() {
- 2:     println!(&quot;hello&quot;);
+<p class="caption">src/peer.rs</p>
+<pre class="emlist language-Rust"> 1: #[cfg(test)]
+ 2: mod tests {
+ 3:     #[tokio::test]
+ 4:     async fn peer_can_transition_to_open_sent_state() {
+ 5:         let config: Config = &quot;64512 127.0.0.1 65413 127.0.0.2 active&quot;.parse().unwrap();
+ 6:         let mut peer = Peer::new(config);
+ 7:         peer.start();
+ 8: 
+ 9:         // 別スレッドでPeer構造体を実行しています。
+10:         // これはネットワーク上で離れた別のマシンを模擬しています。
+11:         tokio::spawn(async move {
+12:             let remote_config = &quot;64513 127.0.0.2 65412 127.0.0.1 passive&quot;.parse().unwrap();
+13:             let mut remote_peer = Peer::new(remote_config);
+14:             remote_peer.start();
+15:             remote_peer.next().await;
+16:             remote_peer.next().await;
+17:         });
+18: 
+19:         // 先にremote_peer側の処理が進むことを保証するためのwait
+20:         tokio::time::sleep(Duration::from_secs(1)).await;
+21:         peer.next().await;
+22:         peer.next().await;
+23:         assert_eq!(peer.state, State::OpenSent);
+24:     }
+25: }
+</pre>
+</div>
+
+<h3><a id="h4-1-2"></a><span class="secno">4.1.2　</span>OpenSentステータスに遷移する。</h3>
+<p>OpenSentに遷移するまでの実装を追加しました。主に<code class="inline-code tt">src/peer.rs</code>の9-13行目でTCP Connectionが成功したときに、TcpConnectionConfirmedのイベントを発火させるようにしたこと、18-23行目でConnect State時にTcpConnectionConfirmedイベントが発生したときOpenSent Stateに遷移するようにしました。つまり<a href="./learning_background.html">第1章</a>で説明したとおりの動作を実装しました。</p>
+<div class="emlistnum-code">
+<p class="caption">src/event.rs</p>
+<pre class="emlist language-Rust"> 1: pub enum Event {
+ 2:     // 正常系しか実装しない本実装では別のEventとして扱う意味がないため、
+ 3:     // TcpConnectionConfirmedはTcpCrAckedも兼ねている。
+ 4:     TcpConnectionConfirmed,
+ 5: }
+</pre>
+</div>
+<div class="emlistnum-code">
+<p class="caption">src/state.rs</p>
+<pre class="emlist language-Rust"> 1: pub enum State {
+ 2:     OpenSent,
  3: }
 </pre>
 </div>
+<div class="emlistnum-code">
+<p class="caption">src/peer.rs</p>
+<pre class="emlist language-Rust"> 1:     async fn handle_event(&amp;mut self, event: &amp;Event) {
+ 2:         match &amp;self.state {
+ 3:             State::Idle =&gt; match event {
+ 4:                 Event::ManualStart =&gt; {
+ 5:                     self.tcp_connection = match self.config.mode {
+ 6:                         Mode::Active =&gt; self.connect_to_remote_peer().await,
+ 7:                         Mode::Passive =&gt; self.wait_connection_from_remote_peer().await,
+ 8:                     }
+ 9:                     if self.tcp_connection.is_some() {
+10:                         self.event_queue.enqueue(Event::TcpConnectionConfirmed);
+11:                     } else {
+12:                         panic!(&quot;TCP Connectionの確立が出来ませんでした。{:?}&quot;, self.config)
+13:                     }
+14:                     self.state = State::Connect;
+15:                 }
+16:                 _ =&gt; {}
+17:             },
+18:             State::Connect =&gt; match event {
+19:                 Event::TcpConnectionConfirmed =&gt; {
+20:                     self.state = State::OpenSent
+21:                 },
+22:                 _ =&gt; {}
+23:             },
+24:             _ =&gt; {}
+25:         }
+26:     }
+</pre>
+</div>
+
+<h3><a id="h4-1-3"></a><span class="secno">4.1.3　</span>Open Messageを送信する。</h3>
+<p><span class="imgref"><a href="./starting_point.html#bgp-fsm">図2.1</a></span>の通り、OpenSentに遷移するとき、Open Messageを送信します。この処理を実装します。</p>
+<p>まず使用するライブラリをインストールします。</p>
+<div class="emlistnum-code">
+<p class="caption">src/lib.rs</p>
+<pre class="emlist language-Rust"> 1: [dependencies]
+ 2: bytes = &quot;1&quot;
+</pre>
+</div>
+<p>次にファイルの構造を示します。主に本章では、<code class="inline-code tt">connection.rs</code>、<code class="inline-code tt">message.rs</code>が主要なファイルです。<code class="inline-code tt">connection.rs</code>は、Connectionの確立やデータの送受信（この段階では送信のみ）を担当します。この<code class="inline-code tt">connection.rs</code>は前章の実装では、<code class="inline-code tt">src/peer.rs</code>内に統合されていました。本章からは送信や受信など役割が増えてくるため別モジュールとして切り出します。<code class="inline-code tt">message.rs</code>では、BGP Messageを表すデータを扱います。<code class="inline-code tt">message.rs</code>内で定義される<code class="inline-code tt">enum Message</code>は、From trait、TryFrom Traitを実装することで、ソフトウェア内の表現であるMessageと、実際に送受信するローレベルなBytesを表すBytesMut型を相互に変換可能にします。</p>
+
+<h4><a id="h4-1-3-1"></a>BGP Messageを実装する。</h4>
+<p>細かい実装の前に、必要な構造体やメソッドを<code class="inline-code tt">todo!</code>マクロを用いて仮実装をして大まかな構造を示します。大まかな実装は以下のとおりです。</p>
+<div class="emlistnum-code">
+<p class="caption">src/lib.rs</p>
+<pre class="emlist language-Rust"> 1: mod packets;
+</pre>
+</div>
+<div class="emlistnum-code">
+<p class="caption">src/packets.rs</p>
+<pre class="emlist language-Rust"> 1: mod header;
+ 2: pub mod message;
+ 3: mod open;
+</pre>
+</div>
+<div class="emlistnum-code">
+<p class="caption">src/error.rs</p>
+<pre class="emlist language-Rust"> 1: #[derive(Error, Debug)]
+ 2: #[error(transparent)]
+ 3: pub struct ConvertBytesToBgpMessageError {
+ 4:     #[from]
+ 5:     source: anyhow::Error,
+ 6: }
+ 7: 
+ 8: #[derive(Error, Debug)]
+ 9: #[error(transparent)]
+10: pub struct ConvertBgpMessageToBytesError {
+11:     #[from]
+12:     source: anyhow::Error,
+13: }
+</pre>
+</div>
+<div class="emlistnum-code">
+<p class="caption">src/packets/message.rs</p>
+<pre class="emlist language-Rust"> 1: use bytes::BytesMut;
+ 2: 
+ 3: use crate::error::{ConvertBgpMessageToBytesError, ConvertBytesToBgpMessageError};
+ 4: use crate::packets::open::OpenMessage;
+ 5: 
+ 6: pub enum Message {
+ 7:     Open(OpenMessage),
+ 8: }
+ 9: 
+10: impl TryFrom&lt;BytesMut&gt; for Message {
+11:     type Error = ConvertBytesToBgpMessageError;
+12: 
+13:     fn try_from(bytes: BytesMut) -&gt; Result&lt;Self, Self::Error&gt; {
+14:         todo!();
+15:     }
+16: }
+17: 
+18: impl From&lt;Message&gt; for BytesMut {
+19:     fn from(message: Message) -&gt; BytesMut {
+20:         todo!();
+21:     }
+22: }
+</pre>
+</div>
+<div class="emlistnum-code">
+<p class="caption">src/packets/open.rs</p>
+<pre class="emlist language-Rust"> 1: #[derive(PartialEq, Eq, Debug, Clone, Hash)]
+ 2: pub struct OpenMessage;
+</pre>
+</div>
+<div class="emlistnum-code">
+<p class="caption">src/packets/header.rs</p>
+<pre class="emlist language-Rust"> 1: #[derive(PartialEq, Eq, Debug, Clone, Hash)]
+ 2: pub struct Header;
+</pre>
+</div>
+<p>Open Messageの情報や、Bytes列としての表現は<a href="https://datatracker.ietf.org/doc/html/rfc4271#section-4.2" class="link">4.2.  OPEN Message Format</a><a id="fnb-message-format" href="#fn-message-format" class="noteref" epub:type="noteref">*3</a>を参照してください。あとは、このRFCの情報に従って実装していきます。</p>
+<p>残りの実装は泥臭くBytes列 &lt;=&gt; Message型を変換するようにしているだけです。退屈で長いため、書内では省略します。本段階のすべての差分を確認したい場合は、<a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/4" class="link">Open sent stateに遷移できるようにする。 #4</a><a id="fnb-pr-open-sent" href="#fn-pr-open-sent" class="noteref" epub:type="noteref">*1</a>,<a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/5" class="link">データを送信関連のバグの修正 #5</a><a id="fnb-pr-open-sent-fix" href="#fn-pr-open-sent-fix" class="noteref" epub:type="noteref">*2</a>を確認してください。</p>
+<div class="footnote" epub:type="footnote" id="fn-message-format"><p class="footnote">[*3] https://datatracker.ietf.org/doc/html/rfc4271#section-4.2</p></div>
+
+<h4><a id="h4-1-3-2"></a>データの送受信を扱うConnectionを実装する。</h4>
+<p>さて、<a href="established.html#h4-1-3-1">「BGP Messageを実装する。」</a>で実装したMessageを送信できるようにConnectionを実装していきましょう。以下のようになります。</p>
+<p><code class="inline-code tt">struct Peer</code>から<code class="inline-code tt">struct Connection</code>へ、通信関連の機能を写し、送信などの機能も追加しました。</p>
+<div class="emlistnum-code">
+<p class="caption">src/lib.rs</p>
+<pre class="emlist language-Rust"> 1: mod connection;
+</pre>
+</div>
+<div class="emlistnum-code">
+<p class="caption">src/connection.rs</p>
+<pre class="emlist language-Rust"> 1: use anyhow::{Context, Result};
+ 2: use bytes::{BufMut, BytesMut};
+ 3: use tokio::io::{self, AsyncReadExt, AsyncWriteExt};
+ 4: use tokio::net::{TcpListener, TcpStream};
+ 5: 
+ 6: use crate::config::{Config, Mode};
+ 7: use crate::error::CreateConnectionError;
+ 8: use crate::packets::message::Message;
+ 9: 
+10: #[derive(Debug)]
+11: pub struct Connection {
+12:     conn: TcpStream,
+13:     buffer: BytesMut,
+14: }
+15: impl Connection {
+16:     pub async fn connect(config: &amp;Config) -&gt; Result&lt;Self, CreateConnectionError&gt; {
+17:         let conn = match config.mode {
+18:             Mode::Active =&gt; Self::connect_to_remote_peer(config).await,
+19:             Mode::Passive =&gt; Self::wait_connection_from_remote_peer(config).await,
+20:         }?;
+21:         let buffer = BytesMut::with_capacity(1500);
+22:         Ok(Self { conn, buffer })
+23:     }
+24: 
+25:     pub async fn send(&amp;mut self, message: Message) {
+26:         let bytes: BytesMut = message.into();
+27:         self.conn.write_all(&amp;bytes[..]).await;
+28:     }
+29: 
+30:     async fn connect_to_remote_peer(config: &amp;Config) -&gt; Result&lt;TcpStream&gt; {
+31:         let bgp_port = 179;
+32:         TcpStream::connect((config.remote_ip, bgp_port))
+33:             .await
+34:             .context(format!(
+35:                 &quot;cannot connect to remote peer {0}:{1}&quot;,
+36:                 config.remote_ip, bgp_port
+37:             ))
+38:     }
+39:     async fn wait_connection_from_remote_peer(config: &amp;Config) -&gt; Result&lt;TcpStream&gt; {
+40:         let bgp_port = 179;
+41:         let listener = TcpListener::bind((config.local_ip, bgp_port))
+42:             .await
+43:             .context(format!(
+44:                 &quot;{0}:{1}にbindすることが出来ませんでした。&quot;,
+45:                 config.local_ip, bgp_port
+46:             ))?;
+47:         Ok(listener
+48:             .accept()
+49:             .await
+50:             .context(format!(
+51:                 &quot;{0}:{1}にてリモートからのTCP Connectionの要求を完遂することが出来ませんでした。
+52:                 リモートからTCP Connectionの要求が来ていない可能性が高いです。&quot;,
+53:                 config.local_ip, bgp_port
+54:             ))?
+55:             .0)
+56:     }
+57: }
+</pre>
+</div>
+<p><code class="inline-code tt">struct Peer</code>でも、先ほど作成した<code class="inline-code tt">Connection</code>を使用するように変更します。これにて、BGP OpenMessageのやり取りが可能になりました。</p>
+<div class="emlistnum-code">
+<p class="caption">src/peer.rs</p>
+<pre class="emlist language-Rust"> 1: use crate::connection::Connection;
+ 2: #[derive(Debug)]
+ 3: pub struct Peer {
+ 4:     tcp_connection: Option&lt;Connection&gt;,
+ 5: }
+ 6: 
+ 7: impl Peer {
+ 8:     async fn handle_event(&amp;mut self, event: &amp;Event) {
+ 9:         match &amp;self.state {
+10:             State::Idle =&gt; match event {
+11:                 Event::ManualStart =&gt; {
+12:                     self.tcp_connection = Connection::connect(&amp;self.config).await.ok();
+13:                     if self.tcp_connection.is_some() {
+14:                         self.event_queue.enqueue(Event::TcpConnectionConfirmed);
+15:                     } else {
+16:                         panic!(&quot;TCP Connectionの確立が出来ませんでした。{:?}&quot;, self.config)
+17:                     }
+18:                     self.state = State::Connect;
+19:                 }
+20:                 _ =&gt; {}
+21:             },
+22:             State::Connect =&gt; match event {
+23:                 Event::TcpConnectionConfirmed =&gt; {
+24:                     self.tcp_connection
+25:                         .as_mut()
+26:                         .unwrap()
+27:                         .send(Message::new_open(
+28:                             self.config.local_as,
+29:                             self.config.local_ip,
+30:                         ))
+31:                         .await;
+32:                     self.state = State::OpenSent
+33:                 }
+34:                 _ =&gt; {}
+35:             },
+36:             _ =&gt; {}
+37:         }
+38:     }
+39: }
+</pre>
+</div>
+<div class="column">
+
+<h3><a id="column-1"></a>Integrationテスト環境でのパケットキャプチャ方法</h3>
+<p>BGP Messageが送信できるようになったら、Wiresharkでキャプチャして自作のパケットを見てみると楽しいです。またデバッグの役にもたちます。そのため、パケットキャプチャする方法を記載します。手順は以下のとおりです。</p>
+<ul>
+<li>パケットをやり取りするネットワークのNETWORK IDを確認する。以下出力だと、<code class="inline-code tt">b57e3cce48fe</code>がパケットをやり取りするネットワークのNetwork IDです。</li>
+</ul>
+<div class="emlistnum-code">
+<p class="caption">Network IDの確認</p>
+<pre class="emlist language-{}"> 1:  mrcsce@pop-os:~/programming/rustProjects/bgp/mrbgpdv2$ docker network ls
+ 2: NETWORK ID     NAME                     DRIVER    SCOPE
+ 3: 43476b51d1ff   bridge                   bridge    local
+ 4: 1d0807314931   host                     host      local
+ 5: de9c07390175   none                     null      local
+ 6: b57e3cce48fe   tests_bgp-test-network   bridge    local
+ 7: 86db1458e999   tests_host1-network      bridge    local
+ 8: 5d46f799fd96   tests_host2-network      bridge    local
+ 9: mrcsce@pop-os:~/programming/rustProjects/bgp/mrbgpdv2$
+</pre>
+</div>
+<ul>
+<li>このとき、<code class="inline-code tt">br-[Network ID]</code>のInterfaceが存在しております。</li>
+</ul>
+<div class="emlistnum-code">
+<p class="caption">Interfaceの存在の確認</p>
+<pre class="emlist language-{}"> 1: mrcsce@pop-os:~/programming/rustProjects/bgp/mrbgpdv2$ ifconfig | grep b57e3cce48fe
+ 2: br-b57e3cce48fe: flags=4163&lt;UP,BROADCAST,RUNNING,MULTICAST&gt;  mtu 1500
+ 3: mrcsce@pop-os:~/programming/rustProjects/bgp/mrbgpdv2$
+</pre>
+</div>
+<ul>
+<li>この<code class="inline-code tt">br-[Network ID]</code>のInterfaceをWiresharkでキャプチャしながら統合テストを実行すると、BGP Messageが確認できます。</li>
+</ul>
+<div id="wireshark" class="image">
+<img src="images/wireshark.png" alt="パケットキャプチャの例" />
+<p class="caption">
+図4.1: パケットキャプチャの例
+</p>
+</div>
+</div>
+
+<h2><a id="h4-2"></a><span class="secno">4.2　</span>OpenConfirm Stateに遷移する</h2>
+<p>次にOpenConfirm Stateに遷移するまでの実装を示します。これまでとの違いは、データの受信・受信内容に従ってイベントの発火を実装することです。</p>
+<p>他は今までの延長です。今までの経験を持って<span class="imgref"><a href="./starting_point.html#bgp-fsm">図2.1</a></span>を参照すれば、実装できると思われますのでそれ以外は省略します。</p>
+
+<h3><a id="h4-2-1"></a><span class="secno">4.2.1　</span>データの受信方法</h3>
+<p>さて、データの受信を実装します。<code class="inline-code tt">Connection</code>の<code class="inline-code tt">get_message</code>メソッドがデータの受信用のメソッドです。このメソッドは何らかのデータ（Bytes列）を受信している場合は、そのBytes列からMessageを作成し、Some(Message)を返します。データを受信していない場合は、不完全に受信している場合はNoneを返します。</p>
+<p>分かりづらいところは、実際にデータを読んでいるメソッドである<code class="inline-code tt">read_data_from_tcp_connection</code>メソッドだと思います。TcpConnectionが張られたまま &amp;&amp; しかしデータを受信していない場合は、<code class="inline-code tt">Err(io::ErrorKind::WouldBlock)</code>を返すことに注意してください。</p>
+<div class="emlistnum-code">
+<p class="caption">src/connection.rs</p>
+<pre class="emlist language-Rust"> 1: impl Connection {
+ 2:     pub async fn get_message(&amp;mut self) -&gt; Option&lt;Message&gt; {
+ 3:         self.read_data_from_tcp_connection().await;
+ 4:         let buffer = self.split_buffer_at_message_separator()?;
+ 5:         Message::try_from(buffer).ok()
+ 6:     }
+ 7: 
+ 8:     /// self.bufferから1つのbgp messageを表すbyteを切り出す。
+ 9:     fn split_buffer_at_message_separator(&amp;mut self) -&gt; Option&lt;BytesMut&gt; {
+10:         let index = self.get_index_of_message_separator().ok()?;
+11:         if self.buffer.len() &lt; index {
+12:             // 1つのBGPメッセージ全体を表すデータが受信できていない。
+13:             // 半端に受信されているか一切受信されていない。
+14:             return None;
+15:         }
+16:         Some(self.buffer.split_to(index))
+17:     }
+18: 
+19:     /// self.bufferのうちどこまでが1つのbgp messageを表すbytesであるか返す。
+20:     fn get_index_of_message_separator(&amp;self) -&gt; Result&lt;usize&gt; {
+21:         let minimum_message_length = 19;
+22:         if self.buffer.len() &lt; 19 {
+23:             return Err(anyhow::anyhow!(&quot;messageのseparatorを表すデータまでbufferに入っていません。データの受信が半端であることが想定されます。&quot;));
+24:         }
+25:         Ok(u16::from_be_bytes([self.buffer[16], self.buffer[17]]) as usize)
+26:     }
+27: 
+28:     async fn read_data_from_tcp_connection(&amp;mut self) {
+29:         loop {
+30:             let mut buf: Vec&lt;u8&gt; = vec![];
+31:             match self.conn.try_read_buf(&amp;mut buf) {
+32:                 Ok(0) =&gt; (),                        // TCP ConnectionがCloseされたことを意味している。
+33:                 Ok(n) =&gt; self.buffer.put(&amp;buf[..]), // n bytesのデータを受信した。
+34:                 Err(ref e) if e.kind() == io::ErrorKind::WouldBlock =&gt; break, // 今readできるデータがないことを意味する。
+35:                 Err(e) =&gt; panic!(&quot;read data from tcp connectionでエラー{:?}が発生しました&quot;, e),
+36:             }
+37:         }
+38:     }
+39: }
+</pre>
+</div>
+
+<h3><a id="h4-2-2"></a><span class="secno">4.2.2　</span>Messageの受信をイベントとして発火させる実装</h3>
+<p>さて、Messageを受信できるようになりました。<span class="imgref"><a href="./starting_point.html#bgp-fsm">図2.1</a></span>の通り、メッセージの受信はイベントとして表現されています。この部分の実装を行います。</p>
+<p><code class="inline-code tt">Peer</code>の<code class="inline-code tt">next</code>メソッドでメッセージの受信をするようにしましょう。メッセージを受信した場合は<code class="inline-code tt">handle_message</code>メソッドによってイベントを発火しています。</p>
+<p>受信したデータ自体は、Eventに含ませることによって、処理するときに使用できるようにします。</p>
+<div class="emlistnum-code">
+<p class="caption">src/peer.rs</p>
+<pre class="emlist language-Rust"> 1: impl Peer {
+ 2:     pub async fn next(&amp;mut self) {
+ 3:         if let Some(event) = self.event_queue.dequeue() {
+ 4:             self.handle_event(&amp;event).await;
+ 5:         }
+ 6: 
+ 7:         if let Some(conn) = &amp;mut self.tcp_connection {
+ 8:             if let Some(message) = conn.get_message().await {
+ 9:                 self.handle_message(message);
+10:             }
+11:         }
+12:     }
+13: 
+14:     fn handle_message(&amp;mut self, message: Message) {
+15:         match message {
+16:             Message::Open(open) =&gt; self.event_queue.enqueue(Event::BgpOpen(open)),
+17:         }
+18:     }
+19: }
+</pre>
+</div>
+<div class="emlistnum-code">
+<p class="caption">src/event.rs</p>
+<pre class="emlist language-Rust"> 1: use crate::packets::open::OpenMessage;
+ 2: 
+ 3: pub enum Event {
+ 4:     BgpOpen(OpenMessage),
+ 5: }
+</pre>
+</div>
+
+<h2><a id="h4-3"></a><span class="secno">4.3　</span>Established Stateに遷移する</h2>
+<p>これEstablished Stateに遷移するまでは、同じようなコードが続きます。メッセージを作成し、送信すること。メッセージを受信したらイベントを発行すること。この繰り返しで同じようなコードが続きます。何も新しいことがないため省略します。</p>
+<p>今までの経験と<span class="imgref"><a href="./starting_point.html#bgp-fsm">図2.1</a></span>を参照することで自力で実装可能だと思われます。もし実装に詰まった場合は以下を参考にしてください。</p>
+<ul>
+<li><a href="https://tools.ietf.org/html/rfc4271#section-8" class="link">RFCの8. BGP Finite State Machine (FSM)</a><a id="fnb-rfc-fsm" href="#fn-rfc-fsm" class="noteref" epub:type="noteref">*4</a></li>
+<li><a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/6" class="link">本PDFの実装のリポジトリのPR: Open confirm stateに遷移する #6</a><a id="fnb-open-confirm" href="#fn-open-confirm" class="noteref" epub:type="noteref">*5</a></li>
+<li><a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/7" class="link">本PDFの実装のリポジトリのPR: Establishedに遷移できるようにする #7</a><a id="fnb-established" href="#fn-established" class="noteref" epub:type="noteref">*6</a></li>
+</ul>
+<div class="footnote" epub:type="footnote" id="fn-rfc-fsm"><p class="footnote">[*4] https://tools.ietf.org/html/rfc4271#section-8</p></div>
+<div class="footnote" epub:type="footnote" id="fn-open-confirm"><p class="footnote">[*5] https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/6</p></div>
+<div class="footnote" epub:type="footnote" id="fn-established"><p class="footnote">[*6] https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/7</p></div>
       </div>
       <nav class="book-navi book-prev">
-                <a href="starting_point.html">
+                <a href="integration_tests.html">
           <div class="book-cursor"><span class="cursor-prev">◀</span></div>
         </a>
               </nav>

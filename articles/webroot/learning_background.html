@@ -5,8 +5,8 @@
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="style.css" />
   <link rel="stylesheet" type="text/css" href="style-web.css" />
-<link rel="next" title="章タイトル" href="starting_point.html" /><link rel="prev" title="前書き" href="preface.html" />  <meta name="generator" content="Re:VIEW" />
-  <title>章タイトル | 作って学ぶルーティングプロトコル〜RustでBGPを実装〜</title>
+<link rel="next" title="実装開始！" href="starting_point.html" /><link rel="prev" title="前書き" href="preface.html" />  <meta name="generator" content="Re:VIEW" />
+  <title>BGPの実装に必要な知識の学習 | 作って学ぶルーティングプロトコル〜RustでBGPを実装〜</title>
 </head>
 <body>
   <div class="book">
@@ -15,10 +15,11 @@
       <ul class="book-toc">
 <li><a href="index.html">TOP</a></li>
 <li><a href="preface.html">前書き</a></li>
-<li><a href="learning_background.html">第1章　章タイトル</a></li>
-<li><a href="starting_point.html">第2章　章タイトル</a></li>
-<li><a href="established.html">第3章　章タイトル</a></li>
-<li><a href="exchange_update_message.html">第4章　章タイトル</a></li>
+<li><a href="learning_background.html">第1章　BGPの実装に必要な知識の学習</a></li>
+<li><a href="starting_point.html">第2章　実装開始！</a></li>
+<li><a href="integration_tests.html">第3章　テスト環境の作成</a></li>
+<li><a href="established.html">第4章　Established Stateまでの実装！</a></li>
+<li><a href="exchange_update_message.html">第5章　Update Messageを交換する！</a></li>
 </ul>
       <p class="review-signature">powered by <a href="http://reviewml.org/">Re:VIEW</a></p>
     </nav>
@@ -26,8 +27,199 @@
       <header>
       </header>
       <div class="book-page">
-        <h1><a id="h1"></a><span class="secno">第1章　</span>章タイトル</h1>
-<p>ここからすべてが始まる！</p>
+        <h1><a id="h1"></a><span class="secno">第1章　</span>BGPの実装に必要な知識の学習</h1>
+
+<h2><a id="h1-1"></a><span class="secno">1.1　</span>BGPとは、を学ぶ参考リンク紹介</h2>
+<p>BGPとはなにか、ということについてはすでにインターネット上に良い資料が存在します。そのため、本PDFではBGPとはなにか、ということについて記載しません。良い資料を2つ紹介します。 BGPについて詳しくない方は、どちらかを読み、本章以降に進んでください。 すべての内容を記憶する必要はありません。 なんとなく見ておくと、本章以降の理解が容易になります。</p>
+<p><a href="https://www.infraexpert.com/study/study60.html" class="link">ネットワークエンジニアとして - BGPの技術</a><a id="fnb-id__E3_83_8D_E3_83_83_E3_83_88_E3_83_AF_E3_83_BC_E3_82_AF_E3_82_A8_E3_83_B3_E3_82_B8_E3_83_8B_E3_82_A2_E3_81_A8_E3_81_97_E3_81_A6---BGP_E3_81_AE_E6_8A_80_E8_A1_93" href="#fn-id__E3_83_8D_E3_83_83_E3_83_88_E3_83_AF_E3_83_BC_E3_82_AF_E3_82_A8_E3_83_B3_E3_82_B8_E3_83_8B_E3_82_A2_E3_81_A8_E3_81_97_E3_81_A6---BGP_E3_81_AE_E6_8A_80_E8_A1_93" class="noteref" epub:type="noteref">*1</a>の次の章が参考になります。</p>
+<div class="footnote" epub:type="footnote" id="fn-id__E3_83_8D_E3_83_83_E3_83_88_E3_83_AF_E3_83_BC_E3_82_AF_E3_82_A8_E3_83_B3_E3_82_B8_E3_83_8B_E3_82_A2_E3_81_A8_E3_81_97_E3_81_A6---BGP_E3_81_AE_E6_8A_80_E8_A1_93"><p class="footnote">[*1] https://www.infraexpert.com/study/study60.html</p></div>
+<ul>
+<li><a href="https://www.infraexpert.com/study/bgpz01.html" class="link">BGP（ Border Gateway Protocol ）とは</a></li>
+<li><a href="https://www.infraexpert.com/study/bgpz02.html" class="link">BGP - 4つのメッセージ、6つのステータスと状態遷移</a></li>
+<li><a href="https://www.infraexpert.com/study/bgpz03.html" class="link">BGP - IBGPとEBGPの違い</a></li>
+<li><a href="https://www.infraexpert.com/study/bgpz04.html" class="link">BGP - スタブAS、トランジットAS、非トランジットAS</a></li>
+<li><a href="https://www.infraexpert.com/study/bgpz05.html" class="link">BGP - パスアトリビュート（ パス属性 ）＆ ベストパス選択</a></li>
+<li><a href="https://www.infraexpert.com/study/bgpz06.html" class="link">BGP - コンフィグ設定 - 基本設定</a></li>
+</ul>
+<p><a href="http://www5e.biglobe.ne.jp/aji/30min/index.html" class="link">30分間ネットワーキング</a><a id="fnb-id_30_E5_88_86_E9_96_93_E3_83_8D_E3_83_83_E3_83_88_E3_83_AF_E3_83_BC_E3_82_AD_E3_83_B3_E3_82_B0" href="#fn-id_30_E5_88_86_E9_96_93_E3_83_8D_E3_83_83_E3_83_88_E3_83_AF_E3_83_BC_E3_82_AD_E3_83_B3_E3_82_B0" class="noteref" epub:type="noteref">*2</a>の次の章が参考になります。</p>
+<div class="footnote" epub:type="footnote" id="fn-id_30_E5_88_86_E9_96_93_E3_83_8D_E3_83_83_E3_83_88_E3_83_AF_E3_83_BC_E3_82_AD_E3_83_B3_E3_82_B0"><p class="footnote">[*2] http://www5e.biglobe.ne.jp/aji/30min/index.html</p></div>
+<ul>
+<li><a href="http://www5e.biglobe.ne.jp/aji/30min/16.html" class="link">第16回 BGP4(1) AS</a></li>
+<li><a href="http://www5e.biglobe.ne.jp/aji/30min/17.html" class="link">第17回 BGP4(2) BGPピア</a></li>
+<li><a href="http://www5e.biglobe.ne.jp/aji/30min/18.html" class="link">第18回 BGP4(3) IBGPとEBGP</a></li>
+<li><a href="http://www5e.biglobe.ne.jp/aji/30min/19.html" class="link">第19回 BGP4(4) パスアトリビュート</a></li>
+<li><a href="http://www5e.biglobe.ne.jp/aji/30min/20.html" class="link">第20回 BGP4(5) ベストパス選択</a></li>
+</ul>
+
+<h2><a id="h1-2"></a><span class="secno">1.2　</span>BGPはイベント駆動ステートマシンである</h2>
+
+<h2><a id="h1-3"></a><span class="secno">1.3　</span>イベント駆動ステートマシンとは</h2>
+<p>イベント駆動ステートマシンとは、現在の状態（ステート）と入力（イベント）によって動作が決定するモノのモデルです。</p>
+<p>例として、テレビをステートマシンとして表現します。 テレビの状態として、1. 電源ON、2. 電源OFFの2状態が存在し、入力としてa. 電源ボタンの押下、b. 音量増加ボタンの押下、c. 音量減少ボタンの押下の3つが存在するとします。本来のテレビはもっと多数の状態やイベントを持っていますが、ここでは例示のためにシンプルにしています。</p>
+<p>テレビの状態が1. 電源OFFのときにa. 電源ボタンの押下が発生した場合はテレビの状態が2. 電源ONに遷移します。テレビの状態が1. 電源OFFのときに、b. 音量増加ボタンの押下、c. 音量減少ボタンの押下が発生した場合はテレビの状態は1. 電源OFFのままで何も起こりません。</p>
+<p>テレビの状態が2. 電源ONのときにa. 電源ボタンの押下が発生した場合はテレビの状態が1. 電源OFFに遷移します。テレビの状態が2. 電源ONのときb. 音量増加ボタンの押下、c. 音量減少ボタンの押下が発生した場合は、テレビの状態は2. 電源ONのまま音量が増減します。これを図示すると<span class="imgref"><a href="./learning_background.html#tv_state_machine">図1.1</a></span>になります。</p>
+<p>テレビは現在の状態と、入力によって動作が決定するモノとして表現することが可能です。</p>
+<p>このような現在の状態（ステート）と入力（イベント）によって動作が決定するモノのモデルをイベント駆動ステートマシンといいます。</p>
+<div id="tv_state_machine" class="image">
+<img src="images/tv_state_machine.png" alt="テレビのステートマシン図" />
+<p class="caption">
+図1.1: テレビのステートマシン図
+</p>
+</div>
+
+<h2><a id="h1-4"></a><span class="secno">1.4　</span>イベント駆動ステートマシンの実装例</h2>
+<p>イベント駆動ステートマシンをどのよう実装すればいいのかということを学ぶため<a href="learning_background.html#h1-3">「1.3 イベント駆動ステートマシンとは」</a>で例示したテレビをコードにします。</p>
+<div class="emlistnum-code">
+<p class="caption">イベント駆動ステートマシン, テレビの実装例</p>
+<pre class="emlist language-Rust"> 1: use rand::Rng;
+ 2: use std::collections::VecDeque;
+ 3: use std::thread;
+ 4: use std::time::Duration;
+ 5: 
+ 6: #[derive(Debug)]
+ 7: enum State {
+ 8:     PowerOn,
+ 9:     PowerOff,
+10: }
+11: 
+12: #[derive(Debug)]
+13: enum Event {
+14:     PushedPowerButton,
+15:     PushedVolumeIncreaseButton,
+16:     PushedVolumeDecreaseButton,
+17: }
+18: 
+19: struct TV {
+20:     now_state: State,
+21:     event_queue: EventQueue,
+22:     volume: u8,
+23: }
+24: 
+25: impl TV {
+26:     pub fn new() -&gt; Self {
+27:         let now_state = State::PowerOff;
+28:         let event_queue = EventQueue::new();
+29:         let volume = 10;
+30:         Self {
+31:             now_state,
+32:             event_queue,
+33:             volume,
+34:         }
+35:     }
+36: 
+37:     pub fn be_pushed_power_button(&amp;mut self) {
+38:         self.event_queue.enqueue(Event::PushedPowerButton);
+39:     }
+40: 
+41:     pub fn be_pushed_volume_increase_button(&amp;mut self) {
+42:         self.event_queue.enqueue(Event::PushedVolumeIncreaseButton);
+43:     }
+44: 
+45:     pub fn be_pushed_volume_decrease_button(&amp;mut self) {
+46:         self.event_queue.enqueue(Event::PushedVolumeDecreaseButton);
+47:     }
+48: 
+49:     pub fn handle_event(&amp;mut self, event: Event) {
+50:         match &amp;self.now_state {
+51:             &amp;State::PowerOn =&gt; match event {
+52:                 Event::PushedPowerButton =&gt; {
+53:                     self.now_state = State::PowerOff;
+54:                 }
+55:                 Event::PushedVolumeIncreaseButton =&gt; {
+56:                     self.volume += 1;
+57:                 }
+58:                 Event::PushedVolumeDecreaseButton =&gt; {
+59:                     self.volume -= 1;
+60:                 }
+61:             },
+62:             &amp;State::PowerOff =&gt; match event {
+63:                 Event::PushedPowerButton =&gt; {
+64:                     self.now_state = State::PowerOn;
+65:                 }
+66:                 _ =&gt; (),
+67:             },
+68:         }
+69:     }
+70: }
+71: 
+72: struct EventQueue(VecDeque&lt;Event&gt;);
+73: 
+74: impl EventQueue {
+75:     pub fn new() -&gt; Self {
+76:         let d = VecDeque::new();
+77:         EventQueue(d)
+78:     }
+79: 
+80:     pub fn dequeue(&amp;mut self) -&gt; Option&lt;Event&gt; {
+81:         self.0.pop_front()
+82:     }
+83: 
+84:     pub fn enqueue(&amp;mut self, event: Event) {
+85:         self.0.push_back(event);
+86:     }
+87: }
+88: 
+89: fn push_random_button_of_tv(tv: &amp;mut TV) {
+90:     let mut rng = rand::thread_rng();
+91:     match rng.gen_range(0..4) {
+92:         1 =&gt; tv.be_pushed_power_button(),
+93:         2 =&gt; tv.be_pushed_volume_increase_button(),
+94:         3 =&gt; tv.be_pushed_volume_decrease_button(),
+95:         _ =&gt; (),
+96:     };
+97: }
+98: 
+99: fn main() {
+100:     let mut tv = TV::new();
+101:     tv.be_pushed_power_button();
+102:     loop {
+103:         push_random_button_of_tv(&amp;mut tv);
+104:         if let Some(event) = tv.event_queue.dequeue() {
+105:             println!(
+106:                 &quot;tv information: {{ now_state={:?}, volume={} }}\ninput_event: {:?}&quot;,
+107:                 tv.now_state, tv.volume, event
+108:             );
+109:             tv.handle_event(event);
+110:         }
+111:         thread::sleep(Duration::from_secs(2));
+112:     }
+113: }
+</pre>
+</div>
+<p>103行目でTVのランダムなボタンを押下し、TVにEvent（入力）を送信しています。送信されたEventはイベントキュー、tv.event_queueにエンキューします。 104行目でイベントキューに保存されているEventを取り出します。 TVの現在の状態（State）はTVのインスタンスに保存されています。 109行目でEventを扱います。 49行目〜69行目を見ると分かるように、`tv.handle_event(event)`はEventとtvインスタンスに保存されている現在の状態に応じて、動作し次の状態を決定します。 それはイベント駆動ステートマシン、そのものでした。このようにしてイベント駆動ステートマシンを実装することができました。</p>
+<p><code class="inline-code tt">TV_実行時のログ</code>が実行時のログです。</p>
+<p>ログの4行目を見ると、電源OFFの状態であることがわかります。 次にログの5行目を見ると、電源ボタンが押されたことがわかります。 次にログの6行目を見ると、電源ONの状態に遷移したことがわかります。 次にログの7行目を見ると、音量増加ボタンが押されたことがわかります。 次にログの8行目を見ると、電源ON状態のまま、音量が11に増加していることがわかります。</p>
+<p>一方でログの16、17、18行目を見ると、電源OFF状態のときに音量増加ボタンが押されても、電源OFF状態のままで音量の変動もないことがわかります。</p>
+<div class="emlistnum-code">
+<p class="caption">TV_実行時のログ</p>
+<pre class="emlist language-{}"> 1: mrcsce@pop-os:~/programming/rustProjects/samplecode$ cargo run
+ 2:     Finished dev [unoptimized + debuginfo] target(s) in 0.00s
+ 3:      Running `target/debug/samplecode`
+ 4: tv information: { now_state=PowerOff, volume=10 }
+ 5: input_event: PushedPowerButton
+ 6: tv information: { now_state=PowerOn, volume=10 }
+ 7: input_event: PushedVolumeIncreaseButton
+ 8: tv information: { now_state=PowerOn, volume=11 }
+ 9: input_event: PushedVolumeDecreaseButton
+10: tv information: { now_state=PowerOn, volume=10 }
+11: input_event: PushedVolumeIncreaseButton
+12: tv information: { now_state=PowerOn, volume=11 }
+13: input_event: PushedVolumeDecreaseButton
+14: tv information: { now_state=PowerOn, volume=10 }
+15: input_event: PushedPowerButton
+16: tv information: { now_state=PowerOff, volume=10 }
+17: input_event: PushedVolumeIncreaseButton
+18: tv information: { now_state=PowerOff, volume=10 }
+19: input_event: PushedPowerButton
+20: tv information: { now_state=PowerOn, volume=10 }
+21: input_event: PushedVolumeIncreaseButton
+22: tv information: { now_state=PowerOn, volume=11 }
+23: input_event: PushedVolumeIncreaseButton
+24: ^C
+25: mrcsce@pop-os:~/programming/rustProjects/samplecode$
+</pre>
+</div>
+<p>これは<a href="learning_background.html#h1-3">「1.3 イベント駆動ステートマシンとは」</a>の章で例示した通りの動作です。 例示したイベント駆動ステートマシンを実装できていることが確かめられました。 BGPのステートマシンも前述の<code class="inline-code tt">イベント駆動ステートマシン, テレビの実装例</code>に似た方針で実装していきます。</p>
       </div>
       <nav class="book-navi book-prev">
                 <a href="preface.html">

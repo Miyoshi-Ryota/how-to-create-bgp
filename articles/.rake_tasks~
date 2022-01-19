@@ -1,0 +1,16 @@
+all
+clean
+clobber
+epub
+html
+html_all
+idgxml
+pandoc2review
+pdf
+plaintext
+preproc
+text
+vivliostyle
+vivliostyle:build
+vivliostyle:preview
+web

@@ -5,8 +5,8 @@
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="style.css" />
   <link rel="stylesheet" type="text/css" href="style-web.css" />
-<link rel="prev" title="章タイトル" href="established.html" />  <meta name="generator" content="Re:VIEW" />
-  <title>章タイトル | 作って学ぶルーティングプロトコル〜RustでBGPを実装〜</title>
+<link rel="prev" title="Established Stateまでの実装！" href="established.html" />  <meta name="generator" content="Re:VIEW" />
+  <title>Update Messageを交換する！ | 作って学ぶルーティングプロトコル〜RustでBGPを実装〜</title>
 </head>
 <body>
   <div class="book">
@@ -15,10 +15,11 @@
       <ul class="book-toc">
 <li><a href="index.html">TOP</a></li>
 <li><a href="preface.html">前書き</a></li>
-<li><a href="learning_background.html">第1章　章タイトル</a></li>
-<li><a href="starting_point.html">第2章　章タイトル</a></li>
-<li><a href="established.html">第3章　章タイトル</a></li>
-<li><a href="exchange_update_message.html">第4章　章タイトル</a></li>
+<li><a href="learning_background.html">第1章　BGPの実装に必要な知識の学習</a></li>
+<li><a href="starting_point.html">第2章　実装開始！</a></li>
+<li><a href="integration_tests.html">第3章　テスト環境の作成</a></li>
+<li><a href="established.html">第4章　Established Stateまでの実装！</a></li>
+<li><a href="exchange_update_message.html">第5章　Update Messageを交換する！</a></li>
 </ul>
       <p class="review-signature">powered by <a href="http://reviewml.org/">Re:VIEW</a></p>
     </nav>
@@ -26,15 +27,197 @@
       <header>
       </header>
       <div class="book-page">
-        <h1><a id="h4"></a><span class="secno">第4章　</span>章タイトル</h1>
-<p>ここからすべてが始まる！</p>
+        <h1><a id="h5"></a><span class="secno">第5章　</span>Update Messageを交換する！</h1>
+<p>ここからは、本当にルーティングテーブルを更新するのに必要な作業に入っていきましょう。BGPでは、Peer間で、ルーティングの情報をUpdate Messageと呼ばれるメッセージによって交換し合います。</p>
+<p>BGP Update Messageを送信する内部のプロセスは複雑です。 概要を掴みやすくするためにコードを用いた説明の前に自然言語で説明をします。</p>
+<p>説明のためにLoc-RIB, Adj-RIB-In, Adj-RIB-Outの3つの用語を導入します。これらはBGPのRFCで用いられている用語です。</p>
+<p>これらの用語を使用してBGPのアップデートメッセージが送信されるまでのプロセスを見ていきましょう。</p>
+<div id="id_BGP_E3_81_AE_E3_82_A4_E3_83_99_E3_83_B3_E3_83_88_E9_A7_86_E5_8B_95_E3_82_B9_E3_83_86_E3_83_BC_E3_83_88_E3_83_9E_E3_82_B7_E3_83_B3_E3_81_A7_E7_99_BB_E5_A0_B4_E3_81_99_E3_82_8BEvent_E3_81_AE_E8_AA_AC_E6_98_8E" class="table">
+<p class="caption">表5.1: BGPのイベント駆動ステートマシンで登場するEventの説明</p>
+<table>
+<tr><th>用語</th><th>説明</th></tr>
+<tr><td>Loc-RIB</td><td>Local Routing Information Baseの略。要はただのルーティングテーブル。<br />要はただのルーティングテーブルなのですべてのPeerで共有する。</td></tr>
+<tr><td>Adj-RIB-In</td><td>BGPのネイバーから受信したルーティング情報。Peerごとに生成する。</td></tr>
+<tr><td>Adj-RIB-Out</td><td>BGPのネイバーに送信する / したルーティング情報。Peerごとに生成する。</td></tr>
+</table>
+</div>
+<p>BGPのアップデートメッセージに関するプロセスは決定プロセス、送信プロセスに分けられます。決定プロセスでは、Adj-RIB-InのルートからLoc-RIB及びAdj-RIB-Outに格納するルートを選択します。送信プロセスではAdj-RIB-Outの情報をピアに送信します。</p>
+<p>もう少し詳細に踏み込みます。決定プロセスはさらに次のPhase1, Phase2, Phase3に分けられます。</p>
+<ul>
+<li>Phase1: Adj-RIB-InのRouteの優先度合いを計算する。</li>
+<li>Phase2: Phase1で計算したRouteの優先度を使用して、Loc-RIBに格納するルートを選択し、そのルートをLoc-RIBに格納する。</li>
+<li>Phase3: Loc-RIBからAdj-RIB-Outに格納するルートを選択し、そのルートをAdj-RIB-Outに格納する。</li>
+</ul>
+<p>送信プロセスでは、Adj-RIB-Outの情報からピアにUpdate Messageを送進します。 例えば、以前にUpdate Messageで送信したルートと同じルートは弾きます。Adj-RIB-Outから削除されたルートはピアに削除するようにwithdrawnとして送信する、などのことを行います。</p>
+<p><span class="imgref"><a href="./starting_point.html#bgp-fsm">図2.1</a></span>と突き合わせて考えます。Established Stateで、Established or LocRibChangedイベントが発火されたときに実施されるのがPhase3です。AdjRibOutChangedイベントが発火されたときに実施されるのが送信プロセスです。UpdateMsgイベントが発火されたときに実施されるのがPhase1です。AdjRibInChangedイベントが発火されたときに実施されるのがPhase2です。</p>
+
+<h2><a id="h5-1"></a><span class="secno">5.1　</span>ルーティングテーブルの扱い方</h2>
+<p>Linuxでルーティングテーブルを読んだり、書いたりするためには、netlinkというものを使用します。netlinkはKernelとユーザ空間で情報をやり取りするためのものです。netlinkを生で扱うのは難しいため、本PDFではライブラリを使用します。</p>
+<p>Cargo.tomlにライブラリ類を追記しましょう。</p>
 <div class="emlistnum-code">
-<p class="caption">アイウエオ</p>
-<pre class="emlist language-Rust"> 1: fn main() {
- 2:     println!(&quot;hello&quot;);
- 3: }
+<p class="caption">Cargo.toml</p>
+<pre class="emlist language-Rust"> 1: rtnetlink = &quot;0.9.0&quot;
+ 2: futures = &quot;0.3.11&quot;
+ 3: ipnetwork = &quot;0.18.0&quot;
 </pre>
 </div>
+<p>以下のようなコードで、読むことがRoutingTableを読むことが出来ます。<code class="inline-code tt">lookup_kernel_routing_table</code>メソッドにてルーティングテーブルを読んでいます。</p>
+<div class="emlistnum-code">
+<p class="caption">src/routing.rs</p>
+<pre class="emlist language-Rust"> 1: use std::net::{IpAddr, Ipv4Addr};
+ 2: 
+ 3: use crate::config::Config;
+ 4: use anyhow::{Context, Result};
+ 5: use futures::stream::{Next, TryStreamExt};
+ 6: use ipnetwork::Ipv4Network;
+ 7: use rtnetlink::{new_connection, Handle, IpVersion};
+ 8: 
+ 9: #[derive(Debug, PartialEq, Eq, Clone)]
+10: struct LocRib;
+11: 
+12: impl LocRib {
+13:     async fn new(config: &amp;Config) -&gt; Self {
+14:         todo!();
+15:     }
+16: 
+17:     async fn lookup_kernel_routing_table(
+18:         network_address: Ipv4Network,
+19:     ) -&gt; Result&lt;(Vec&lt;(Ipv4Network)&gt;)&gt; {
+20:         let (connection, handle, _) = new_connection()?;
+21:         tokio::spawn(connection);
+22:         let mut routes = handle.route().get(IpVersion::V4).execute();
+23:         let mut results = vec![];
+24:         while let Some(route) = routes.try_next().await? {
+25:             let destination = if let Some((IpAddr::V4(addr), prefix)) = route.destination_prefix() {
+26:                 Ipv4Network::new(addr, prefix)?
+27:             } else {
+28:                 continue;
+29:             };
+30: 
+31:             if destination != network_address {
+32:                 continue;
+33:             }
+34: 
+35:             results.push(destination);
+36:         }
+37:         Ok(results)
+38:     }
+39: }
+40: 
+41: #[cfg(test)]
+42: mod tests {
+43:     use super::*;
+44:     use tokio::time::{sleep, Duration};
+45: 
+46:     #[tokio::test]
+47:     async fn loclib_can_lookup_routing_table() {
+48:         // 本テストの値は環境によって異なる。
+49:         // 本実装では開発機, テスト実施機に192.168.1.0/24に属するIPが付与されていることを仮定している。
+50:         let network = Ipv4Network::new(&quot;192.168.1.0&quot;.parse().unwrap(), 24).unwrap();
+51:         let routes = LocRib::lookup_kernel_routing_table(network).await.unwrap();
+52:         let expected = vec![(network, NextHop::DirectConnected)];
+53:         assert_eq!(routes, expected);
+54:     }
+55: }
+</pre>
+</div>
+
+<h2><a id="h5-2"></a><span class="secno">5.2　</span>Update Messageの構造</h2>
+<p>Update Messageの構造は<a href="https://datatracker.ietf.org/doc/html/rfc4271#section-4.3" class="link">RFC 4271 4.3. UPDATE Message Format</a><a id="fnb-update-format" href="#fn-update-format" class="noteref" epub:type="noteref">*1</a>、Path Attributeの定義は<a href="https://datatracker.ietf.org/doc/html/rfc4271#section-5.1" class="link">RFC 4271 5.1. Path Attribute Usage</a><a id="fnb-path-def" href="#fn-path-def" class="noteref" epub:type="noteref">*2</a>に記載があります。</p>
+<p>本実装ではUpdate MessageのPathAttibuteは、最低限の実装ということで、AS_PATH、ORIGIN, NEXT_HOPのみ実装しています。本実装ではPath Attributeの値を矛盾なく設定するために、Phase3（LocRib -&gt; AdjRibOutにルートを渡す際）に、以下のようにPathAttributeの変更も行っています。</p>
+<ul>
+<li>PathAttribute AS_PATHに自分のAS番号を追加しています。</li>
+<li>NextHopを自分のlocal ipに変更しています。</li>
+</ul>
+<div class="footnote" epub:type="footnote" id="fn-update-format"><p class="footnote">[*1] https://datatracker.ietf.org/doc/html/rfc4271#section-4.3</p></div>
+<div class="footnote" epub:type="footnote" id="fn-path-def"><p class="footnote">[*2] https://datatracker.ietf.org/doc/html/rfc4271#section-5.1</p></div>
+
+<h2><a id="h5-3"></a><span class="secno">5.3　</span>Update Messageの送信の実装</h2>
+<p>広報するネットワークを指定する方法を実装します。一般的にnetworkコマンドで設定されるものです。今回はConfigに追加し、コマンドライン引数で渡すことにしましょう。</p>
+<div class="emlistnum-code">
+<p class="caption">src/config.rs</p>
+<pre class="emlist language-Rust"> 1: #[derive(PartialEq, Eq, Debug, Clone, Hash, PartialOrd, Ord)]
+ 2: pub struct Config {
+ 3:     pub networks: Vec&lt;Ipv4Network&gt;,
+ 4: }
+</pre>
+</div>
+<p>また、テスト時に広報するネットワークを指定するようにします。@&lt;chap&gt;[integration_tests]で説明したようにhost2 -&gt; host1にhost2-networkを広報するように指定します。</p>
+<div class="emlistnum-code">
+<p class="caption">tests/host2/Dockerfile</p>
+<pre class="emlist language-{}"> 1: CMD ./target/debug/mrbgpdv2 &quot;64513 10.200.100.3 64512 10.200.100.2 passive 10.100.220.0/24&quot;
+</pre>
+</div>
+<p>この変更により、あとはうまくUpdate Messageの送受信が完了すれば、統合テストが通るようになります。Update Messageの送信自体は、Open Messageの送信と変わらないため書内では省略します。この実装を確認したい場合は、本実装のリポジトリの以下のPRを確認してください。</p>
+<ul>
+<li><a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/11" class="link">Update messageを送信可能にする #11</a><a id="fnb-update-11" href="#fn-update-11" class="noteref" epub:type="noteref">*3</a></li>
+<li><a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/13" class="link">Update messageの送信に関するバグを修正した。 #13</a><a id="fnb-update-13" href="#fn-update-13" class="noteref" epub:type="noteref">*4</a></li>
+<li><a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/14" class="link">UpdateMessageにNLRIが欠落するバグの修正 #14</a><a id="fnb-update-14" href="#fn-update-14" class="noteref" epub:type="noteref">*5</a></li>
+</ul>
+<div class="footnote" epub:type="footnote" id="fn-update-11"><p class="footnote">[*3] https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/11</p></div>
+<div class="footnote" epub:type="footnote" id="fn-update-13"><p class="footnote">[*4] https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/13</p></div>
+<div class="footnote" epub:type="footnote" id="fn-update-14"><p class="footnote">[*5] https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/14</p></div>
+
+<h2><a id="h5-4"></a><span class="secno">5.4　</span>Update Messageの受信の実装</h2>
+<p>Update Messageは受信した内容に従って、ルーティングテーブルの書き込みを行います。ルーティングテーブルの書き込みは本PDF内では初なので、以下にコードを記載します。</p>
+<div class="emlistnum-code">
+<p class="caption">src/routing.rs</p>
+<pre class="emlist language-Rust"> 1: impl LocRib {
+ 2:     pub async fn write_to_kernel_routing_table(&amp;self) -&gt; Result&lt;()&gt; {
+ 3:         let (connection, handle, _) = new_connection()?;
+ 4:         tokio::spawn(connection);
+ 5:         for e in &amp;self.0 {
+ 6:             for p in &amp;e.path_attributes {
+ 7:                 if let PathAttribute::NextHop(gateway) = p {
+ 8:                     let dest = e.network_address;
+ 9:                     handle
+10:                         .route()
+11:                         .add()
+12:                         .v4()
+13:                         .destination_prefix(dest.ip(), dest.prefix())
+14:                         .gateway(*gateway)
+15:                         .execute()
+16:                         .await?;
+17:                     break;
+18:                 }
+19:             }
+20:         }
+21:         Ok(())
+22:     }
+23: }
+</pre>
+</div>
+<p>その他のUpdate Messageの受信もOpen Messageの受信と大差ないため概ね省略します。すべてのコードを確認したい場合は、以下のPRを参照してください。</p>
+<ul>
+<li><a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/15" class="link">Update messageを受信可能にする #15</a><a id="fnb-update-received" href="#fn-update-received" class="noteref" epub:type="noteref">*6</a></li>
+</ul>
+<div class="footnote" epub:type="footnote" id="fn-update-received"><p class="footnote">[*6] https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/15</p></div>
+<p>最後に<code class="inline-code tt">tests/run_integration_tests.sh</code>を実行して、統合テストが通るようになったことを確認しましょう。</p>
+<div class="emlistnum-code">
+<p class="caption">統合テストの実行</p>
+<pre class="emlist language-{}"> 1: mrcsce@pop-os:~/programming/rustProjects/bgp/mrbgpdv2$ ./tests/run_integration_tests.sh
+ 2: &lt;中略&gt;
+ 3: Successfully built 09fb776025aa
+ 4: Successfully tagged tests_host1:latest
+ 5: Recreating tests_host2_1 ... done
+ 6: Recreating tests_host1_1 ... done
+ 7: PING 10.100.220.3 (10.100.220.3) 56(84) bytes of data.
+ 8: 64 bytes from 10.100.220.3: icmp_seq=1 ttl=64 time=0.101 ms
+ 9: 64 bytes from 10.100.220.3: icmp_seq=2 ttl=64 time=0.051 ms
+10: 64 bytes from 10.100.220.3: icmp_seq=3 ttl=64 time=0.059 ms
+11: 64 bytes from 10.100.220.3: icmp_seq=4 ttl=64 time=0.062 ms
+12: 64 bytes from 10.100.220.3: icmp_seq=5 ttl=64 time=0.065 ms
+13: 
+14: --- 10.100.220.3 ping statistics ---
+15: 5 packets transmitted, 5 received, 0% packet loss, time 4102ms
+16: rtt min/avg/max/mdev = 0.051/0.067/0.101/0.017 ms
+17: 統合テストが成功しました。
+18: mrcsce@pop-os:~/programming/rustProjects/bgp/mrbgpdv2$ git status
+</pre>
+</div>
+<p>これにて本PDFの内容は終了です。</p>
+<p>ここまで実装した方は、その実装に肉付けすることで、異常系や実装していないPathAttributeの実装も行っていけるはずです。RFCにも慣れ、その他のプロトコルもRFCから実装できるようになっていることと思います。</p>
+<p>おつかれさまでした。</p>
       </div>
       <nav class="book-navi book-prev">
                 <a href="established.html">

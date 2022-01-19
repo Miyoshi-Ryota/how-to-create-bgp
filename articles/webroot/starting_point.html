@@ -5,8 +5,8 @@
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="style.css" />
   <link rel="stylesheet" type="text/css" href="style-web.css" />
-<link rel="next" title="章タイトル" href="established.html" /><link rel="prev" title="章タイトル" href="learning_background.html" />  <meta name="generator" content="Re:VIEW" />
-  <title>章タイトル | 作って学ぶルーティングプロトコル〜RustでBGPを実装〜</title>
+<link rel="next" title="テスト環境の作成" href="integration_tests.html" /><link rel="prev" title="BGPの実装に必要な知識の学習" href="learning_background.html" />  <meta name="generator" content="Re:VIEW" />
+  <title>実装開始！ | 作って学ぶルーティングプロトコル〜RustでBGPを実装〜</title>
 </head>
 <body>
   <div class="book">
@@ -15,10 +15,11 @@
       <ul class="book-toc">
 <li><a href="index.html">TOP</a></li>
 <li><a href="preface.html">前書き</a></li>
-<li><a href="learning_background.html">第1章　章タイトル</a></li>
-<li><a href="starting_point.html">第2章　章タイトル</a></li>
-<li><a href="established.html">第3章　章タイトル</a></li>
-<li><a href="exchange_update_message.html">第4章　章タイトル</a></li>
+<li><a href="learning_background.html">第1章　BGPの実装に必要な知識の学習</a></li>
+<li><a href="starting_point.html">第2章　実装開始！</a></li>
+<li><a href="integration_tests.html">第3章　テスト環境の作成</a></li>
+<li><a href="established.html">第4章　Established Stateまでの実装！</a></li>
+<li><a href="exchange_update_message.html">第5章　Update Messageを交換する！</a></li>
 </ul>
       <p class="review-signature">powered by <a href="http://reviewml.org/">Re:VIEW</a></p>
     </nav>
@@ -26,8 +27,495 @@
       <header>
       </header>
       <div class="book-page">
-        <h1><a id="h2"></a><span class="secno">第2章　</span>章タイトル</h1>
-<p>ここからすべてが始まる！</p>
+        <h1><a id="h2"></a><span class="secno">第2章　</span>実装開始！</h1>
+
+<h2><a id="h2-1"></a><span class="secno">2.1　</span>BGPはどのようなイベント駆動ステートマシンなのか</h2>
+<p>BGPはどのようなイベント駆動ステートマシンとして表すのが良いでしょうか。</p>
+<p>実は <a href="https://tools.ietf.org/html/rfc4271" class="link">RFC4271-A Border Gateway Protocol 4 (BGP-4)</a><a id="fnb-RFC" href="#fn-RFC" class="noteref" epub:type="noteref">*1</a>の <a href="https://tools.ietf.org/html/rfc4271#section-8" class="link">8.  BGP Finite State Machine (FSM)</a>に、イベント駆動ステートマシンの定義の記載があります。</p>
+<div class="footnote" epub:type="footnote" id="fn-RFC"><p class="footnote">[*1] https://tools.ietf.org/html/rfc4271</p></div>
+<p>しかし最初から <a href="https://tools.ietf.org/html/rfc4271#section-8" class="link">8.  BGP Finite State Machine (FSM)</a>を参照して、完全なBGPを作成することは大変です。そのため本PDFではBGPを次の段階に分けて開発します。また正常系のみ実装していきます。</p>
+<ul>
+<li>Connectまで遷移する実装</li>
+<li>Establishedまで遷移する実装</li>
+<li>Update Messageを交換する実装</li>
+</ul>
+<p>本PDFで実装するBGPのステートマシンを図示すると<span class="imgref"><a href="./starting_point.html#bgp-fsm">図2.1</a></span>になります。</p>
+<p><span class="imgref"><a href="./starting_point.html#bgp-fsm">図2.1</a></span>で登場するEventはそれぞれ<span class="tableref"><a href="./starting_point.html#id_BGP_E3_81_AE_E3_82_A4_E3_83_99_E3_83_B3_E3_83_88_E9_A7_86_E5_8B_95_E3_82_B9_E3_83_86_E3_83_BC_E3_83_88_E3_83_9E_E3_82_B7_E3_83_B3_E3_81_A7_E7_99_BB_E5_A0_B4_E3_81_99_E3_82_8BEvent_E3_81_AE_E8_AA_AC_E6_98_8E">表2.1</a></span>の通りです。</p>
+<p><span class="imgref"><a href="./starting_point.html#bgp-fsm">図2.1</a></span>で登場する状態（State）については、RFCのとおりです。<a href="https://www.infraexpert.com/study/study60.html" class="link">ネットワークエンジニアとして - BGPの技術</a>の<a href="https://www.infraexpert.com/study/bgpz02.html" class="link">BGP - 4つのメッセージ、6つのステータスと状態遷移</a><a id="fnb-id__E3_83_8D_E3_83_83_E3_83_88_E3_83_AF_E3_83_BC_E3_82_AF_E3_82_A8_E3_83_B3_E3_82_B8_E3_83_8B_E3_82_A2_E3_81_A8_E3_81_97_E3_81_A6-BGP---4_E3_81_A4_E3_81_AE_E3_83_A1_E3_83_83_E3_82_BB_E3_83_BC_E3_82_B8_E3_80_816_E3_81_A4_E3_81_AE_E3_82_B9_E3_83_86_E3_83_BC_E3_82_BF_E3_82_B9_E3_81_A8_E7_8A_B6_E6_85_8B_E9_81_B7_E7_A7_BB" href="#fn-id__E3_83_8D_E3_83_83_E3_83_88_E3_83_AF_E3_83_BC_E3_82_AF_E3_82_A8_E3_83_B3_E3_82_B8_E3_83_8B_E3_82_A2_E3_81_A8_E3_81_97_E3_81_A6-BGP---4_E3_81_A4_E3_81_AE_E3_83_A1_E3_83_83_E3_82_BB_E3_83_BC_E3_82_B8_E3_80_816_E3_81_A4_E3_81_AE_E3_82_B9_E3_83_86_E3_83_BC_E3_82_BF_E3_82_B9_E3_81_A8_E7_8A_B6_E6_85_8B_E9_81_B7_E7_A7_BB" class="noteref" epub:type="noteref">*2</a>でも説明されております。</p>
+<div class="footnote" epub:type="footnote" id="fn-id__E3_83_8D_E3_83_83_E3_83_88_E3_83_AF_E3_83_BC_E3_82_AF_E3_82_A8_E3_83_B3_E3_82_B8_E3_83_8B_E3_82_A2_E3_81_A8_E3_81_97_E3_81_A6-BGP---4_E3_81_A4_E3_81_AE_E3_83_A1_E3_83_83_E3_82_BB_E3_83_BC_E3_82_B8_E3_80_816_E3_81_A4_E3_81_AE_E3_82_B9_E3_83_86_E3_83_BC_E3_82_BF_E3_82_B9_E3_81_A8_E7_8A_B6_E6_85_8B_E9_81_B7_E7_A7_BB"><p class="footnote">[*2] https://www.infraexpert.com/study/bgpz02.html</p></div>
+<div id="id_BGP_E3_81_AE_E3_82_A4_E3_83_99_E3_83_B3_E3_83_88_E9_A7_86_E5_8B_95_E3_82_B9_E3_83_86_E3_83_BC_E3_83_88_E3_83_9E_E3_82_B7_E3_83_B3_E3_81_A7_E7_99_BB_E5_A0_B4_E3_81_99_E3_82_8BEvent_E3_81_AE_E8_AA_AC_E6_98_8E" class="table">
+<p class="caption">表2.1: BGPのイベント駆動ステートマシンで登場するEventの説明</p>
+<table>
+<tr><th>Event名</th><th>説明</th></tr>
+<tr><td>ManualStart</td><td>BGPの開始を指示したときに発行されるイベント。<br />RFC内でも同様に定義されている。</td></tr>
+<tr><td>TcpConnectionConfirmed</td><td>対向機器とTCPコネクションを確立できたときに発行されるイベント。<br />RFC内でも同様に定義されている。RFCでは、<br />TCP ackを受信したときのイベント、Tcp Cr Ackedと区別している。<br />しかし本PDFでは正常系しか実装しないため、TCPコネクションが<br />確立された時のイベントとしては本イベントのみにしている。</td></tr>
+<tr><td>BGPOpen</td><td>対向機器からOpen Messageを受信したときに発行されるイベント。<br />RFC内でも同様に定義されている。</td></tr>
+<tr><td>KeepAliveMsg</td><td>対向機器からKeepalive Messageを受信したときに発行されるイベント<br />RFC内でも同様に定義されている。</td></tr>
+<tr><td>UpdateMsg</td><td>対向機器からUpdate Messageを受信したときに発行されるイベント<br />RFC内でも同様に定義されている。</td></tr>
+<tr><td>Established</td><td>Established Stateに遷移したときに発行されるイベント。<br />存在するほうが実装しやすいため筆者が追加した<br />RFCには存在しないイベント。</td></tr>
+<tr><td>LocRibChanged</td><td>LocRib<a id="fnb-LocRib" href="#fn-LocRib" class="noteref" epub:type="noteref">*3</a>が変更されたときに発行されるイベント。<br />存在するほうが実装しやすいため追加した<br />RFCには存在しないイベント。</td></tr>
+<tr><td>AdjRibInChanged</td><td>AdjRibIn<a id="fnb-AdjRibIn" href="#fn-AdjRibIn" class="noteref" epub:type="noteref">*4</a>が変更されたときに発行されるイベント。<br />存在するほうが実装しやすいため追加した<br />RFCには存在しないイベント。</td></tr>
+<tr><td>AdjRibOutChanged</td><td>AdjRibOut<a id="fnb-AdjRibOut" href="#fn-AdjRibOut" class="noteref" epub:type="noteref">*5</a>が変更されたときに発行されるイベント。<br />存在するほうが実装しやすいため追加した<br />RFCには存在しないイベント。</td></tr>
+</table>
+</div>
+<div class="footnote" epub:type="footnote" id="fn-LocRib"><p class="footnote">[*3] https://datatracker.ietf.org/doc/html/rfc4271#section-1.1で説明されている。本PDFでも必要になったタイミングで説明する。</p></div>
+<div class="footnote" epub:type="footnote" id="fn-AdjRibIn"><p class="footnote">[*4] https://datatracker.ietf.org/doc/html/rfc4271#section-1.1で説明されている。本PDFでも必要になったタイミングで説明する。</p></div>
+<div class="footnote" epub:type="footnote" id="fn-AdjRibOut"><p class="footnote">[*5] https://datatracker.ietf.org/doc/html/rfc4271#section-1.1で説明されている。本PDFでも必要になったタイミングで説明する。</p></div>
+<div id="bgp-fsm" class="image">
+<img src="images/bgp-fsm.png" alt="本PDFで実装するBGPのステートマシン図" />
+<p class="caption">
+図2.1: 本PDFで実装するBGPのステートマシン図
+</p>
+</div>
+
+<h2><a id="h2-2"></a><span class="secno">2.2　</span>プロジェクト作成</h2>
+<p>さて、実装に入りましょう。この章を終えた段階で全体像を掴むことができると思います。</p>
+<p>本章では以下のタスクを行います。</p>
+<ul>
+<li>プロジェクトの作成</li>
+<li>使用するライブラリ類のインストール</li>
+<li>Connect Stateへ遷移することのテストを書く</li>
+<li>Connect Stateへ遷移するテストを通す。</li>
+<li>main関数の追加</li>
+</ul>
+<p>まずはプロジェクトの作成及び使用するライブラリ類のインストールを行います。</p>
+<div class="emlistnum-code">
+<p class="caption">プロジェクトの作成</p>
+<pre class="emlist language-{}"> 1: cargo new &lt;プロジェクトの名前&gt;
+</pre>
+</div>
+<div class="emlistnum-code">
+<p class="caption">Cargo.toml</p>
+<pre class="emlist language-{}"> 1: [package]
+ 2: name = &quot;&lt;プロジェクトの名前&gt;&quot;
+ 3: version = &quot;0.1.0&quot;
+ 4: edition = &quot;2021&quot;
+ 5: # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+ 6: 
+ 7: [dependencies]
+ 8: tokio = { version = &quot;1.14.0&quot;, features = [&quot;full&quot;] }
+ 9: thiserror = &quot;1.0&quot;
+10: anyhow = &quot;1.0&quot;
+</pre>
+</div>
+
+<h2><a id="h2-3"></a><span class="secno">2.3　</span>最初のテストの追加</h2>
+<p>次に最初にConnect Stateへ遷移することのテストを作成します。<code class="inline-code tt">src/peer.rs</code>の通りです。</p>
+<div class="emlistnum-code">
+<p class="caption">src/peer.rs</p>
+<pre class="emlist language-Rust"> 1: /// [BGPのRFCで示されている実装方針](https://datatracker.ietf.org/doc/html/rfc4271#section-8)では、
+ 2: /// 1つのPeerを1つのイベント駆動ステートマシンとして用いています。
+ 3: /// Peer構造体はRFC内で示されている実装方針に従ったイベント駆動ステートマシンです。
+ 4: #[cfg(test)]
+ 5: mod tests {
+ 6:     use super::*;
+ 7: 
+ 8:     #[tokio::test]
+ 9:     async fn peer_can_transition_to_connect_state() {
+10:         let config: Config = &quot;64512 127.0.0.1 65413 127.0.0.2 active&quot;.parse().unwrap();
+11:         let mut peer = Peer::new(config);
+12:         peer.start();
+13:         peer.next().await;
+14:         assert_eq!(peer.state, State::Connect);
+15:     }
+16: }
+</pre>
+</div>
+<p>一つのPeerを一つのイベント駆動ステートマシンとして実装します。Configは&quot;自分のAS番号、自分のIP、対向側のAS番号、対向側のAS番号 動作モード<a id="fnb-id__E5_8B_95_E4_BD_9C_E3_83_A2_E3_83_BC_E3_83_89" href="#fn-id__E5_8B_95_E4_BD_9C_E3_83_A2_E3_83_BC_E3_83_89" class="noteref" epub:type="noteref">*6</a>&quot;のようにしています。</p>
+<p>本テストはPeer構造体が以下のように動作することを期待していることを示しています。</p>
+<p>Peerを作成します。作成時のStateはIdleです。startメソッドによって、ManualStart Eventを発生させます。<code class="inline-code tt">peer.next().await;</code>によってEventを取り出し処理を進めます。<span class="imgref"><a href="./starting_point.html#bgp-fsm">図2.1</a></span>の通り、Idle Stateのとき、ManualStart Eventが処理されることで、Connect Stateへ遷移します。</p>
+<div class="footnote" epub:type="footnote" id="fn-id__E5_8B_95_E4_BD_9C_E3_83_A2_E3_83_BC_E3_83_89"><p class="footnote">[*6] Active: 自分からBGPネイバーを構築する。Passive:自分からは開始しないが相手からきたときは受け入れる、といった設定。</p></div>
+
+<h2><a id="h2-4"></a><span class="secno">2.4　</span>Connect Stateへの遷移</h2>
+<p>さて、前述のテスト<code class="inline-code tt">src/peer.rs</code>が通るまで実装を進めましょう。以下のようになります。<code class="inline-code tt">src/peer.rs</code>、<code class="inline-code tt">src/event.rs</code>、<code class="inline-code tt">src/event_queue.rs</code>、<code class="inline-code tt">src/state.rs</code>を見るとわかるように、<code class="inline-code tt">イベント駆動ステートマシン, テレビの実装例</code> と同じ実装方針になっています。今後もこの延長線上でコードが実装されます。</p>
+<p>以下に掲載しているコードは<code class="inline-code tt">src/config.rs</code>のせいで長く見えてしまいますが、<code class="inline-code tt">src/config.rs</code>のほとんどは、単に<code class="inline-code tt">&quot;64512 127.0.0.1 65413 127.0.0.2 active&quot;.parse()</code>でConfig構造体を作成できるようにしているだけです。</p>
+<p>そのため、重要なコードは、<code class="inline-code tt">src/peer.rs</code>、<code class="inline-code tt">src/event.rs</code>、<code class="inline-code tt">src/event_queue.rs</code>、<code class="inline-code tt">src/state.rs</code>です。</p>
+<p>また、現状では<code class="inline-code tt">src/peer.rs</code>のPeerのnextメソッド、handle_eventメソッドは非同期である必要がありません。しかしすぐに通信など非同期のほうが好ましい処理を追加すること、テストでも非同期であることを期待していることから現時点で非同期にしています。</p>
+<div class="emlistnum-code">
+<p class="caption">src/lib.rs</p>
+<pre class="emlist language-Rust"> 1: #![feature(backtrace)]
+ 2: #![allow(dead_code, unused)]
+ 3: 
+ 4: mod autonomous_system_number;
+ 5: mod config;
+ 6: mod error;
+ 7: mod event;
+ 8: mod event_queue;
+ 9: mod peer;
+10: mod state;
+</pre>
+</div>
+<div class="emlistnum-code">
+<p class="caption">src/peer.rs</p>
+<pre class="emlist language-Rust"> 1: use crate::config::Config;
+ 2: use crate::event::Event;
+ 3: use crate::event_queue::EventQueue;
+ 4: use crate::state::State;
+ 5: 
+ 6: /// [BGPのRFCで示されている実装方針](https://datatracker.ietf.org/doc/html/rfc4271#section-8)では、
+ 7: /// 1つのPeerを1つのイベント駆動ステートマシンとして用いています。
+ 8: /// Peer構造体はRFC内で示されている実装方針に従ったイベント駆動ステートマシンです。
+ 9: #[derive(PartialEq, Eq, Debug, Clone, Hash)]
+10: struct Peer {
+11:     state: State,
+12:     event_queue: EventQueue,
+13:     config: Config,
+14: }
+15: 
+16: impl Peer {
+17:     fn new(config: Config) -&gt; Self {
+18:         let state = State::Idle;
+19:         let event_queue = EventQueue::new();
+20:         Self { state, event_queue, config }
+21:     }
+22: 
+23:     fn start(&amp;mut self) {
+24:         self.event_queue.enqueue(Event::ManualStart);
+25:     }
+26: 
+27:     async fn next(&amp;mut self) {
+28:         if let Some(event) = self.event_queue.dequeue() {
+29:             self.handle_event(&amp;event).await;
+30:         }
+31:     }
+32: 
+33:     async fn handle_event(&amp;mut self, event: &amp;Event) {
+34:         match &amp;self.state {
+35:             State::Idle =&gt; {
+36:                 match event {
+37:                     Event::ManualStart =&gt; {
+38:                         self.state = State::Connect;
+39:                     }
+40:                     _ =&gt; {}
+41:                 }
+42:             },
+43:             _ =&gt; {}
+44:         }
+45:     }
+46: }
+</pre>
+</div>
+<div class="emlistnum-code">
+<p class="caption">src/event.rs</p>
+<pre class="emlist language-Rust"> 1: /// BGPの[RFC内 8.1 で定義されているEvent](https://datatracker.ietf.org/doc/html/rfc4271#section-8.1)を
+ 2: /// 表す列挙型です。
+ 3: #[derive(PartialEq, Eq, Debug, Clone, Copy, Hash, PartialOrd, Ord)]
+ 4: pub enum Event {
+ 5:     ManualStart,
+ 6: }
+</pre>
+</div>
+<div class="emlistnum-code">
+<p class="caption">src/event_queue.rs</p>
+<pre class="emlist language-Rust"> 1: use crate::event::Event;
+ 2: use std::collections::VecDeque;
+ 3: 
+ 4: #[derive(Debug, Clone, Hash, PartialEq, Eq)]
+ 5: pub struct EventQueue(VecDeque&lt;Event&gt;);
+ 6: 
+ 7: impl EventQueue {
+ 8:     pub fn new() -&gt; Self {
+ 9:         EventQueue(VecDeque::new())
+10:     }
+11: 
+12:     pub fn enqueue(&amp;mut self, event: Event) {
+13:         self.0.push_front(event);
+14:     }
+15: 
+16:     pub fn dequeue(&amp;mut self) -&gt; Option&lt;Event&gt; {
+17:         self.0.pop_back()
+18:     }
+19: }
+</pre>
+</div>
+<div class="emlistnum-code">
+<p class="caption">src/state.rs</p>
+<pre class="emlist language-Rust"> 1: #[derive(PartialEq, Eq, Debug, Clone, Copy, Hash)]
+ 2: pub enum State {
+ 3:     Idle,
+ 4:     Connect,
+ 5: }
+</pre>
+</div>
+<div class="emlistnum-code">
+<p class="caption">src/autonomous_system_number.rs</p>
+<pre class="emlist language-Rust"> 1: #[derive(PartialEq, Eq, Debug, Clone, Copy, Hash, PartialOrd, Ord)]
+ 2: pub struct AutonomousSystemNumber(u16);
+ 3: 
+ 4: impl From&lt;u16&gt; for AutonomousSystemNumber {
+ 5:     fn from(as_number: u16) -&gt; Self {
+ 6:         Self(as_number)
+ 7:     }
+ 8: }
+</pre>
+</div>
+<div class="emlistnum-code">
+<p class="caption">src/config.rs</p>
+<pre class="emlist language-Rust"> 1: use crate::autonomous_system_number::AutonomousSystemNumber;
+ 2: use crate::error::ConfigParseError;
+ 3: use anyhow::{Context, Result};
+ 4: use std::net::Ipv4Addr;
+ 5: use std::str::FromStr;
+ 6: 
+ 7: #[derive(PartialEq, Eq, Debug, Clone, Copy, Hash, PartialOrd, Ord)]
+ 8: pub struct Config {
+ 9:     local_as: AutonomousSystemNumber,
+10:     local_ip: Ipv4Addr,
+11:     remote_as: AutonomousSystemNumber,
+12:     remote_ip: Ipv4Addr,
+13:     mode: Mode,
+14: }
+15: 
+16: #[derive(PartialEq, Eq, Debug, Clone, Copy, Hash, PartialOrd, Ord)]
+17: enum Mode {
+18:     Passive,
+19:     Active,
+20: }
+21: 
+22: impl FromStr for Mode {
+23:     type Err = ConfigParseError;
+24:     fn from_str(s: &amp;str) -&gt; Result&lt;Self, Self::Err&gt; {
+25:         match s {
+26:             &quot;passive&quot; | &quot;Passive&quot; =&gt; Ok(Mode::Passive),
+27:             &quot;active&quot; | &quot;Active&quot; =&gt; Ok(Mode::Active),
+28:             _ =&gt; Err(ConfigParseError::from(anyhow::anyhow!(&quot;cannot parse {s}&quot;))),
+29:         }
+30:     }
+31: }
+32: 
+33: impl FromStr for Config {
+34:     type Err = ConfigParseError;
+35: 
+36:     fn from_str(s: &amp;str) -&gt; Result&lt;Self, Self::Err&gt; {
+37:         let config: Vec&lt;&amp;str&gt; = s.split(&#39; &#39;).collect();
+38:         let local_as = AutonomousSystemNumber::from(config[0].parse::&lt;u16&gt;().context(format!(
+39:             &quot;cannot parse 1st part of config, `{0}`, as as-number and config is {1}&quot;,
+40:             config[0], s
+41:         ))?);
+42:         let local_ip: Ipv4Addr = config[1].parse().context(format!(
+43:             &quot;cannot parse 2nd part of config, `{0}`, as as-number and config is {1}&quot;,
+44:             config[1], s
+45:         ))?;
+46:         let remote_as = AutonomousSystemNumber::from(config[2].parse::&lt;u16&gt;().context(format!(
+47:             &quot;cannot parse 3rd part of config, `{0}`, as as-number and config is {1}&quot;,
+48:             config[2], s
+49:         ))?);
+50:         let remote_ip: Ipv4Addr = config[3].parse().context(format!(
+51:             &quot;cannot parse 4th part of config, `{0}`, as as-number and config is {1}&quot;,
+52:             config[3], s
+53:         ))?;
+54:         let mode: Mode = config[4].parse().context(format!(
+55:             &quot;cannot parse 5th part of config, `{0}`, as as-number and config is {1}&quot;,
+56:             config[4], s
+57:         ))?;
+58:         Ok(Self {
+59:             local_as,
+60:             local_ip,
+61:             remote_as,
+62:             remote_ip,
+63:             mode,
+64:         })
+65:     }
+66: }
+</pre>
+</div>
+<div class="emlistnum-code">
+<p class="caption">src/error.rs</p>
+<pre class="emlist language-Rust"> 1: use thiserror::Error;
+ 2: 
+ 3: #[derive(Error, Debug)]
+ 4: #[error(transparent)]
+ 5: pub struct ConfigParseError {
+ 6:     #[from]
+ 7:     source: anyhow::Error,
+ 8: }
+</pre>
+</div>
+<p><code class="inline-code tt">cargo test</code>でテストを実行し、テストが通ることを確認しましょう。以下のように表示されればOKです。</p>
+<div class="emlistnum-code">
+<p class="caption">テスト結果</p>
+<pre class="emlist language-{}"> 1: mrcsce@pop-os:~/programming/rustProjects/bgp/mrbgpdv2$ cargo test
+ 2:     Finished test [unoptimized + debuginfo] target(s) in 0.01s
+ 3:      Running unittests (target/debug/deps/mrbgpdv2-d3ae14e12196c9a9)
+ 4: 
+ 5: running 1 test
+ 6: test peer::tests::peer_can_transition_to_connect_state ... ok
+ 7: }
+</pre>
+</div>
+
+<h2><a id="h2-5"></a><span class="secno">2.5　</span>main関数の追加</h2>
+<p>さて、main関数を追加します。<a href="starting_point.html#h2-3">「2.3 最初のテストの追加」</a>で示したテストとほとんどと同じです。9行目でConfig構造体から、Peer構造体を作成し、11行目でstartメソッドにてManualStartイベントを発火させます。その後は、17-19行目で<code class="inline-code tt">loop</code>ブロックを用いて、常にnextを呼び続けています。nextメソッドはイベントが発生していればつぎの処理をし、イベントがなければそのまま、という実装になっています。無限ループさせることで、新しいイベントが発生するまで待ち続けること、新しいイベントが発生したらすぐに処理をすること、を意味しています。</p>
+<div class="emlistnum-code">
+<p class="caption">src/main.rs</p>
+<pre class="emlist language-Rust"> 1: use std::str::FromStr;
+ 2: 
+ 3: use mrbgpdv2::peer::Peer;
+ 4: use mrbgpdv2::config::Config;
+ 5: 
+ 6: #[tokio::main]
+ 7: async fn main() {
+ 8:     let configs = vec![Config::from_str(&quot;64512 127.0.0.1 65413 127.0.0.2 active&quot;).unwrap()];
+ 9:     let mut peers: Vec&lt;Peer&gt; = configs.into_iter().map(Peer::new).collect();
+10:     for peer in &amp;mut peers {
+11:         peer.start();
+12:     }
+13: 
+14:     let mut handles = vec![];
+15:     for mut peer in peers {
+16:         let handle = tokio::spawn(async move {
+17:             loop {
+18:                 peer.next().await;
+19:             }
+20:         });
+21:         handles.push(handle);
+22:     }
+23: 
+24:     // main関数が勝手に終了しないようにしている。
+25:     for handle in handles {
+26:         handle.await;
+27:     }
+28: }
+</pre>
+</div>
+
+<h2><a id="h2-6"></a><span class="secno">2.6　</span>TCP Connectionの作成</h2>
+<p><span class="imgref"><a href="./starting_point.html#bgp-fsm">図2.1</a></span>の通りIdle -&gt; Connectに遷移するとき、対向機器とTCPコネクションの作成を試みます。本項ではTCPコネクションの作成の部分の実装を行います。</p>
+<p>まずは、TCP Connectionを張っていることを確認できるようにテストを書き換えます。3行目, 6-13行を追加しました。テストのtokio::spawnによって、別スレッドでもPeer構造体（remote_peer）を実行しています。これはネットワーク上で離れた別のマシンを模擬しています。模擬した別のマシンとTCP Connectionが張れていることを確認しています。</p>
+<div class="emlistnum-code">
+<p class="caption">src/main.rs</p>
+<pre class="emlist language-Rust"> 1: mod tests {
+ 2:     use super::*;
+ 3:     use tokio::time::{sleep, Duration};
+ 4:     async fn peer_can_transition_to_connect_state() {
+ 5:         let config: Config = &quot;64512 127.0.0.1 65413 127.0.0.2 active&quot;.parse().unwrap();
+ 6:         let mut peer = Peer::new(config);
+ 7:         peer.start();
+ 8: 
+ 9:         tokio::spawn(async move {
+10:             let remote_config = &quot;64513 127.0.0.2 65412 127.0.0.1 passive&quot;.parse().unwrap();
+11:             let mut remote_peer = Peer::new(remote_config);
+12:             remote_peer.start();
+13:             remote_peer.next().await;
+14:         });
+15: 
+16:         // 先にremote_peer側の処理が進むことを保証するためのwait
+17:         tokio::time::sleep(Duration::from_secs(1)).await;
+18:         peer.next().await;
+19:         assert_eq!(peer.state, State::Connect);
+20:     }
+21: }
+</pre>
+</div>
+<p>それでは実装に入ります。</p>
+<p>ただしPDF上では主要なコードを紹介します。例えばコンパイラにしたがってpubキーワードを付与したり、useキーワードを使用してimportしたりするだけの差分は省略しております。またフルのコードではなく主要な追加分を記載しています。</p>
+<p>完全な差分やコードを確認したい場合は<a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/3" class="link">Tcp connectionを作成する部分を実装 #3</a><a id="fnb-tcp-conn-pr" href="#fn-tcp-conn-pr" class="noteref" epub:type="noteref">*7</a>のPRを参照ください。</p>
+<div class="footnote" epub:type="footnote" id="fn-tcp-conn-pr"><p class="footnote">[*7] https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/3</p></div>
+<p><code class="inline-code tt">src/peer.rs</code>の13行目, 21-28行目, 37行目-64行目が主要な差分です。</p>
+<div class="emlistnum-code">
+<p class="caption">src/peer.rs</p>
+<pre class="emlist language-Rust"> 1: use tokio::net::{TcpListener, TcpStream};
+ 2: 
+ 3: pub struct Peer {
+ 4:     tcp_connection: Option&lt;TcpStream&gt;,
+ 5: }
+ 6: 
+ 7: impl Peer {
+ 8:     pub fn new(config: Config) -&gt; Self {
+ 9:         Self {
+10:             state,
+11:             event_queue,
+12:             config,
+13:             tcp_connection: None,
+14:         }
+15:     }
+16: 
+17:     async fn handle_event(&amp;mut self, event: &amp;Event) {
+18:         match &amp;self.state {
+19:             State::Idle =&gt; match event {
+20:                 Event::ManualStart =&gt; {
+21:                     self.tcp_connection = match self.config.mode {
+22:                         Mode::Active =&gt; self.connect_to_remote_peer().await,
+23:                         Mode::Passive =&gt; self.wait_connection_from_remote_peer().await,
+24:                     }
+25:                     .ok();
+26:                     self.tcp_connection.as_ref().unwrap_or_else(|| {
+27:                         panic!(&quot;TCP Connectionの確立が出来ませんでした。{:?}&quot;, self.config)
+28:                     });
+29:                     self.state = State::Connect;
+30:                 }
+31:                 _ =&gt; {}
+32:             },
+33:             _ =&gt; {}
+34:         }
+35:     }
+36: 
+37:     async fn connect_to_remote_peer(&amp;self) -&gt; Result&lt;TcpStream&gt; {
+38:         let bgp_port = 179;
+39:         TcpStream::connect((self.config.remote_ip, bgp_port))
+40:             .await
+41:             .context(format!(
+42:                 &quot;cannot connect to remote peer {0}:{1}&quot;,
+43:                 self.config.remote_ip, bgp_port
+44:             ))
+45:     }
+46: 
+47:     async fn wait_connection_from_remote_peer(&amp;self) -&gt; Result&lt;TcpStream&gt; {
+48:         let bgp_port = 179;
+49:         let listener = TcpListener::bind((self.config.local_ip, bgp_port))
+50:             .await
+51:             .context(format!(
+52:                 &quot;{0}:{1}にbindすることが出来ませんでした。&quot;,
+53:                 self.config.local_ip, bgp_port
+54:             ))?;
+55:         Ok(listener
+56:             .accept()
+57:             .await
+58:             .context(format!(
+59:                 &quot;{0}:{1}にてリモートからのTCP Connectionの要求を完遂することが出来ませんでした。
+60:                 リモートからTCP Connectionの要求が来ていない可能性が高いです。&quot;,
+61:                 self.config.local_ip, bgp_port
+62:             ))?
+63:             .0)
+64:     }
+65: }
+</pre>
+</div>
+<p>実装が終わったらテストを実行して結果を確認しましょう。</p>
+<p>テストを実行する際には以下2つの注意点があります。</p>
+<p>BGPで使用する179番ポートにBindするためにはroot権限が必要になります。sudoでcargoを実行できるようにする必要があります。筆者は以下のようにcargoの設定を編集することで対応しています。</p>
+<div class="emlistnum-code">
+<p class="caption">~/.cargo/config,root権限で実行可能にする設定</p>
+<pre class="emlist language-{}"> 1: mrcsce@pop-os:~/programming/rustProjects/bgp/mrbgpdv2$ cat ~/.cargo/config
+ 2: 
+ 3: # nightly-x86_64-unknown-linux-gnu
+ 4: [target.x86_64-unknown-linux-gnu]
+ 5: runner = &#39;sudo -E&#39;
+ 6: mrcsce@pop-os:~/programming/rustProjects/bgp/mrbgpdv2$
+</pre>
+</div>
+<p>またMacOSの場合は、127.0.0.2にはバインド出来ないため、Dockerや仮想マシンなどのLinux環境を用意してください。今後もnetlinkなど、Linux固有のものが登場します。実装が進むにつれて、Rust上でのテストだけでなく、Docker、Docker-composeを用いて実際にBGP Messageのやりとりを行えているかどうかテストしたり、ルートの交換ができていることをテストするスクリプトを追加します。Linux以外を使用していて、活つ適切なLinux環境の用意の仕方がわからない場合は、先に<a href="./integration_tests.html">第3章</a>を参照し、テスト環境を用意してください。</p>
+<div class="emlistnum-code">
+<p class="caption">テスト結果</p>
+<pre class="emlist language-{}"> 1: mrcsce@pop-os:~/programming/rustProjects/bgp/mrbgpdv2$ cargo test
+ 2:    Compiling mrbgpdv2 v0.1.0 (/home/mrcsce/programming/rustProjects/bgp/mrbgpdv2)
+ 3:     Finished test [unoptimized + debuginfo] target(s) in 1.22s
+ 4:      Running unittests (target/debug/deps/mrbgpdv2-d3ae14e12196c9a9)
+ 5: [sudo] mrcsce のパスワード:
+ 6: 
+ 7: running 1 test
+ 8: test peer::tests::peer_can_transition_to_connect_state ... ok
+ 9: 
+10: test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.00s
+</pre>
+</div>
+<div class="column">
+
+<h3><a id="column-1"></a>RFCと本PDFの相違点</h3>
+<p>実はRFCにもBGPを表すイベント駆動ステートマシンの細かい動作が記載されています。例えば、State Idle時、ManualStart Eventが発生したときの動作は<a href="https://datatracker.ietf.org/doc/html/rfc4271#section-8.2.2" class="link">RFC 4271 section-8.2.2</a><a id="fnb-rfc4271" href="#fn-rfc4271" class="noteref" epub:type="noteref">*8</a>に記載されています。</p>
+<p>本PDFではState Idle時、ManualStart Eventが発火したとき、StateをConnectに変更する、及びTCP Connectionを作成するだけにしています。しかしRFCではいろんなタイマーやカウンタを初期化したしています。それらのタイマーやカウンタは異常時に使用されるものなので、本PDFでは省略しています。また、Idleイベント時にManualState以外のEvnetが発火した時の動作も記載されていますが、同様の理由で本PDFでは省略しています。</p>
+<div class="footnote" epub:type="footnote" id="fn-rfc4271"><p class="footnote">[*8] https://datatracker.ietf.org/doc/html/rfc4271#section-8.2.2</p></div>
+</div>
       </div>
       <nav class="book-navi book-prev">
                 <a href="learning_background.html">
@@ -35,7 +523,7 @@
         </a>
               </nav>
       <nav class="book-navi book-next">
-                <a href="established.html">
+                <a href="integration_tests.html">
           <div class="book-cursor"><span class="cursor-next">▶</span></div>
         </a>
               </nav>

@@ -4,6 +4,7 @@ PREDEF:
 CHAPS:
   - learning_background.re
   - starting_point.re
+  - integration_tests.re
   - established.re
   - exchange_update_message.re
 

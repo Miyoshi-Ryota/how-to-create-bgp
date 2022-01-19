@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="style.css" />
   <link rel="stylesheet" type="text/css" href="style-web.css" />
-<link rel="next" title="章タイトル" href="learning_background.html" />  <meta name="generator" content="Re:VIEW" />
+<link rel="next" title="BGPの実装に必要な知識の学習" href="learning_background.html" />  <meta name="generator" content="Re:VIEW" />
   <title>前書き | 作って学ぶルーティングプロトコル〜RustでBGPを実装〜</title>
 </head>
 <body>
@@ -15,10 +15,11 @@
       <ul class="book-toc">
 <li><a href="index.html">TOP</a></li>
 <li><a href="preface.html">前書き</a></li>
-<li><a href="learning_background.html">第1章　章タイトル</a></li>
-<li><a href="starting_point.html">第2章　章タイトル</a></li>
-<li><a href="established.html">第3章　章タイトル</a></li>
-<li><a href="exchange_update_message.html">第4章　章タイトル</a></li>
+<li><a href="learning_background.html">第1章　BGPの実装に必要な知識の学習</a></li>
+<li><a href="starting_point.html">第2章　実装開始！</a></li>
+<li><a href="integration_tests.html">第3章　テスト環境の作成</a></li>
+<li><a href="established.html">第4章　Established Stateまでの実装！</a></li>
+<li><a href="exchange_update_message.html">第5章　Update Messageを交換する！</a></li>
 </ul>
       <p class="review-signature">powered by <a href="http://reviewml.org/">Re:VIEW</a></p>
     </nav>
@@ -27,10 +28,61 @@
       </header>
       <div class="book-page">
         <h1><a id="h"></a>前書き</h1>
-<p>前書きなのだ。</p>
+<p>インターネットを支えるルーティングプロトコルであるBGP(Border Gateway Protocol)をRFCからRustで実装する方法を解説します。小さなプログラムから始め、Update Messageを交換しルーティングテーブルの更新を行うまで、ステップバイステップで実装を追うことができるように解説します。</p>
+<p>本PDFでは正常系のみ実装します。また可能な限り最小限の実装をします。</p>
+<p>また、本PDFで作成するBGPのサンプル実装・本PDFの自体のソースコードは以下リポジトリに公開しております。</p>
+<ul>
+<li>https://github.com/Miyoshi-Ryota/mrbgpdv2</li>
+<li>https://github.com/Miyoshi-Ryota/how-to-create-bgp</li>
+</ul>
+<p>GitHub Starをいただけたら<strong>とっても・とっても</strong>嬉しいです！</p>
+<p>RFCに定義されているようなプロトコルを一度自分の手で実装することで、BGPに限らず、その他のプロトコルについてもRFCから実装できるようになるように思います。</p>
+<p>本PDFがBGPを実装する手助け、ひいてはRFCを読めるようになること、RFCからプロトコルを実装できるようになることの手助けになることを祈っております。</p>
+<p>ぜひ楽しんでいただけたら幸いです。</p>
 
-<h2><a id="h-1"></a>免責事項</h2>
-<p>本書に記載された内容は、情報の提供のみを目的としています。したがって、本書を用いた開発、製作、運用は、必ずご自身の責任と判断によって行ってください。これらの情報による開発、製作、運用の結果について、著者はいかなる責任も負いません。</p>
+<h2><a id="h-1"></a>対象読者</h2>
+<p>読者に以下の前提知識を求めています。</p>
+<ul>
+<li>ルーティングプロトコルは聞いたことがある。</li>
+<li>スタティックルートとは何か分かる。</li>
+<li>ルーティングテーブルを見て意味が分かる。</li>
+<li>何らかのプログラミング言語でのプログラミング経験</li>
+<li>Rustを知っている。</li>
+</ul>
+<p>以下の経験があるとよりわかりやすいかもしれません。</p>
+<ul>
+<li>BGPの運用経験</li>
+<li>Docker、docker-composeを用いた開発経験</li>
+<li>wiresharkを用いてパケットキャプチャを行った経験</li>
+</ul>
+
+<h2><a id="h-2"></a>書いていないこと</h2>
+<p>本PDFには以下のことは書かれておりません。</p>
+<ul>
+<li>BGPとは何かということについての詳細な説明<ul>
+<li>ただし、参考になるWebページを紹介しています。そのためBGPについて知らなくても問題ありません。またBGPのRFC内で説明されていることについても書内で説明しきらずURLや項目番号の紹介にとどめている部分もあります。RFCだけでは理解が難しい部分については解説しているつもりです。</li>
+</ul>
+</li>
+<li>Rustの文法解説</li>
+<li>Rust / Docker / docker-compose / wiresharkなど本PDFに登場するツールのインストール方法</li>
+<li>すべてのコードの詳細な解説。<ul>
+<li>繰り返し似たようなコードを書く部分があります。それらについては書内にすべてのコードを記載していません。GitHubのPRへのURLなどで済ませている部分があります。</li>
+</ul>
+</li>
+</ul>
+
+<h2><a id="h-3"></a>本PDFの動作環境</h2>
+<p>筆者は以下の環境で本PDFのサンプルプログラムの作成・動作環境を行っております。</p>
+<ul>
+<li>Ubuntu 20.04 LTS / Pop!_OS 20.04 LTS</li>
+<li>cargo 1.53.0-nightly (f3e13226d 2021-04-30)</li>
+<li>rustc 1.54.0-nightly (676ee1472 2021-05-06)</li>
+</ul>
+<p>cargo / rustcのバージョンは2018 Edition以降であれば何でも動作すると考えております。</p>
+<p>ただしOSについては注意点があります。ルーティングプロトコルを実装するため、ルーティングテーブルを読み書きする処理が存在します。ルーティングテーブルの読み書きの方法はOSによって異なります。そのため、本PDFの後半ではLinuxの環境が必要になります。仮想マシン等でも問題ありません。</p>
+
+<h2><a id="h-4"></a>本PDFに関する問い合わせ</h2>
+<p>本PDF記載の内容に関しての質問・問い合わせ等は、Twitter: @llp_qlv 宛へのリプライ・DM、もしくはGitHubのIssueから受け付けています。</p>
       </div>
       <nav class="book-navi book-prev">
               </nav>
