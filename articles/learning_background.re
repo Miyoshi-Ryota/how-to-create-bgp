@@ -173,7 +173,7 @@ fn main() {
 
 一方でログの16、17、18行目を見ると、電源OFF状態のときに音量増加ボタンが押されても、電源OFF状態のままで音量の変動もないことがわかります。
 
-//emlistnum[TV_実行時のログ][text]{
+//emlistnum[TV_実行時のログ][{}]{
 mrcsce@pop-os:~/programming/rustProjects/samplecode$ cargo run
     Finished dev [unoptimized + debuginfo] target(s) in 0.00s
      Running `target/debug/samplecode`

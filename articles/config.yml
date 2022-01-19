@@ -176,7 +176,7 @@ colophon: true
 # ソースコードハイライトを利用する (rouge,pygmentsには外部gemが必要)
 highlight:
 #  html: "rouge"
-#  latex: "listings"
+  latex: "listings"
 
 # カタログファイル名を指定する
 # catalogfile: catalog.yml
