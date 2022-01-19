@@ -7,7 +7,9 @@
 BGPとはなにか、ということについてはすでにインターネット上に良い資料が存在します。そのため、本書ではBGPとはなにか、ということについて記載しません。
 良い資料を2つ紹介します。 BGPについて詳しくない方は、どちらかを読み、本章以降に進んでください。 すべての内容を記憶する必要はありません。 なんとなく見ておくと、本章以降の理解が容易になります。
 
-@<href>{https://www.infraexpert.com/study/study60.html,ネットワークエンジニアとして - BGPの技術}の次の章が参考になります。
+@<href>{https://www.infraexpert.com/study/study60.html,ネットワークエンジニアとして - BGPの技術}@<fn>{ネットワークエンジニアとして - BGPの技術}の次の章が参考になります。
+
+//footnote[ネットワークエンジニアとして - BGPの技術][https://www.infraexpert.com/study/study60.html]
 
  * @<href>{https://www.infraexpert.com/study/bgpz01.html,BGP（ Border Gateway Protocol ）とは}
  * @<href>{https://www.infraexpert.com/study/bgpz02.html,BGP - 4つのメッセージ、6つのステータスと状態遷移}
@@ -16,8 +18,9 @@ BGPとはなにか、ということについてはすでにインターネッ�
  * @<href>{https://www.infraexpert.com/study/bgpz05.html,BGP - パスアトリビュート（ パス属性 ）＆ ベストパス選択}
  * @<href>{https://www.infraexpert.com/study/bgpz06.html,BGP - コンフィグ設定 - 基本設定}
 
-@<href>{http://www5e.biglobe.ne.jp/aji/30min/index.html,30分間ネットワーキング}の次の章が参考になります。
+@<href>{http://www5e.biglobe.ne.jp/aji/30min/index.html,30分間ネットワーキング}@<fn>{30分間ネットワーキング}の次の章が参考になります。
 
+//footnote[30分間ネットワーキング][http://www5e.biglobe.ne.jp/aji/30min/index.html]
  * @<href>{http://www5e.biglobe.ne.jp/aji/30min/16.html,第16回 BGP4(1) AS}
  * @<href>{http://www5e.biglobe.ne.jp/aji/30min/17.html,第17回 BGP4(2) BGPピア}
  * @<href>{http://www5e.biglobe.ne.jp/aji/30min/18.html,第18回 BGP4(3) IBGPとEBGP}
@@ -170,7 +173,7 @@ fn main() {
 
 一方でログの16、17、18行目を見ると、電源OFF状態のときに音量増加ボタンが押されても、電源OFF状態のままで音量の変動もないことがわかります。
 
-//emlistnum[TV_実行時のログ][]{
+//emlistnum[TV_実行時のログ][text]{
 mrcsce@pop-os:~/programming/rustProjects/samplecode$ cargo run
     Finished dev [unoptimized + debuginfo] target(s) in 0.00s
      Running `target/debug/samplecode`

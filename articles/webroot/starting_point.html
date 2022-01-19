@@ -29,15 +29,50 @@
         <h1><a id="h2"></a><span class="secno">第2章　</span>実装開始！</h1>
 
 <h2><a id="h2-1"></a><span class="secno">2.1　</span>BGPはどのようなイベント駆動ステートマシンなのか</h2>
+<p>BGPはどのようなイベント駆動ステートマシンとして表すのが良いでしょうか。</p>
+<p>実は <a href="https://tools.ietf.org/html/rfc4271" class="link">RFC4271-A Border Gateway Protocol 4 (BGP-4)</a><a id="fnb-RFC" href="#fn-RFC" class="noteref" epub:type="noteref">*1</a>の <a href="https://tools.ietf.org/html/rfc4271#section-8" class="link">8.  BGP Finite State Machine (FSM)</a>に、イベント駆動ステートマシンの定義の記載があります。</p>
+<div class="footnote" epub:type="footnote" id="fn-RFC"><p class="footnote">[*1] https://tools.ietf.org/html/rfc4271</p></div>
+<p>しかし最初から <a href="https://tools.ietf.org/html/rfc4271#section-8" class="link">8.  BGP Finite State Machine (FSM)</a>を参照して、完全なBGPを作成することは大変です。そのため本書ではBGPを次の段階に分けて開発します。また正常系のみ実装していきます。</p>
+<ul>
+<li>Connectまで遷移する実装</li>
+<li>Establishedまで遷移する実装</li>
+<li>Update Messageを交換する実装</li>
+</ul>
+<p>本書で実装するBGPのステートマシンを図示すると<span class="imgref"><a href="./starting_point.html#bgp-fsm">図2.1</a></span>になります。</p>
+<p><span class="imgref"><a href="./starting_point.html#bgp-fsm">図2.1</a></span>で登場するEventはそれぞれ<span class="tableref"><a href="./starting_point.html#id_BGP_E3_81_AE_E3_82_A4_E3_83_99_E3_83_B3_E3_83_88_E9_A7_86_E5_8B_95_E3_82_B9_E3_83_86_E3_83_BC_E3_83_88_E3_83_9E_E3_82_B7_E3_83_B3_E3_81_A7_E7_99_BB_E5_A0_B4_E3_81_99_E3_82_8BEvent_E3_81_AE_E8_AA_AC_E6_98_8E">表2.1</a></span>の通りです。</p>
+<p><span class="imgref"><a href="./starting_point.html#bgp-fsm">図2.1</a></span>で登場する状態（State）については、RFCのとおりです。<a href="https://www.infraexpert.com/study/study60.html" class="link">ネットワークエンジニアとして - BGPの技術</a>の<a href="https://www.infraexpert.com/study/bgpz02.html" class="link">BGP - 4つのメッセージ、6つのステータスと状態遷移</a><a id="fnb-id__E3_83_8D_E3_83_83_E3_83_88_E3_83_AF_E3_83_BC_E3_82_AF_E3_82_A8_E3_83_B3_E3_82_B8_E3_83_8B_E3_82_A2_E3_81_A8_E3_81_97_E3_81_A6-BGP---4_E3_81_A4_E3_81_AE_E3_83_A1_E3_83_83_E3_82_BB_E3_83_BC_E3_82_B8_E3_80_816_E3_81_A4_E3_81_AE_E3_82_B9_E3_83_86_E3_83_BC_E3_82_BF_E3_82_B9_E3_81_A8_E7_8A_B6_E6_85_8B_E9_81_B7_E7_A7_BB" href="#fn-id__E3_83_8D_E3_83_83_E3_83_88_E3_83_AF_E3_83_BC_E3_82_AF_E3_82_A8_E3_83_B3_E3_82_B8_E3_83_8B_E3_82_A2_E3_81_A8_E3_81_97_E3_81_A6-BGP---4_E3_81_A4_E3_81_AE_E3_83_A1_E3_83_83_E3_82_BB_E3_83_BC_E3_82_B8_E3_80_816_E3_81_A4_E3_81_AE_E3_82_B9_E3_83_86_E3_83_BC_E3_82_BF_E3_82_B9_E3_81_A8_E7_8A_B6_E6_85_8B_E9_81_B7_E7_A7_BB" class="noteref" epub:type="noteref">*2</a>でも説明されております。</p>
+<div class="footnote" epub:type="footnote" id="fn-id__E3_83_8D_E3_83_83_E3_83_88_E3_83_AF_E3_83_BC_E3_82_AF_E3_82_A8_E3_83_B3_E3_82_B8_E3_83_8B_E3_82_A2_E3_81_A8_E3_81_97_E3_81_A6-BGP---4_E3_81_A4_E3_81_AE_E3_83_A1_E3_83_83_E3_82_BB_E3_83_BC_E3_82_B8_E3_80_816_E3_81_A4_E3_81_AE_E3_82_B9_E3_83_86_E3_83_BC_E3_82_BF_E3_82_B9_E3_81_A8_E7_8A_B6_E6_85_8B_E9_81_B7_E7_A7_BB"><p class="footnote">[*2] https://www.infraexpert.com/study/bgpz02.html</p></div>
+<div id="id_BGP_E3_81_AE_E3_82_A4_E3_83_99_E3_83_B3_E3_83_88_E9_A7_86_E5_8B_95_E3_82_B9_E3_83_86_E3_83_BC_E3_83_88_E3_83_9E_E3_82_B7_E3_83_B3_E3_81_A7_E7_99_BB_E5_A0_B4_E3_81_99_E3_82_8BEvent_E3_81_AE_E8_AA_AC_E6_98_8E" class="table">
+<p class="caption">表2.1: BGPのイベント駆動ステートマシンで登場するEventの説明</p>
+<table>
+<tr><th>Event名</th><th>説明</th></tr>
+<tr><td>ManualStart</td><td>BGPの開始を指示したときに発行されるイベント。<br />RFC内でも同様に定義されている。</td></tr>
+<tr><td>TcpConnectionConfirmed</td><td>対向機器とTCPコネクションを確立できたときに発行されるイベント。<br />RFC内でも同様に定義されている。RFCでは、<br />TCP ackを受信したときのイベント、Tcp Cr Ackedと区別している。<br />しかし本書では正常系しか実装しないため、TCPコネクションが<br />確立された時のイベントとしては本イベントのみにしている。</td></tr>
+<tr><td>BGPOpen</td><td>対向機器からOpen Messageを受信したときに発行されるイベント。<br />RFC内でも同様に定義されている。</td></tr>
+<tr><td>KeepAliveMsg</td><td>対向機器からKeepalive Messageを受信したときに発行されるイベント<br />RFC内でも同様に定義されている。</td></tr>
+<tr><td>UpdateMsg</td><td>対向機器からUpdate Messageを受信したときに発行されるイベント<br />RFC内でも同様に定義されている。</td></tr>
+<tr><td>Established</td><td>Established Stateに遷移したときに発行されるイベント。<br />存在するほうが実装しやすいため筆者が追加した<br />RFCには存在しないイベント。</td></tr>
+<tr><td>LocRibChanged</td><td>LocRib<a id="fnb-LocRib" href="#fn-LocRib" class="noteref" epub:type="noteref">*3</a>が変更されたときに発行されるイベント。<br />存在するほうが実装しやすいため追加した<br />RFCには存在しないイベント。</td></tr>
+<tr><td>AdjRibInChanged</td><td>AdjRibIn<a id="fnb-AdjRibIn" href="#fn-AdjRibIn" class="noteref" epub:type="noteref">*4</a>が変更されたときに発行されるイベント。<br />存在するほうが実装しやすいため追加した<br />RFCには存在しないイベント。</td></tr>
+<tr><td>AdjRibOutChanged</td><td>AdjRibOut<a id="fnb-AdjRibOut" href="#fn-AdjRibOut" class="noteref" epub:type="noteref">*5</a>が変更されたときに発行されるイベント。<br />存在するほうが実装しやすいため追加した<br />RFCには存在しないイベント。</td></tr>
+</table>
+</div>
+<div class="footnote" epub:type="footnote" id="fn-LocRib"><p class="footnote">[*3] https://datatracker.ietf.org/doc/html/rfc4271#section-1.1で説明されている。本書でも必要になったタイミングで説明する。</p></div>
+<div class="footnote" epub:type="footnote" id="fn-AdjRibIn"><p class="footnote">[*4] https://datatracker.ietf.org/doc/html/rfc4271#section-1.1で説明されている。本書でも必要になったタイミングで説明する。</p></div>
+<div class="footnote" epub:type="footnote" id="fn-AdjRibOut"><p class="footnote">[*5] https://datatracker.ietf.org/doc/html/rfc4271#section-1.1で説明されている。本書でも必要になったタイミングで説明する。</p></div>
+<div id="bgp-fsm" class="image">
+<img src="images/bgp-fsm.png" alt="本書で実装するBGPのステートマシン図" />
+<p class="caption">
+図2.1: 本書で実装するBGPのステートマシン図
+</p>
+</div>
 
 <h2><a id="h2-2"></a><span class="secno">2.2　</span>プロジェクト作成</h2>
-
-<h2><a id="h2-3"></a><span class="secno">2.3　</span>最初のテストの追加</h2>
-
-<h2><a id="h2-4"></a><span class="secno">2.4　</span>Connect Stateへの遷移</h2>
-
-<h2><a id="h2-5"></a><span class="secno">2.5　</span>main関数の追加</h2>
-<p>カルマ、FORK、輪入道、DOTAMA、ID、そして</p>
+<p>さて、実装に入りましょう。</p>
+<ul>
+<li>Connectまで遷移する実装を行います。</li>
+</ul>
+<p>この実装を終えた段階で全体像を掴むことができると思います。== 最初のテストの追加== Connect Stateへの遷移== main関数の追加</p>
       </div>
       <nav class="book-navi book-prev">
                 <a href="learning_background.html">

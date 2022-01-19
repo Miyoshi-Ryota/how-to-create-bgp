@@ -1,0 +1,28 @@
+@startuml
+
+state Idle
+state Connect
+state OpenConfirm
+state OpenSent
+state Established
+
+[*] --> Idle
+Idle --> Connect : ManualStart event
+note on link
+   対向側機器とTCPコネクションを作成を試みる。
+end note
+Connect --> OpenSent : Tcp_CR_Acked | TcpConnectionConfirmed event
+note on link
+   対向側機器にBGP OpenMessageを送信する。
+end note
+OpenSent --> OpenConfirm : BGPOpen event
+note on link
+    対向機器にBGP Keepalive Messageを送信する。
+end note
+OpenConfirm --> Established : KeepAliveMsg event
+Established --> Established : Established event
+Established --> Established : LocRibChanged event
+Established --> Established : AdjRibOutChanged event
+Established --> Established : UpdateMsg event
+Established --> Established : AdjRibInChanged event
+@enduml
