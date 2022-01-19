@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <link rel="stylesheet" type="text/css" href="style.css" />
   <link rel="stylesheet" type="text/css" href="style-web.css" />
-<link rel="next" title="Established Stateまでの実装！" href="established.html" /><link rel="prev" title="BGPの実装に必要な知識の学習" href="learning_background.html" />  <meta name="generator" content="Re:VIEW" />
+<link rel="next" title="テスト環境の作成" href="integration_tests.html" /><link rel="prev" title="BGPの実装に必要な知識の学習" href="learning_background.html" />  <meta name="generator" content="Re:VIEW" />
   <title>実装開始！ | 作って学ぶルーティングプロトコル〜RustでBGPを実装〜</title>
 </head>
 <body>
@@ -17,8 +17,9 @@
 <li><a href="preface.html">前書き</a></li>
 <li><a href="learning_background.html">第1章　BGPの実装に必要な知識の学習</a></li>
 <li><a href="starting_point.html">第2章　実装開始！</a></li>
-<li><a href="established.html">第3章　Established Stateまでの実装！</a></li>
-<li><a href="exchange_update_message.html">第4章　Update Messageを交換する！</a></li>
+<li><a href="integration_tests.html">第3章　テスト環境の作成</a></li>
+<li><a href="established.html">第4章　Established Stateまでの実装！</a></li>
+<li><a href="exchange_update_message.html">第5章　Update Messageを交換する！</a></li>
 </ul>
       <p class="review-signature">powered by <a href="http://reviewml.org/">Re:VIEW</a></p>
     </nav>
@@ -380,7 +381,7 @@
 
 <h2><a id="h2-6"></a><span class="secno">2.6　</span>TCP Connectionの作成</h2>
 <p><span class="imgref"><a href="./starting_point.html#bgp-fsm">図2.1</a></span>の通りIdle -&gt; Connectに遷移するとき、対向機器とTCPコネクションの作成を試みます。本項ではTCPコネクションの作成の部分の実装を行います。</p>
-<p>まずは、TCP Connectionを張っていることを確認できるようにテストを書き換えます。3行目, 6-13行を追加しました。テストのtokio::spawnによって、別スレッドでもPeer構造体（remote_peer）を実行しています。これはネットワーク上で離れた別のマシンを模擬しています。</p>
+<p>まずは、TCP Connectionを張っていることを確認できるようにテストを書き換えます。3行目, 6-13行を追加しました。テストのtokio::spawnによって、別スレッドでもPeer構造体（remote_peer）を実行しています。これはネットワーク上で離れた別のマシンを模擬しています。模擬した別のマシンとTCP Connectionが張れていることを確認しています。</p>
 <div class="emlistnum-code">
 <p class="caption">src/main.rs</p>
 <pre class="emlist language-Rust"> 1: mod tests {
@@ -480,8 +481,20 @@
 65: }
 </pre>
 </div>
-<p>実装が終わったらテストを実行して結果を確認しましょう。テストを実行する際には以下の注意点があります。BGPで使用する179番ポートにBindするためにはroot権限が必要になります。sudoで実行できるようにするか、〜〜を編集するなどの必要があります。</p>
-<p>またMacOSの場合は、127.0.0.2にはバインド出来ないため、Dockerや仮想マシンなどのLinux環境を用意してください。今後もnetlinkなど、Linux固有のものが登場します。今後実装が進むにつれて、Rust上でのテストだけでなく、Docker、Docker-composeを用いて実際にBGP Messageのやりとりを行えているかどうかテストしたり、ルートの交換ができていることをテストするスクリプトを追加します。Linux以外を使用していて、活つ適切なLinux環境の用意の仕方がわからない場合は、先に〜〜を参照し、テスト環境を用意してください。</p>
+<p>実装が終わったらテストを実行して結果を確認しましょう。</p>
+<p>テストを実行する際には以下2つの注意点があります。</p>
+<p>BGPで使用する179番ポートにBindするためにはroot権限が必要になります。sudoでcargoを実行できるようにする必要があります。筆者は以下のようにcargoの設定を編集することで対応しています。</p>
+<div class="emlistnum-code">
+<p class="caption">~/.cargo/config,root権限で実行可能にする設定</p>
+<pre class="emlist language-{}"> 1: mrcsce@pop-os:~/programming/rustProjects/bgp/mrbgpdv2$ cat ~/.cargo/config
+ 2: 
+ 3: # nightly-x86_64-unknown-linux-gnu
+ 4: [target.x86_64-unknown-linux-gnu]
+ 5: runner = &#39;sudo -E&#39;
+ 6: mrcsce@pop-os:~/programming/rustProjects/bgp/mrbgpdv2$
+</pre>
+</div>
+<p>またMacOSの場合は、127.0.0.2にはバインド出来ないため、Dockerや仮想マシンなどのLinux環境を用意してください。今後もnetlinkなど、Linux固有のものが登場します。実装が進むにつれて、Rust上でのテストだけでなく、Docker、Docker-composeを用いて実際にBGP Messageのやりとりを行えているかどうかテストしたり、ルートの交換ができていることをテストするスクリプトを追加します。Linux以外を使用していて、活つ適切なLinux環境の用意の仕方がわからない場合は、先に<a href="./integration_tests.html">第3章</a>を参照し、テスト環境を用意してください。</p>
 <div class="emlistnum-code">
 <p class="caption">テスト結果</p>
 <pre class="emlist language-{}"> 1: mrcsce@pop-os:~/programming/rustProjects/bgp/mrbgpdv2$ cargo test
@@ -510,7 +523,7 @@
         </a>
               </nav>
       <nav class="book-navi book-next">
-                <a href="established.html">
+                <a href="integration_tests.html">
           <div class="book-cursor"><span class="cursor-next">▶</span></div>
         </a>
               </nav>

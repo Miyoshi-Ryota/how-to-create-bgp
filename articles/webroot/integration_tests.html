@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" xml:lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" type="text/css" href="style.css" />
+  <link rel="stylesheet" type="text/css" href="style-web.css" />
+<link rel="next" title="Established Stateまでの実装！" href="established.html" /><link rel="prev" title="実装開始！" href="starting_point.html" />  <meta name="generator" content="Re:VIEW" />
+  <title>テスト環境の作成 | 作って学ぶルーティングプロトコル〜RustでBGPを実装〜</title>
+</head>
+<body>
+  <div class="book">
+    <nav class="side-content">
+      <h1>作って学ぶルーティングプロトコル〜RustでBGPを実装〜</h1>
+      <ul class="book-toc">
+<li><a href="index.html">TOP</a></li>
+<li><a href="preface.html">前書き</a></li>
+<li><a href="learning_background.html">第1章　BGPの実装に必要な知識の学習</a></li>
+<li><a href="starting_point.html">第2章　実装開始！</a></li>
+<li><a href="integration_tests.html">第3章　テスト環境の作成</a></li>
+<li><a href="established.html">第4章　Established Stateまでの実装！</a></li>
+<li><a href="exchange_update_message.html">第5章　Update Messageを交換する！</a></li>
+</ul>
+      <p class="review-signature">powered by <a href="http://reviewml.org/">Re:VIEW</a></p>
+    </nav>
+    <div class="book-body">
+      <header>
+      </header>
+      <div class="book-page">
+        <h1><a id="h3"></a><span class="secno">第3章　</span>テスト環境の作成</h1>
+
+<h2><a id="h3-1"></a><span class="secno">3.1　</span>作成するテスト環境について</h2>
+<p>Dockerを用いて<span class="imgref"><a href="./integration_tests.html#test-env">図3.1</a></span>のテスト用のネットワークを構築します。</p>
+<div id="test-env" class="image">
+<img src="images/test-env.png" alt="作成するテスト環境" />
+<p class="caption">
+図3.1: 作成するテスト環境
+</p>
+</div>
+
+<h2><a id="h3-2"></a><span class="secno">3.2　</span>テスト環境の構築用のファイル追加</h2>
+<p><span class="imgref"><a href="./integration_tests.html#test-env">図3.1</a></span>の環境を<code class="inline-code tt">docker-compose -f ./tests/docker-compose.yml build --no-cache &amp;&amp; docker-compose -f ./tests/docker-compose.yml up -d</code>の一発で立ち上げられるように<code class="inline-code tt">テストのディレクトリ構造</code>のファイルを作成します。</p>
+<div class="emlistnum-code">
+<p class="caption">テストのディレクトリ構造</p>
+<pre class="emlist language-{}"> 1: .
+ 2: └── tests
+ 3:     ├── docker-compose.yml
+ 4:     ├── host1
+ 5:     │   └── Dockerfile
+ 6:     ├── host2
+ 7:     │   └── Dockerfile
+ 8:     ├── run_integration_tests.sh
+ 9:     └── run_unit_tests.sh
+</pre>
+</div>
+<p>それぞれのファイルの中身は以下のとおりです。</p>
+<div class="emlistnum-code">
+<p class="caption">tests/docker-compose</p>
+<pre class="emlist language-{}"> 1: services:
+ 2:   host1:
+ 3:     cap_add:
+ 4:       - NET_ADMIN # NET_ADMINがないと、ルーティングテーブルの操作ができない。
+ 5:     build: # Build Contextを変更して、Dockerfile, docker-compose.ymlより上位にあるファイルをCOPYできるようにしている。
+ 6:       context: ../
+ 7:       dockerfile: ./tests/host1/Dockerfile
+ 8:     networks:
+ 9:       bgp-test-network:
+10:         ipv4_address: 10.200.100.2
+11:       host1-network:
+12:         ipv4_address: 10.100.210.2
+13:     depends_on:
+14:       - host2 # host2から起動するようにしているのは、現状の実装ではBGPのpassiveモード側から起動しないとネイバーがはれないため。
+15:   host2:
+16:     cap_add:
+17:       - NET_ADMIN # NET_ADMINがないと、ルーティングテーブルの操作ができない。
+18:     build: # Build Contextを変更して、Dockerfile, docker-compose.ymlより上位にあるファイルをCOPYできるようにしている。
+19:       context: ../
+20:       dockerfile: ./tests/host2/Dockerfile
+21:     networks:
+22:       bgp-test-network:
+23:         ipv4_address: 10.200.100.3
+24:       host2-network:
+25:         ipv4_address: 10.100.220.3
+26: 
+27: networks:
+28:   bgp-test-network: # host1, host2がピアリングするためのネットワーク
+29:     driver: bridge
+30:     ipam:
+31:       config:
+32:         - subnet: 10.200.100.0/24
+33:   host1-network:
+34:     driver: bridge
+35:     ipam:
+36:       config:
+37:         - subnet: 10.100.210.0/24
+38:   host2-network: # host2 -&gt; host1にアドバタイズするネットワーク
+39:     driver: bridge
+40:     ipam:
+41:       config:
+42:         - subnet: 10.100.220.0/24
+</pre>
+</div>
+<div class="emlistnum-code">
+<p class="caption">tests/host1/Dockerfile</p>
+<pre class="emlist language-{}"> 1: FROM rust
+ 2: 
+ 3: WORKDIR /mrbgpdv2
+ 4: COPY . .
+ 5: RUN rustup default nightly
+ 6: RUN cargo build
+ 7: RUN apt-get update
+ 8: RUN apt-get -y install iputils-ping
+ 9: CMD ./target/debug/mrbgpdv2 &quot;64512 10.200.100.2 64513 10.200.100.3 active&quot;
+</pre>
+</div>
+<div class="emlistnum-code">
+<p class="caption">tests/host2/Dockerfile</p>
+<pre class="emlist language-{}"> 1: FROM rust
+ 2: 
+ 3: WORKDIR /mrbgpdv2
+ 4: COPY . .
+ 5: RUN rustup default nightly
+ 6: RUN cargo build
+ 7: RUN apt-get update
+ 8: RUN apt-get -y install iputils-ping
+ 9: CMD ./target/debug/mrbgpdv2 &quot;64513 10.200.100.3 64512 10.200.100.2 passive&quot;
+</pre>
+</div>
+
+<h2><a id="h3-3"></a><span class="secno">3.3　</span>configをコマンドライン引数から作成するようにmain関数を修正する。</h2>
+<p>コマンドライン引数によってconfigを渡すことができるようにmain関数を修正します。</p>
+<div class="emlistnum-code">
+<p class="caption">tests/host2/Dockerfile</p>
+<pre class="emlist language-{}"> 1: use std::env;
+ 2: 
+ 3: #[tokio::main]
+ 4: async fn main() {
+ 5:     let config =
+ 6:         env::args()
+ 7:             .skip(1)
+ 8:             .fold(&quot;&quot;.to_owned(), |mut acc, s| {
+ 9:                 acc += &amp;(s.to_owned() + &quot; &quot;);
+10:                 acc
+11:             });
+12:     let config = config.trim_end();
+13:     let configs = vec![Config::from_str(&amp;config).unwrap()];
+14: }
+15: 
+16: == 単体テスト、統合テスト用のスクリプトの作成
+17: これらの環境を用いてテストを行うスクリプトを追加します。
+18: 以下のように、環境構築、テスト実行をshell scriptにします。
+19: 
+20: //emlistnum[tests/run_integration_tests.sh][{}]{
+21: #!/bin/bash
+22: docker-compose -f ./tests/docker-compose.yml build --no-cache
+23: docker-compose -f ./tests/docker-compose.yml up -d
+24: HOST_2_LOOPBACK_IP=10.100.220.3
+25: docker-compose -f ./tests/docker-compose.yml exec -T host1 ping -c 5 $HOST_2_LOOPBACK_IP
+26: 
+27: # docker-compose execの終了コードは実行したコマンド、
+28: # ここでは`ping -c 5 $HOST_2_LOOPBACK_IP`のものである。
+29: # そのため、BGPでルートを交換し、pingが通れば0, それ以外の場合は1である。
+30: TEST_RESULT=$?
+31: if [ $TEST_RESULT -eq 0 ]; then
+32:     printf &quot;\e[32m%s\e[m\n&quot; &quot;統合テストが成功しました。&quot;
+33: else
+34:     printf &quot;\e[31m%s\e[m\n&quot; &quot;統合テストが失敗しました。&quot;
+35: fi
+36: 
+37: exit $TEST_RESULT
+</pre>
+</div>
+<div class="emlistnum-code">
+<p class="caption">tests/run_unit_tests.sh</p>
+<pre class="emlist language-{}"> 1: #!/bin/bash
+ 2: docker-compose -f ./tests/docker-compose.yml build --no-cache
+ 3: docker-compose -f ./tests/docker-compose.yml up -d
+ 4: docker-compose -f ./tests/docker-compose.yml exec -T host2 cargo test -- --test-threads=1 --nocapture
+</pre>
+</div>
+<p><code class="inline-code tt">tests/run_integration_tests.sh</code>を実行することで、以下のテストが実行されます。bgp-test-networkを用いて、host1, host2はBGP Peerを確立します。host2はhost2-networkの情報をhost1に広報します。これよりhost1はhost2-networkをルーティングテーブルに追加し、host2-network宛の通信が可能になります。host1 -&gt; host2-network宛の通信が成功したら統合テスト成功です。</p>
+<p><code class="inline-code tt">tests/run_unit_tests.sh</code>を実行することで、このDocker上で、<code class="inline-code tt">cargo test</code>が実行されます。これはLinuxを使用していれば、ローカルでcargo testを実行するだけで済むため必要ありません。</p>
+      </div>
+      <nav class="book-navi book-prev">
+                <a href="starting_point.html">
+          <div class="book-cursor"><span class="cursor-prev">◀</span></div>
+        </a>
+              </nav>
+      <nav class="book-navi book-next">
+                <a href="established.html">
+          <div class="book-cursor"><span class="cursor-next">▶</span></div>
+        </a>
+              </nav>
+    </div>
+  </div>
+  <footer>
+      </footer>
+</body>
+</html>

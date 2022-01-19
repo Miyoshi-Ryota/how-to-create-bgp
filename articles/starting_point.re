@@ -487,7 +487,7 @@ runner = 'sudo -E'
 mrcsce@pop-os:~/programming/rustProjects/bgp/mrbgpdv2$ 
 //}
 
-またMacOSの場合は、127.0.0.2にはバインド出来ないため、Dockerや仮想マシンなどのLinux環境を用意してください。今後もnetlinkなど、Linux固有のものが登場します。実装が進むにつれて、Rust上でのテストだけでなく、Docker、Docker-composeを用いて実際にBGP Messageのやりとりを行えているかどうかテストしたり、ルートの交換ができていることをテストするスクリプトを追加します。Linux以外を使用していて、活つ適切なLinux環境の用意の仕方がわからない場合は、先に〜〜を参照し、テスト環境を用意してください。
+またMacOSの場合は、127.0.0.2にはバインド出来ないため、Dockerや仮想マシンなどのLinux環境を用意してください。今後もnetlinkなど、Linux固有のものが登場します。実装が進むにつれて、Rust上でのテストだけでなく、Docker、Docker-composeを用いて実際にBGP Messageのやりとりを行えているかどうかテストしたり、ルートの交換ができていることをテストするスクリプトを追加します。Linux以外を使用していて、活つ適切なLinux環境の用意の仕方がわからない場合は、先に@<chap>{integration_tests}を参照し、テスト環境を用意してください。
 
 //emlistnum[テスト結果][{}]{
 mrcsce@pop-os:~/programming/rustProjects/bgp/mrbgpdv2$ cargo test
