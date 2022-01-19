@@ -11,7 +11,6 @@ GitHub Starいただけたら嬉しいです。
 ## 権利
 本リポジトリは[TechBooster/ReVIEW-Template](https://github.com/TechBooster/ReVIEW-Template/)を用いて作成されています。
  * 設定ファイル、テンプレートなど制作環境（techbooster-doujin-base.styなど）はMITライセンスでTechBoosterが権利者です。
-   * 再配布などMITライセンスで定める範囲で権利者表記をおねがいします
  * articles/styにあるファイルには以下のライセンスが適用されています。
    * review-jsbook.cls, review-base.sty, review-style.sty, review-custom.sty: MIT License
    * jumoline.sty: The LaTeX Project Public License
