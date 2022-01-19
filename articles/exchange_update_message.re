@@ -42,7 +42,7 @@ AdjRibInChangedイベントが発火されたときに実施されるのがPhase
 
 Linuxでルーティングテーブルを読んだり、書いたりするためには、netlinkというものを使用します。
 netlinkはKernelとユーザ空間で情報をやり取りするためのものです。
-netlinkを生で扱うのは難しいため、本書ではライブラリを使用します。
+netlinkを生で扱うのは難しいため、本PDFではライブラリを使用します。
 
 Cargo.tomlにライブラリ類を追記しましょう。
 
@@ -115,10 +115,10 @@ mod tests {
 
 == Update Messageの構造
 Update Messageの構造は@<href>{https://datatracker.ietf.org/doc/html/rfc4271#section-4.3,RFC 4271 4.3. UPDATE Message Format}@<fn>{update-format}、
-Path Attributeの定義は@<href>{https://datatracker.ietf.org/doc/html/rfc4271#section-5.1,RFC 4271 5.1. Path Attribute Usage}@<fn>{path-def}}に記載があります。
+Path Attributeの定義は@<href>{https://datatracker.ietf.org/doc/html/rfc4271#section-5.1,RFC 4271 5.1. Path Attribute Usage}@<fn>{path-def}に記載があります。
 
 本実装ではUpdate MessageのPathAttibuteは、最低限の実装ということで、AS_PATH、ORIGIN, NEXT_HOPのみ実装しています。
-本実装ではPath Attributeの値を矛盾なく設定するために、Phase3（LocRib -> AdjRibOutにルートを渡す際）に、PathAttributeの変更も行っています。
+本実装ではPath Attributeの値を矛盾なく設定するために、Phase3（LocRib -> AdjRibOutにルートを渡す際）に、以下のようにPathAttributeの変更も行っています。
 
  * PathAttribute AS_PATHに自分のAS番号を追加しています。
  * NextHopを自分のlocal ipに変更しています。
@@ -145,14 +145,18 @@ CMD ./target/debug/mrbgpdv2 "64513 10.200.100.3 64512 10.200.100.2 passive 10.10
 //}
 
 この変更により、あとはうまくUpdate Messageの送受信が完了すれば、統合テストが通るようになります。
-Update Messageの送信自体は、Open Messageの送信と変わらないため書内では省略します。この実装を確認したい場合は、以下のPRを確認してください。
+Update Messageの送信自体は、Open Messageの送信と変わらないため書内では省略します。この実装を確認したい場合は、本実装のリポジトリの以下のPRを確認してください。
 
- * @<href>{https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/11,Update messageを送信可能にする #11}
- * @<href>{https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/13,Update messageの送信に関するバグを修正した。 #13}
- * @<href>{https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/14,UpdateMessageにNLRIが欠落するバグの修正 #14}
+ * @<href>{https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/11,Update messageを送信可能にする #11}@<fn>{update-11}
+ * @<href>{https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/13,Update messageの送信に関するバグを修正した。 #13}@<fn>{update-13}
+ * @<href>{https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/14,UpdateMessageにNLRIが欠落するバグの修正 #14}@<fn>{update-14}
+
+//footnote[update-11][https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/11]
+//footnote[update-13][https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/13]
+//footnote[update-14][https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/14]
 
 == Update Messageの受信の実装
-Update Messageは受信した内容に従って、ルーティングテーブルの書き込みを行います。ルーティングテーブルの書き込みは本書内では初なので、以下にコードを記載します。 
+Update Messageは受信した内容に従って、ルーティングテーブルの書き込みを行います。ルーティングテーブルの書き込みは本PDF内では初なので、以下にコードを記載します。 
 
 //emlistnum[src/routing.rs][Rust]{
 impl LocRib {
@@ -183,7 +187,9 @@ impl LocRib {
 その他のUpdate Messageの受信もOpen Messageの受信と大差ないため概ね省略します。
 すべてのコードを確認したい場合は、以下のPRを参照してください。
 
- * @<href>{https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/15,Update messageを受信可能にする #15}
+ * @<href>{https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/15,Update messageを受信可能にする #15}@<fn>{update-received}
+
+//footnote[update-received][https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/15]
 
 最後に@<code>{tests/run_integration_tests.sh}を実行して、統合テストが通るようになったことを確認しましょう。
 
@@ -208,6 +214,9 @@ rtt min/avg/max/mdev = 0.051/0.067/0.101/0.017 ms
 mrcsce@pop-os:~/programming/rustProjects/bgp/mrbgpdv2$ git status
 //}
 
-これにて本書は完了とします！
+これにて本PDFの内容は終了です。
+
 ここまで実装した方は、その実装に肉付けすることで、異常系や実装していないPathAttributeの実装も行っていけるはずです。
+RFCにも慣れ、その他のプロトコルもRFCから実装できるようになっていることと思います。
+
 おつかれさまでした。

@@ -7,13 +7,13 @@ BGPはどのようなイベント駆動ステートマシンとして表すの�
 
 //footnote[RFC][https://tools.ietf.org/html/rfc4271]
 しかし最初から @<href>{https://tools.ietf.org/html/rfc4271#section-8,8.  BGP Finite State Machine (FSM)}を参照して、完全なBGPを作成することは大変です。
-そのため本書ではBGPを次の段階に分けて開発します。また正常系のみ実装していきます。
+そのため本PDFではBGPを次の段階に分けて開発します。また正常系のみ実装していきます。
 
  * Connectまで遷移する実装
  * Establishedまで遷移する実装
  * Update Messageを交換する実装
 
-本書で実装するBGPのステートマシンを図示すると@<img>{bgp-fsm}になります。
+本PDFで実装するBGPのステートマシンを図示すると@<img>{bgp-fsm}になります。
 
 @<img>{bgp-fsm}で登場するEventはそれぞれ@<table>{BGPのイベント駆動ステートマシンで登場するEventの説明}の通りです。
 
@@ -27,7 +27,7 @@ BGPはどのようなイベント駆動ステートマシンとして表すの�
 Event名	説明
 ---------------------------------------------------
 ManualStart	BGPの開始を指示したときに発行されるイベント。@<br>{}RFC内でも同様に定義されている。
-TcpConnectionConfirmed	対向機器とTCPコネクションを確立できたときに発行されるイベント。@<br>{}RFC内でも同様に定義されている。RFCでは、@<br>{}TCP ackを受信したときのイベント、Tcp Cr Ackedと区別している。@<br>{}しかし本書では正常系しか実装しないため、TCPコネクションが@<br>{}確立された時のイベントとしては本イベントのみにしている。
+TcpConnectionConfirmed	対向機器とTCPコネクションを確立できたときに発行されるイベント。@<br>{}RFC内でも同様に定義されている。RFCでは、@<br>{}TCP ackを受信したときのイベント、Tcp Cr Ackedと区別している。@<br>{}しかし本PDFでは正常系しか実装しないため、TCPコネクションが@<br>{}確立された時のイベントとしては本イベントのみにしている。
 BGPOpen	対向機器からOpen Messageを受信したときに発行されるイベント。@<br>{}RFC内でも同様に定義されている。
 KeepAliveMsg	対向機器からKeepalive Messageを受信したときに発行されるイベント@<br>{}RFC内でも同様に定義されている。
 UpdateMsg	対向機器からUpdate Messageを受信したときに発行されるイベント@<br>{}RFC内でも同様に定義されている。
@@ -37,11 +37,11 @@ AdjRibInChanged	AdjRibIn@<fn>{AdjRibIn}が変更されたときに発行され�
 AdjRibOutChanged	AdjRibOut@<fn>{AdjRibOut}が変更されたときに発行されるイベント。@<br>{}存在するほうが実装しやすいため追加した@<br>{}RFCには存在しないイベント。
 //}
 
-//footnote[LocRib][https://datatracker.ietf.org/doc/html/rfc4271#section-1.1で説明されている。本書でも必要になったタイミングで説明する。]
-//footnote[AdjRibIn][https://datatracker.ietf.org/doc/html/rfc4271#section-1.1で説明されている。本書でも必要になったタイミングで説明する。]
-//footnote[AdjRibOut][https://datatracker.ietf.org/doc/html/rfc4271#section-1.1で説明されている。本書でも必要になったタイミングで説明する。]
+//footnote[LocRib][https://datatracker.ietf.org/doc/html/rfc4271#section-1.1で説明されている。本PDFでも必要になったタイミングで説明する。]
+//footnote[AdjRibIn][https://datatracker.ietf.org/doc/html/rfc4271#section-1.1で説明されている。本PDFでも必要になったタイミングで説明する。]
+//footnote[AdjRibOut][https://datatracker.ietf.org/doc/html/rfc4271#section-1.1で説明されている。本PDFでも必要になったタイミングで説明する。]
 
-//image[bgp-fsm][本書で実装するBGPのステートマシン図]{
+//image[bgp-fsm][本PDFで実装するBGPのステートマシン図]{
 //}
 
 == プロジェクト作成
@@ -508,8 +508,8 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 @<href>{https://datatracker.ietf.org/doc/html/rfc4271#section-8.2.2,RFC 4271 section-8.2.2}@<fn>{rfc4271}
 に記載されています。
 
-本書ではState Idle時、ManualStart Eventが発火したとき、StateをConnectに変更する、及びTCP Connectionを作成するだけにしています。しかしRFCではいろんなタイマーやカウンタを初期化したしています。それらのタイマーやカウンタは異常時に使用されるものなので、本書では省略しています。
-また、Idleイベント時にManualState以外のEvnetが発火した時の動作も記載されていますが、同様の理由で本書では省略しています。
+本PDFではState Idle時、ManualStart Eventが発火したとき、StateをConnectに変更する、及びTCP Connectionを作成するだけにしています。しかしRFCではいろんなタイマーやカウンタを初期化したしています。それらのタイマーやカウンタは異常時に使用されるものなので、本PDFでは省略しています。
+また、Idleイベント時にManualState以外のEvnetが発火した時の動作も記載されていますが、同様の理由で本PDFでは省略しています。
 
 //footnote[rfc4271][https://datatracker.ietf.org/doc/html/rfc4271#section-8.2.2]
 ===[/column]

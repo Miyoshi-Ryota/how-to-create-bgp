@@ -52,7 +52,7 @@
 <p><span class="imgref"><a href="./starting_point.html#bgp-fsm">図2.1</a></span>と突き合わせて考えます。Established Stateで、Established or LocRibChangedイベントが発火されたときに実施されるのがPhase3です。AdjRibOutChangedイベントが発火されたときに実施されるのが送信プロセスです。UpdateMsgイベントが発火されたときに実施されるのがPhase1です。AdjRibInChangedイベントが発火されたときに実施されるのがPhase2です。</p>
 
 <h2><a id="h5-1"></a><span class="secno">5.1　</span>ルーティングテーブルの扱い方</h2>
-<p>Linuxでルーティングテーブルを読んだり、書いたりするためには、netlinkというものを使用します。netlinkはKernelとユーザ空間で情報をやり取りするためのものです。netlinkを生で扱うのは難しいため、本書ではライブラリを使用します。</p>
+<p>Linuxでルーティングテーブルを読んだり、書いたりするためには、netlinkというものを使用します。netlinkはKernelとユーザ空間で情報をやり取りするためのものです。netlinkを生で扱うのは難しいため、本PDFではライブラリを使用します。</p>
 <p>Cargo.tomlにライブラリ類を追記しましょう。</p>
 <div class="emlistnum-code">
 <p class="caption">Cargo.toml</p>
@@ -123,8 +123,8 @@
 </div>
 
 <h2><a id="h5-2"></a><span class="secno">5.2　</span>Update Messageの構造</h2>
-<p>Update Messageの構造は<a href="https://datatracker.ietf.org/doc/html/rfc4271#section-4.3" class="link">RFC 4271 4.3. UPDATE Message Format</a><a id="fnb-update-format" href="#fn-update-format" class="noteref" epub:type="noteref">*1</a>、Path Attributeの定義は<a href="https://datatracker.ietf.org/doc/html/rfc4271#section-5.1" class="link">RFC 4271 5.1. Path Attribute Usage</a><a id="fnb-path-def" href="#fn-path-def" class="noteref" epub:type="noteref">*2</a>}に記載があります。</p>
-<p>本実装ではUpdate MessageのPathAttibuteは、最低限の実装ということで、AS_PATH、ORIGIN, NEXT_HOPのみ実装しています。本実装ではPath Attributeの値を矛盾なく設定するために、Phase3（LocRib -&gt; AdjRibOutにルートを渡す際）に、PathAttributeの変更も行っています。</p>
+<p>Update Messageの構造は<a href="https://datatracker.ietf.org/doc/html/rfc4271#section-4.3" class="link">RFC 4271 4.3. UPDATE Message Format</a><a id="fnb-update-format" href="#fn-update-format" class="noteref" epub:type="noteref">*1</a>、Path Attributeの定義は<a href="https://datatracker.ietf.org/doc/html/rfc4271#section-5.1" class="link">RFC 4271 5.1. Path Attribute Usage</a><a id="fnb-path-def" href="#fn-path-def" class="noteref" epub:type="noteref">*2</a>に記載があります。</p>
+<p>本実装ではUpdate MessageのPathAttibuteは、最低限の実装ということで、AS_PATH、ORIGIN, NEXT_HOPのみ実装しています。本実装ではPath Attributeの値を矛盾なく設定するために、Phase3（LocRib -&gt; AdjRibOutにルートを渡す際）に、以下のようにPathAttributeの変更も行っています。</p>
 <ul>
 <li>PathAttribute AS_PATHに自分のAS番号を追加しています。</li>
 <li>NextHopを自分のlocal ipに変更しています。</li>
@@ -133,8 +133,91 @@
 <div class="footnote" epub:type="footnote" id="fn-path-def"><p class="footnote">[*2] https://datatracker.ietf.org/doc/html/rfc4271#section-5.1</p></div>
 
 <h2><a id="h5-3"></a><span class="secno">5.3　</span>Update Messageの送信の実装</h2>
+<p>広報するネットワークを指定する方法を実装します。一般的にnetworkコマンドで設定されるものです。今回はConfigに追加し、コマンドライン引数で渡すことにしましょう。</p>
+<div class="emlistnum-code">
+<p class="caption">src/config.rs</p>
+<pre class="emlist language-Rust"> 1: #[derive(PartialEq, Eq, Debug, Clone, Hash, PartialOrd, Ord)]
+ 2: pub struct Config {
+ 3:     pub networks: Vec&lt;Ipv4Network&gt;,
+ 4: }
+</pre>
+</div>
+<p>また、テスト時に広報するネットワークを指定するようにします。@&lt;chap&gt;[integration_tests]で説明したようにhost2 -&gt; host1にhost2-networkを広報するように指定します。</p>
+<div class="emlistnum-code">
+<p class="caption">tests/host2/Dockerfile</p>
+<pre class="emlist language-{}"> 1: CMD ./target/debug/mrbgpdv2 &quot;64513 10.200.100.3 64512 10.200.100.2 passive 10.100.220.0/24&quot;
+</pre>
+</div>
+<p>この変更により、あとはうまくUpdate Messageの送受信が完了すれば、統合テストが通るようになります。Update Messageの送信自体は、Open Messageの送信と変わらないため書内では省略します。この実装を確認したい場合は、本実装のリポジトリの以下のPRを確認してください。</p>
+<ul>
+<li><a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/11" class="link">Update messageを送信可能にする #11</a><a id="fnb-update-11" href="#fn-update-11" class="noteref" epub:type="noteref">*3</a></li>
+<li><a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/13" class="link">Update messageの送信に関するバグを修正した。 #13</a><a id="fnb-update-13" href="#fn-update-13" class="noteref" epub:type="noteref">*4</a></li>
+<li><a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/14" class="link">UpdateMessageにNLRIが欠落するバグの修正 #14</a><a id="fnb-update-14" href="#fn-update-14" class="noteref" epub:type="noteref">*5</a></li>
+</ul>
+<div class="footnote" epub:type="footnote" id="fn-update-11"><p class="footnote">[*3] https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/11</p></div>
+<div class="footnote" epub:type="footnote" id="fn-update-13"><p class="footnote">[*4] https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/13</p></div>
+<div class="footnote" epub:type="footnote" id="fn-update-14"><p class="footnote">[*5] https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/14</p></div>
 
 <h2><a id="h5-4"></a><span class="secno">5.4　</span>Update Messageの受信の実装</h2>
+<p>Update Messageは受信した内容に従って、ルーティングテーブルの書き込みを行います。ルーティングテーブルの書き込みは本PDF内では初なので、以下にコードを記載します。</p>
+<div class="emlistnum-code">
+<p class="caption">src/routing.rs</p>
+<pre class="emlist language-Rust"> 1: impl LocRib {
+ 2:     pub async fn write_to_kernel_routing_table(&amp;self) -&gt; Result&lt;()&gt; {
+ 3:         let (connection, handle, _) = new_connection()?;
+ 4:         tokio::spawn(connection);
+ 5:         for e in &amp;self.0 {
+ 6:             for p in &amp;e.path_attributes {
+ 7:                 if let PathAttribute::NextHop(gateway) = p {
+ 8:                     let dest = e.network_address;
+ 9:                     handle
+10:                         .route()
+11:                         .add()
+12:                         .v4()
+13:                         .destination_prefix(dest.ip(), dest.prefix())
+14:                         .gateway(*gateway)
+15:                         .execute()
+16:                         .await?;
+17:                     break;
+18:                 }
+19:             }
+20:         }
+21:         Ok(())
+22:     }
+23: }
+</pre>
+</div>
+<p>その他のUpdate Messageの受信もOpen Messageの受信と大差ないため概ね省略します。すべてのコードを確認したい場合は、以下のPRを参照してください。</p>
+<ul>
+<li><a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/15" class="link">Update messageを受信可能にする #15</a><a id="fnb-update-received" href="#fn-update-received" class="noteref" epub:type="noteref">*6</a></li>
+</ul>
+<div class="footnote" epub:type="footnote" id="fn-update-received"><p class="footnote">[*6] https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/15</p></div>
+<p>最後に<code class="inline-code tt">tests/run_integration_tests.sh</code>を実行して、統合テストが通るようになったことを確認しましょう。</p>
+<div class="emlistnum-code">
+<p class="caption">統合テストの実行</p>
+<pre class="emlist language-{}"> 1: mrcsce@pop-os:~/programming/rustProjects/bgp/mrbgpdv2$ ./tests/run_integration_tests.sh
+ 2: &lt;中略&gt;
+ 3: Successfully built 09fb776025aa
+ 4: Successfully tagged tests_host1:latest
+ 5: Recreating tests_host2_1 ... done
+ 6: Recreating tests_host1_1 ... done
+ 7: PING 10.100.220.3 (10.100.220.3) 56(84) bytes of data.
+ 8: 64 bytes from 10.100.220.3: icmp_seq=1 ttl=64 time=0.101 ms
+ 9: 64 bytes from 10.100.220.3: icmp_seq=2 ttl=64 time=0.051 ms
+10: 64 bytes from 10.100.220.3: icmp_seq=3 ttl=64 time=0.059 ms
+11: 64 bytes from 10.100.220.3: icmp_seq=4 ttl=64 time=0.062 ms
+12: 64 bytes from 10.100.220.3: icmp_seq=5 ttl=64 time=0.065 ms
+13: 
+14: --- 10.100.220.3 ping statistics ---
+15: 5 packets transmitted, 5 received, 0% packet loss, time 4102ms
+16: rtt min/avg/max/mdev = 0.051/0.067/0.101/0.017 ms
+17: 統合テストが成功しました。
+18: mrcsce@pop-os:~/programming/rustProjects/bgp/mrbgpdv2$ git status
+</pre>
+</div>
+<p>これにて本PDFの内容は終了です。</p>
+<p>ここまで実装した方は、その実装に肉付けすることで、異常系や実装していないPathAttributeの実装も行っていけるはずです。RFCにも慣れ、その他のプロトコルもRFCから実装できるようになっていることと思います。</p>
+<p>おつかれさまでした。</p>
       </div>
       <nav class="book-navi book-prev">
                 <a href="established.html">

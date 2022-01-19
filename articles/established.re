@@ -310,7 +310,7 @@ impl Peer {
 
 ===[column] Integrationテスト環境でのパケットキャプチャ方法
 
-BGP Messageが送信できるようになったら、Wiresharkでキャプチャして自作のパケットを見てみると楽しいです。またデバッグの役にもたちます。そのため、パケットキャプチャする方法を記載します。 ________________________________________________________________
+BGP Messageが送信できるようになったら、Wiresharkでキャプチャして自作のパケットを見てみると楽しいです。またデバッグの役にもたちます。そのため、パケットキャプチャする方法を記載します。
 手順は以下のとおりです。
 
  * パケットをやり取りするネットワークのNETWORK IDを確認する。以下出力だと、@<code>{b57e3cce48fe}がパケットをやり取りするネットワークのNetwork IDです。
@@ -441,8 +441,12 @@ pub enum Event {
 この繰り返しで同じようなコードが続きます。何も新しいことがないため省略します。
 
 今までの経験と@<img>{starting_point|bgp-fsm}を参照することで自力で実装可能だと思われます。
-もし実装に詰まった場合は以下を参照してください。
+もし実装に詰まった場合は以下を参考にしてください。
 
- * @<href>{https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/6,Open confirm stateに遷移する #6}
- * @<href>{https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/7,Establishedに遷移できるようにする #7}
+ * @<href>{https://tools.ietf.org/html/rfc4271#section-8,RFCの8. BGP Finite State Machine (FSM)}@<fn>{rfc-fsm}
+ * @<href>{https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/6,本PDFの実装のリポジトリのPR: Open confirm stateに遷移する #6}@<fn>{open-confirm}
+ * @<href>{https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/7,本PDFの実装のリポジトリのPR: Establishedに遷移できるようにする #7}@<fn>{established}
 
+//footnote[rfc-fsm][https://tools.ietf.org/html/rfc4271#section-8]
+//footnote[open-confirm][https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/6]
+//footnote[established][https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/7]

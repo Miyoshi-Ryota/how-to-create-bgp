@@ -322,7 +322,7 @@
 <div class="column">
 
 <h3><a id="column-1"></a>Integrationテスト環境でのパケットキャプチャ方法</h3>
-<p>BGP Messageが送信できるようになったら、Wiresharkでキャプチャして自作のパケットを見てみると楽しいです。またデバッグの役にもたちます。そのため、パケットキャプチャする方法を記載します。 ________________________________________________________________手順は以下のとおりです。</p>
+<p>BGP Messageが送信できるようになったら、Wiresharkでキャプチャして自作のパケットを見てみると楽しいです。またデバッグの役にもたちます。そのため、パケットキャプチャする方法を記載します。手順は以下のとおりです。</p>
 <ul>
 <li>パケットをやり取りするネットワークのNETWORK IDを確認する。以下出力だと、<code class="inline-code tt">b57e3cce48fe</code>がパケットをやり取りするネットワークのNetwork IDです。</li>
 </ul>
@@ -364,7 +364,7 @@
 <p>次にOpenConfirm Stateに遷移するまでの実装を示します。これまでとの違いは、データの受信・受信内容に従ってイベントの発火を実装することです。</p>
 <p>他は今までの延長です。今までの経験を持って<span class="imgref"><a href="./starting_point.html#bgp-fsm">図2.1</a></span>を参照すれば、実装できると思われますのでそれ以外は省略します。</p>
 
-<h3><a id="h4-2-1"></a><span class="secno">4.2.1　</span>データの受診方法</h3>
+<h3><a id="h4-2-1"></a><span class="secno">4.2.1　</span>データの受信方法</h3>
 <p>さて、データの受信を実装します。<code class="inline-code tt">Connection</code>の<code class="inline-code tt">get_message</code>メソッドがデータの受信用のメソッドです。このメソッドは何らかのデータ（Bytes列）を受信している場合は、そのBytes列からMessageを作成し、Some(Message)を返します。データを受信していない場合は、不完全に受信している場合はNoneを返します。</p>
 <p>分かりづらいところは、実際にデータを読んでいるメソッドである<code class="inline-code tt">read_data_from_tcp_connection</code>メソッドだと思います。TcpConnectionが張られたまま &amp;&amp; しかしデータを受信していない場合は、<code class="inline-code tt">Err(io::ErrorKind::WouldBlock)</code>を返すことに注意してください。</p>
 <div class="emlistnum-code">
@@ -450,11 +450,15 @@
 
 <h2><a id="h4-3"></a><span class="secno">4.3　</span>Established Stateに遷移する</h2>
 <p>これEstablished Stateに遷移するまでは、同じようなコードが続きます。メッセージを作成し、送信すること。メッセージを受信したらイベントを発行すること。この繰り返しで同じようなコードが続きます。何も新しいことがないため省略します。</p>
-<p>今までの経験と<span class="imgref"><a href="./starting_point.html#bgp-fsm">図2.1</a></span>を参照することで自力で実装可能だと思われます。もし実装に詰まった場合は以下を参照してください。</p>
+<p>今までの経験と<span class="imgref"><a href="./starting_point.html#bgp-fsm">図2.1</a></span>を参照することで自力で実装可能だと思われます。もし実装に詰まった場合は以下を参考にしてください。</p>
 <ul>
-<li><a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/6" class="link">Open confirm stateに遷移する #6</a></li>
-<li><a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/7" class="link">Establishedに遷移できるようにする #7</a></li>
+<li><a href="https://tools.ietf.org/html/rfc4271#section-8" class="link">RFCの8. BGP Finite State Machine (FSM)</a><a id="fnb-rfc-fsm" href="#fn-rfc-fsm" class="noteref" epub:type="noteref">*4</a></li>
+<li><a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/6" class="link">本PDFの実装のリポジトリのPR: Open confirm stateに遷移する #6</a><a id="fnb-open-confirm" href="#fn-open-confirm" class="noteref" epub:type="noteref">*5</a></li>
+<li><a href="https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/7" class="link">本PDFの実装のリポジトリのPR: Establishedに遷移できるようにする #7</a><a id="fnb-established" href="#fn-established" class="noteref" epub:type="noteref">*6</a></li>
 </ul>
+<div class="footnote" epub:type="footnote" id="fn-rfc-fsm"><p class="footnote">[*4] https://tools.ietf.org/html/rfc4271#section-8</p></div>
+<div class="footnote" epub:type="footnote" id="fn-open-confirm"><p class="footnote">[*5] https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/6</p></div>
+<div class="footnote" epub:type="footnote" id="fn-established"><p class="footnote">[*6] https://github.com/Miyoshi-Ryota/mrbgpdv2/pull/7</p></div>
       </div>
       <nav class="book-navi book-prev">
                 <a href="integration_tests.html">
