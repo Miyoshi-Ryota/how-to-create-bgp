@@ -4,7 +4,9 @@
 本リポジトリは、「作って学ぶルーティングプロトコル〜RustでBGPを実装〜」の原稿を管理するリポジトリです。 
 本PDF自体は以下からダウンロードすることが可能です。
 
-https://github.com/Miyoshi-Ryota/how-to-create-bgp/suites/4987243070/artifacts/145836535
+* https://techbookfest.org/product/6435451466416128
+or
+* https://github.com/Miyoshi-Ryota/how-to-create-bgp/suites/4987432339/artifacts/145847593
 
 GitHub Starいただけたら嬉しいです。
 
