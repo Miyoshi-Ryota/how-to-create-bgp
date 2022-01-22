@@ -112,6 +112,7 @@ async fn main() {
     let config = config.trim_end();
     let configs = vec![Config::from_str(&config).unwrap()];
 }
+//}
 
 == 単体テスト、統合テスト用のスクリプトの作成
 これらの環境を用いてテストを行うスクリプトを追加します。
