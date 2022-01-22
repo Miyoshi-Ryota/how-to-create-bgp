@@ -138,7 +138,7 @@ pub struct Config {
 //}
 
 また、テスト時に広報するネットワークを指定するようにします。
-@<chap>[integration_tests]で説明したようにhost2 -> host1にhost2-networkを広報するように指定します。
+@<chap>{integration_tests}で説明したようにhost2 -> host1にhost2-networkを広報するように指定します。
 
 //emlistnum[tests/host2/Dockerfile][{}]{
 CMD ./target/debug/mrbgpdv2 "64513 10.200.100.3 64512 10.200.100.2 passive 10.100.220.0/24"
