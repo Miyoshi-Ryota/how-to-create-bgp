@@ -1,11 +1,14 @@
 # 作って学ぶルーティングプロトコル〜RustでBGPを実装〜
-![cover.jpg](https://github.com/Miyoshi-Ryota/how-to-create-bgp/blob/master/articles/images/cover.jpg?raw=true "サンプル")
 
 本リポジトリは、「作って学ぶルーティングプロトコル〜RustでBGPを実装〜」の原稿を管理するリポジトリです。 本書は同人版と商業版が存在します。
 本リポジトリでは、同人版の原稿が上がっています。無料で読みたい場合はこのリポジトリの内容を自力でビルドすることで読むことが可能です。
 
 商業版では、大量のバグ・誤記が修正され、解説が大量に追加されています。ページ数で言えば、46ページから100ページ越えへ大幅に加筆されています。商業版は以下で購入が可能です。
 
+https://www.amazon.co.jp/gp/product/B0BN9TBQB6/ref=as_li_tf_tl?ie=UTF8&camp=247&creative=1211&creativeASIN=B0BN9TBQB6&linkCode=as2&tag=impressrd-1-22
+![]( "サンプル")
+
+[![cover](https://m.media-amazon.com/images/P/B0BN9TBQB6.01._SCLZZZZZZZ_SX500_.jpg)](https://www.amazon.co.jp/gp/product/B0BN9TBQB6/)
 
 GitHub Starいただけたら嬉しいです。
 
