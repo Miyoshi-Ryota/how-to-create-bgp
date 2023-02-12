@@ -12,7 +12,12 @@ https://www.amazon.co.jp/gp/product/B0BN9TBQB6/ref=as_li_tf_tl?ie=UTF8&camp=247&
 
 [![cover](https://m.media-amazon.com/images/P/B0BN9TBQB6.01._SCLZZZZZZZ_SX500_.jpg)](https://www.amazon.co.jp/gp/product/B0BN9TBQB6/)
 
-GitHub Starいただけたら嬉しいです。
+
+## 商業版の正誤表
+
+商業版の正誤表は以下に公開されております。
+
+https://miyoshi-ryota.github.io/mrbgpdv2/
 
 ## 権利
 本リポジトリは[TechBooster/ReVIEW-Template](https://github.com/TechBooster/ReVIEW-Template/)を用いて作成されています。
